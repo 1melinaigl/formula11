@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/formula11
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.type.descriptor.sql.BasicBinder: trace

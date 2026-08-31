@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:formula11;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  sql:
+    init:
+      mode: always
+
+jwt:
+  secret: test-secret-key-for-unit-tests-1234567890
+  expiration-ms: 3600000
+
+api:
+  key:
+    prefix: TEST

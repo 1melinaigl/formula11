@@ -1,0 +1,4 @@
+com\formula11\controllers\UserControllerTest.class
+com\formula11\services\UserServiceTest.class
+com\formula11\controllers\PlayerControllerTest.class
+com\formula11\services\PlayerServiceTest.class
