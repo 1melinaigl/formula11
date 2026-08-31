@@ -26,6 +26,7 @@ No merge should expand technical debt without a justified exception. Shared code
 
 ## Architecture & Technology Constraints
 
+
 The backend MUST be implemented with Java and Spring Boot, using PostgreSQL as the persistence layer. The architecture MUST preserve clear boundaries between application, domain, and infrastructure concerns. Persistence, external integrations, and domain services MUST be decoupled from HTTP concerns and remain independently testable.
 
 The project MUST favor explicit contracts, clean domain logic, and deterministic error handling. When new dependencies are introduced, they MUST be justified by maintainability, security, or measurable operational value rather than convenience alone.
