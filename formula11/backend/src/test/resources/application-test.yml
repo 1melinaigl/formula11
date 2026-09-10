@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: jdbc:tc:postgresql:16-alpine:///formula11
+    username: test
+    password: test
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+app:
+  jwt:
+    secret: test-secret-key-that-is-at-least-32-bytes-long
+    expiration: 3600

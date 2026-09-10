@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: formula11-backend
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: false
+  flyway:
+    enabled: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+server:
+  error:
+    include-message: never
+app:
+  jwt:
+    expiration: 3600
+    secret: change-me-local-secret-key-must-be-at-least-32-bytes
+logging:
+  pattern:
+    level: "%5p [corr:%X{correlationId}]"
