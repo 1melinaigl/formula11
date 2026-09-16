@@ -22,3 +22,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Java / Maven
+target/
+bin/
+*.class
+
+# Eclipse / JDT (usado por la extensión de Java de VS Code)
+.project
+.classpath
+.settings/
+.factorypath
+
+# Archivos internos del compilador de Maven
+createdFiles.lst
+inputFiles.lst
