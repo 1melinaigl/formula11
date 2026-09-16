@@ -1,0 +1,132 @@
+openapi: 3.0.3
+info:
+  title: Formula11 - Registro y catálogo
+  version: 1.0.0
+  description: API para registrar usuarios y consultar el catálogo autenticado de jugadores.
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/usuarios/registro:
+    post:
+      summary: Registra un usuario y emite un JWT
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistroUsuarioRequest'
+      responses:
+        '201':
+          description: Usuario creado y credencial emitida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistroUsuarioResponse'
+        '400':
+          $ref: '#/components/responses/ErrorValidacion'
+        '409':
+          $ref: '#/components/responses/ErrorConflicto'
+  /api/jugadores:
+    get:
+      summary: Consulta el catálogo completo de jugadores
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Catálogo, posiblemente vacío
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JugadorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    RegistroUsuarioRequest:
+      type: object
+      required: [nombre, email, password]
+      properties:
+        nombre:
+          type: string
+          minLength: 1
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 72
+    RegistroUsuarioResponse:
+      type: object
+      required: [id, nombre, email, fechaRegistro, token]
+      properties:
+        id:
+          type: integer
+          format: int64
+        nombre:
+          type: string
+        email:
+          type: string
+          format: email
+        fechaRegistro:
+          type: string
+          format: date-time
+        token:
+          type: string
+    JugadorResponse:
+      type: object
+      required: [id, nombre, equipo, liga, posicion]
+      properties:
+        id:
+          type: integer
+          format: int64
+        nombre:
+          type: string
+        equipo:
+          type: string
+        liga:
+          type: string
+          enum: [Premier League, Bundesliga, La Liga, Serie A, Ligue 1]
+        posicion:
+          type: string
+    Error:
+      type: object
+      required: [mensaje, timestamp, correlationId]
+      properties:
+        mensaje:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        correlationId:
+          type: string
+  responses:
+    ErrorValidacion:
+      description: Datos inválidos
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ErrorConflicto:
+      description: Email ya registrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ErrorNoAutorizado:
+      description: JWT ausente, inválido o vencido
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
