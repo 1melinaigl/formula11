@@ -34,7 +34,7 @@ public class Usuario {
 
     public static String normalizarEmail(String email) {
         String normalized = requireText(email, "El email es obligatorio").toLowerCase(java.util.Locale.ROOT);
-        if (!normalized.matches("^[^\\s@]++@[^\\s@]++\\.[^\\s@]++$")) throw new IllegalArgumentException("El email no es válido");
+        if (!normalized.matches("^[^\s@]++@[^\s@.]++\.[^\s@]++$")) throw new IllegalArgumentException("El email no es válido");
         return normalized;
     }
 
