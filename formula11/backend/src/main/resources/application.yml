@@ -28,3 +28,11 @@ app:
 logging:
   pattern:
     level: "%5p [corr:%X{correlationId}]"
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
