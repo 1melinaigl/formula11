@@ -1,0 +1,85 @@
+openapi: 3.0.3
+info:
+  title: Formula11 - Login de usuarios
+  version: 1.0.0
+  description: Contrato del acceso de usuarios registrados mediante email y contraseña.
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/usuarios/login:
+    post:
+      summary: Inicia sesión y emite un JWT
+      description: Endpoint público. El email se normaliza quitando espacios externos y sin distinguir mayúsculas.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Credenciales válidas y JWT emitido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/ErrorValidacion'
+        '401':
+          $ref: '#/components/responses/ErrorCredencialesInvalidas'
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          example: ana@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 72
+          example: Secreto123!
+    LoginResponse:
+      type: object
+      required: [id, nombre, email, token]
+      properties:
+        id:
+          type: integer
+          format: int64
+        nombre:
+          type: string
+        email:
+          type: string
+          format: email
+        token:
+          type: string
+          description: JWT equivalente al emitido durante el registro.
+    Error:
+      type: object
+      required: [mensaje, timestamp, correlationId]
+      properties:
+        mensaje:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        correlationId:
+          type: string
+    ErrorCredencialesInvalidas:
+      description: Email inexistente o contraseña incorrecta; ambos casos usan el mismo mensaje genérico.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ErrorValidacion:
+      description: Datos ausentes o con formato inválido.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

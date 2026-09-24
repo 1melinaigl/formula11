@@ -30,6 +30,11 @@ public class GlobalExceptionHandler {
         return responder(HttpStatus.CONFLICT, exception.getMessage(), request);
     }
 
+    @ExceptionHandler(CredencialesInvalidasException.class)
+    public ResponseEntity<ErrorResponse> credencialesInvalidas(CredencialesInvalidasException exception, HttpServletRequest request) {
+        return responder(HttpStatus.UNAUTHORIZED, exception.getMessage(), request);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> inesperado(Exception exception, HttpServletRequest request) {
         return responder(HttpStatus.INTERNAL_SERVER_ERROR, "Ocurrió un error interno", request);
