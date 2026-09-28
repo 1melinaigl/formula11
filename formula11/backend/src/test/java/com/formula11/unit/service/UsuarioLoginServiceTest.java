@@ -57,9 +57,10 @@ class UsuarioLoginServiceTest {
     @Test
     void loginRechazaEmailInexistenteSinEmitirToken() {
         when(usuarioRepository.findByEmail("no-existe@example.com")).thenReturn(Optional.empty());
+        LoginRequest request = new LoginRequest("no-existe@example.com", "Secreto123!");
 
         var exception = assertThrows(CredencialesInvalidasException.class,
-                () -> usuarioService.login(new LoginRequest("no-existe@example.com", "Secreto123!")));
+        () -> usuarioService.login(request));
 
         assertEquals("Las credenciales no son válidas", exception.getMessage());
         verify(passwordEncoder, never()).matches(eq("Secreto123!"), eq("hash-encriptado"));
@@ -68,17 +69,17 @@ class UsuarioLoginServiceTest {
 
     @Test
     void loginRechazaPasswordIncorrectaConElMismoMensaje() {
-        Usuario usuario = usuario("Ana", "ana@example.com", "hash-encriptado", 1L);
-        when(usuarioRepository.findByEmail("ana@example.com")).thenReturn(Optional.of(usuario));
-        when(passwordEncoder.matches("Incorrecta1!", "hash-encriptado")).thenReturn(false);
+    Usuario usuario = usuario("Ana", "ana@example.com", "hash-encriptado", 1L);
+    when(usuarioRepository.findByEmail("ana@example.com")).thenReturn(Optional.of(usuario));
+    when(passwordEncoder.matches("Incorrecta1!", "hash-encriptado")).thenReturn(false);
+    LoginRequest request = new LoginRequest("ana@example.com", "Incorrecta1!");
 
-        var exception = assertThrows(CredencialesInvalidasException.class,
-                () -> usuarioService.login(new LoginRequest("ana@example.com", "Incorrecta1!")));
+    var exception = assertThrows(CredencialesInvalidasException.class,
+            () -> usuarioService.login(request));
 
-        assertEquals("Las credenciales no son válidas", exception.getMessage());
-        verify(jwtService, never()).generarToken(anyLong(), eq("ana@example.com"));
-    }
-
+    assertEquals("Las credenciales no son válidas", exception.getMessage());
+    verify(jwtService, never()).generarToken(anyLong(), eq("ana@example.com"));
+}
     private Usuario usuario(String nombre, String email, String passwordHash, Long id) {
         Usuario usuario = new Usuario(nombre, email, passwordHash);
         ReflectionTestUtils.setField(usuario, "id", id);

@@ -59,9 +59,10 @@ class UsuarioLoginIntegrationTest {
 
     @Test
     void loginRechazaPasswordIncorrecta() {
-        usuarioService.registrar(new RegistroUsuarioRequest("Ana", "ana-login@example.com", "Secreto123!"));
+    usuarioService.registrar(new RegistroUsuarioRequest("Ana", "ana-login@example.com", "Secreto123!"));
+    LoginRequest request = new LoginRequest("ana-login@example.com", "Otra1234!");
 
-        assertThrows(CredencialesInvalidasException.class,
-                () -> usuarioService.login(new LoginRequest("ana-login@example.com", "Otra1234!")));
+    assertThrows(CredencialesInvalidasException.class,
+            () -> usuarioService.login(request));
     }
 }
