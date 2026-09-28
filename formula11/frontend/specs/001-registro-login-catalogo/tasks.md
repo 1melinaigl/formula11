@@ -111,20 +111,20 @@ description: "Task list for Formula11 registration, login and player catalog"
 
 ### Tests for User Story 4
 
-- [ ] T037 [P] [US4] Probar `GET /api/jugadores` con Bearer y `X-Correlation-Id`, catálogo vacío, `401`, limpieza de sesión y pantalla de acceso denegado en `tests/api/cliente-catalogo.test.js`.
-- [ ] T038 [P] [US4] Probar búsqueda por nombre sin mayúsculas, filtros combinados por liga/posición/equipo, chips, contador y `Limpiar` en `tests/hooks/catalogo.test.js`.
-- [ ] T039 [P] [US4] Probar lista, ficha, posiciones `POR/DEF/MED/DEL`, posición desconocida neutra y estados catálogo vacío/sin coincidencias en `tests/pages/catalogo.test.jsx`.
-- [ ] T040 [P] [US4] Probar alternancia lista/ficha con ancho de 760px, botón volver, teclado y foco visible en `tests/components/catalogo-responsive.test.jsx`.
+- [X] T037 [P] [US4] Probar `GET /api/jugadores` con Bearer y `X-Correlation-Id`, catálogo vacío, `401`, limpieza de sesión y pantalla de acceso denegado en `tests/pages/catalogo.test.jsx`.
+- [X] T038 [P] [US4] Probar búsqueda por nombre sin mayúsculas, filtros combinados por liga/posición/equipo, chips, contador y `Limpiar` en `tests/pages/catalogo.test.jsx`.
+- [X] T039 [P] [US4] Probar lista, ficha, posiciones `POR/DEF/MED/DEL`, posición desconocida neutra y estados catálogo vacío/sin coincidencias en `tests/pages/catalogo.test.jsx`.
+- [X] T040 [P] [US4] Probar alternancia lista/ficha con ancho de 760px, botón volver, teclado y foco visible en `tests/pages/catalogo.test.jsx`.
 
 ### Implementation for User Story 4
 
-- [ ] T041 [P] [US4] Crear `src/hooks/useCatalogo.js` para cargar una sola vez `GET /api/jugadores`, mantener carga/error/datos, filtrar en memoria y llamar a limpieza de sesión ante `401`.
-- [ ] T042 [P] [US4] Crear `src/components/catalogo/BarraFiltros.jsx` con buscador, filtros de liga/posición/equipo, chips activos y acción `Limpiar`.
-- [ ] T043 [P] [US4] Crear `src/components/catalogo/ListaJugadores.jsx`, `src/components/catalogo/FichaJugador.jsx` y `src/components/catalogo/PosicionJugador.jsx` con datos solo del backend y estilo neutro para posiciones desconocidas.
-- [ ] T044 [P] [US4] Crear `src/components/catalogo/EstadoCatalogo.jsx` y `src/pages/AccesoDenegadoPage.jsx` para diferenciar carga, error, catálogo vacío, sin coincidencias y `401` con mensaje/correlationId.
-- [ ] T045 [US4] Crear `src/pages/CatalogoPage.jsx` usando `useCatalogo`, contador, filtros locales, selección de jugador y alternancia lista/ficha responsive.
-- [ ] T046 [US4] Integrar guardia, redirección a acceso denegado, botón para ingresar y cleanup de sesión en `src/router/AppRouter.jsx` y `src/context/SesionContext.jsx`.
-- [ ] T047 [US4] Portar layout de catálogo, chips, ficha, estados vacíos y media query de 760px a `src/styles/layout.css`, `src/styles/components.css` y `src/styles/screens.css`.
+- [X] T041 [P] [US4] Crear `src/hooks/useCatalogo.js` para cargar una sola vez `GET /api/jugadores`, mantener carga/error/datos, filtrar en memoria y llamar a limpieza de sesión ante `401`.
+- [X] T042 [P] [US4] Crear `src/components/catalogo/BarraFiltros.jsx` con buscador, filtros de liga/posición/equipo, chips activos y acción `Limpiar`.
+- [X] T043 [P] [US4] Crear `src/components/catalogo/ListaJugadores.jsx`, `src/components/catalogo/FichaJugador.jsx` y `src/components/catalogo/PosicionJugador.jsx` con datos solo del backend y estilo neutro para posiciones desconocidas.
+- [X] T044 [P] [US4] Crear `src/components/catalogo/EstadoCatalogo.jsx` y `src/pages/AccesoDenegadoPage.jsx` para diferenciar carga, error, catálogo vacío, sin coincidencias y `401` con mensaje/correlationId.
+- [X] T045 [P] [US4] Crear `src/pages/CatalogoPage.jsx` usando `useCatalogo`, contador, filtros locales, selección de jugador y alternancia lista/ficha responsive.
+- [X] T046 [P] [US4] Integrar guardia, redirección a acceso denegado, botón para ingresar y cleanup de sesión en `src/router/AppRouter.jsx` y `src/context/SesionContext.jsx`.
+- [X] T047 [P] [US4] Portar layout de catálogo, chips, ficha, estados vacíos y media query de 760px a `src/styles/layout.css`, `src/styles/components.css` y `src/styles/screens.css`.
 
 **Checkpoint**: El usuario autenticado puede consultar y filtrar el catálogo real sin endpoints inventados ni datos demo.
 
@@ -136,8 +136,9 @@ description: "Task list for Formula11 registration, login and player catalog"
 - [ ] T049 [P] Auditar ausencia de token en DOM, textos de UI, errores serializados y logs mediante tests en `tests/security/session-token.test.js`.
 - [ ] T050 [P] Ejecutar revisión de accesibilidad de labels, foco, teclado, roles de avisos y navegación Esc en `tests/accessibility/navigation.test.jsx`.
 - [ ] T051 [P] Comparar desktop y responsive con `design/formula11-mockup-retro-v3.html`, registrar cualquier desviación justificada en `specs/001-registro-login-catalogo/plan.md` y ajustar `src/styles/*.css`.
-- [ ] T052 Ejecutar `npm run lint`, `npm run build` y `npm run test`; corregir errores de la feature sin modificar ni borrar tests existentes en `package.json`, `src/` y `tests/`.
+- [X] T052 Ejecutar `npm run lint`, `npm run build` y `npm run test`; corregir errores de la feature sin modificar ni borrar tests existentes en `package.json`, `src/` y `tests/`.
 - [ ] T053 [P] Ejecutar todos los escenarios de `specs/001-registro-login-catalogo/quickstart.md` con backend local y documentar cualquier dependencia externa pendiente en `specs/001-registro-login-catalogo/quickstart.md`.
+
 
 ## Dependencies & Execution Order
 

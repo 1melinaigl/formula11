@@ -43,7 +43,7 @@ describe('ingreso', () => {
     await user.type(screen.getByLabelText('Contraseña'), 'Secreto123!')
     await user.click(screen.getByRole('button', { name: 'Ingresar', exact: true }))
 
-    expect(await screen.findByText('La consulta del catálogo estará disponible en la siguiente fase.')).toBeInTheDocument()
+    expect(await screen.findByText('Catálogo vacío')).toBeInTheDocument()
     expect(screen.getByText('Ana Formula')).toBeInTheDocument()
     expect(screen.queryByText('test-token')).not.toBeInTheDocument()
     expect(window.sessionStorage.getItem('formula11.session')).toContain('test-token')
