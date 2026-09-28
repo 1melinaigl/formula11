@@ -1,0 +1,113 @@
+.hero-copy {
+  flex: 1;
+  align-self: center;
+  padding-right: 20px;
+  text-align: right;
+}
+
+.hero-copy h1 {
+  margin: 0;
+  color: transparent;
+  font: 400 clamp(64px, 11vw, 140px) / .9 var(--disp);
+  text-transform: uppercase;
+  background: linear-gradient(#fff 30%, #ffb02e);
+  background-clip: text;
+  filter: drop-shadow(0 6px 0 rgba(0, 0, 0, .4));
+  -webkit-background-clip: text;
+}
+
+.hero-copy h1 em {
+  color: var(--gold);
+  font-style: normal;
+  -webkit-text-fill-color: var(--gold);
+}
+
+.hero-copy p {
+  color: var(--cyan);
+  font: 400 24px var(--disp);
+  letter-spacing: 6px;
+  text-transform: uppercase;
+}
+
+.auth-panel {
+  width: min(640px, 100%);
+  margin: 10px auto 0;
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 12px 22px 0;
+}
+
+.auth-tab {
+  padding: 8px 18px;
+  border: 1px solid rgba(220, 240, 200, .25);
+  border-bottom: 0;
+  background: rgba(0, 0, 0, .3);
+  color: var(--muted);
+  cursor: pointer;
+  font: 400 22px var(--disp);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.auth-tab.active {
+  background: var(--cyan);
+  color: var(--navy);
+}
+
+.form-body {
+  display: grid;
+  gap: 14px;
+  padding: 18px 22px;
+}
+
+.form-field label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--cyan);
+  font: 400 18px var(--disp);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.form-field input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid rgba(220, 240, 200, .4);
+  border-bottom: 3px solid var(--cyan);
+  outline: 0;
+  background: rgba(0, 0, 0, .55);
+  color: #fff;
+  font: 600 16px var(--body);
+}
+
+.form-field input:focus { background: rgba(40, 120, 60, .55); border-bottom-color: var(--gold); }
+.form-field input.invalid { border-bottom-color: var(--red); }
+.field-error { min-height: 15px; margin-top: 3px; color: var(--red); font-size: 12px; }
+.form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 4px; }
+
+.account-summary {
+  display: grid;
+  gap: 8px 14px;
+  grid-template-columns: 130px 1fr;
+  padding: 22px;
+  font-size: 15px;
+}
+
+.account-summary dt { color: var(--cyan); font-family: var(--disp); letter-spacing: 1px; text-transform: uppercase; }
+.account-summary dd { margin: 0; }
+
+@media (max-width: 760px) {
+  .site-header { gap: 8px; }
+  .logo { font-size: 31px; }
+  .breadcrumb { display: none; }
+  .session-chip { margin-left: auto; }
+  .hero-copy { display: none; }
+  .menu { padding-top: 10px; }
+  .menu-title { font-size: 25px; }
+  .auth-tabs { padding-inline: 12px; }
+  .form-body { padding-inline: 14px; }
+  .form-actions { flex-wrap: wrap; }
+}

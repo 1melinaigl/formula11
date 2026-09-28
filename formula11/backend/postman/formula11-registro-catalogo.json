@@ -15,6 +15,27 @@
       }
     },
     {
+      "name": "Iniciar sesión",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const response = pm.response.json();",
+              "if (response.token) pm.collectionVariables.set('token', response.token);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {"mode": "raw", "raw": "{\"email\":\"ana@example.com\",\"password\":\"Secreto123!\"}"},
+        "url": {"raw": "{{baseUrl}}/api/usuarios/login", "host": ["{{baseUrl}}"], "path": ["api", "usuarios", "login"]}
+      }
+    },
+    {
       "name": "Consultar jugadores",
       "request": {
         "method": "GET",

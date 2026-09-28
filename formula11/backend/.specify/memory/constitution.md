@@ -28,7 +28,7 @@ La lógica de negocio vive en los objetos de modelo (Jugador, Cotizacion, Estrat
 
 ## 4. Seguridad
 
-- Todos los endpoints, salvo el registro de usuario, requieren autenticación.
+- Todos los endpoints, salvo el registro y el login de usuario, requieren autenticación.
 - **Supuesto documentado:** se interpreta que la "ApiKEY" mencionada en la planilla de entregas y el JWT son la misma credencial — el token JWT emitido al momento del registro/login de un usuario, no un mecanismo de autenticación separado tipo M2M. Si en una corrección se aclara lo contrario, este punto se revisa.
 - Estricta validación de todas las entradas de datos (cubierto también por el punto 3, capa de DTO).
 
@@ -42,7 +42,7 @@ La lógica de negocio vive en los objetos de modelo (Jugador, Cotizacion, Estrat
 
 - **Unitarios del dominio:** sin el framework y sin base de datos. Deben probar exhaustivamente el cálculo matemático de las estrategias de cotización y las variaciones de ganancia/pérdida dentro del portfolio del usuario.
 - **Integración:** Services y Repositories contra PostgreSQL real levantado con Testcontainers.
-- **End to end (E2E) con Supertest:** validando flujos completos de lectura (ej. `GET /players/:id/quotes`) y transaccionales. Solo en su propio paquete. Nunca dentro de un test de service.
+- **End to end (E2E) con MockMvc sobre `@SpringBootTest`:** equivalente de Supertest en Spring Boot, validando flujos completos de lectura (ej. `GET /players/:id/quotes`) y transaccionales. Los tests deben ubicarse únicamente en su propio paquete `e2e` y nunca dentro de un test de service.
 - Siempre se deben contemplar casos felices y casos borde (por ejemplo, el comportamiento del sistema cuando el scraper de WhoScored o la API de Football-Data.org fallan).
 - No se modifica ni se borra un test existente, en ninguna fase del flujo, sin pedir permiso y recibir un "sí" explícito.
 
@@ -63,4 +63,4 @@ Un requerimiento está terminado cuando:
 
 ---
 
-**Version**: 2.0.0 | **Ratified**: 2026-08-31 | **Last Amended**: 2026-09-08
+**Version**: 2.0.2 | **Ratified**: 2026-08-31 | **Last Amended**: 2026-09-23
