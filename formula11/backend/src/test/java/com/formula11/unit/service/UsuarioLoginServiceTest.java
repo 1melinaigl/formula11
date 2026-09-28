@@ -63,7 +63,7 @@ class UsuarioLoginServiceTest {
         () -> usuarioService.login(request));
 
         assertEquals("Las credenciales no son válidas", exception.getMessage());
-        verify(passwordEncoder, never()).matches(eq("Secreto123!"), eq("hash-encriptado"));
+        verify(passwordEncoder, never()).matches("Secreto123!", "hash-encriptado");
         verify(jwtService, never()).generarToken(anyLong(), eq("no-existe@example.com"));
     }
 
