@@ -4,7 +4,7 @@ export default function AvisoError({ error, className = '' }) {
   return (
     <div className={`alert show ${className}`.trim()} role="alert">
       <span>{error.api?.mensaje || error.message}</span>
-      {error.api?.correlationId && <code>correlationId: {error.api.correlationId}</code>}
+      {error.api?.correlationId && <code></code>}
     </div>
   )
 }

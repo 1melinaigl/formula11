@@ -32,7 +32,7 @@ export default function CatalogoPage() {
   return (
     <section className="screen catalog-screen">
       <div className="catalog-content">
-        <div className="catalog-title-row"><div><p className="eyebrow">GET /API/JUGADORES</p><h1 className="panel-heading">Catálogo de jugadores</h1></div><button className="btn ghost" type="button" onClick={() => navigate('/')}>Menú</button></div>
+        <div className="catalog-title-row"><div><p className="eyebrow"></p><h1 className="panel-heading">Catálogo de jugadores</h1></div><button className="btn ghost" type="button" onClick={() => navigate('/')}>Menú</button></div>
         <BarraFiltros {...catalogo} />
         <p className="catalog-count" aria-live="polite">{catalogo.resultados.length} jugadores</p>
         {estado || <div className={`catalog-columns ${mostrarFicha ? 'show-detail' : ''}`}><div className="catalog-list-panel"><ListaJugadores jugadores={catalogo.resultados} seleccionado={jugadorVisible} seleccionar={seleccionar} /></div><div className="catalog-detail-panel"><FichaJugador jugador={jugadorVisible} volver={() => setMostrarFicha(false)} /></div></div>}
