@@ -1,0 +1,145 @@
+openapi: 3.0.3
+info:
+  title: Formula11 - Paginacion del catalogo
+  version: 1.0.0
+  description: Contrato paginado para consultar el catalogo autenticado de jugadores.
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/jugadores:
+    get:
+      summary: Consulta una pagina del catalogo de jugadores
+      description: Endpoint protegido. Los filtros de equipo y posicion son busquedas parciales sin distinguir mayusculas; liga es un valor exacto permitido.
+      parameters:
+        - name: page
+          in: query
+          description: Indice de pagina base 0.
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          description: Cantidad de jugadores por pagina.
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: sort
+          in: query
+          description: Un unico criterio con formato campo,direccion.
+          required: false
+          schema:
+            type: string
+            pattern: '^(id|nombre|equipo|liga|posicion),(asc|desc)$'
+            example: nombre,asc
+        - name: liga
+          in: query
+          description: Liga exacta del jugador.
+          required: false
+          schema:
+            type: string
+            enum: [Premier League, Bundesliga, La Liga, Serie A, Ligue 1]
+        - name: equipo
+          in: query
+          description: Texto parcial del equipo, sin distinguir mayusculas.
+          required: false
+          schema:
+            type: string
+            minLength: 1
+        - name: posicion
+          in: query
+          description: Texto parcial de la posicion, sin distinguir mayusculas.
+          required: false
+          schema:
+            type: string
+            minLength: 1
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Pagina de jugadores, posiblemente vacia.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JugadoresPageResponse'
+        '400':
+          $ref: '#/components/responses/ErrorParametrosInvalidos'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    JugadoresPageResponse:
+      type: object
+      required: [content, page, size, totalElements, totalPages]
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/JugadorResponse'
+        page:
+          type: integer
+          format: int32
+          minimum: 0
+        size:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 100
+        totalElements:
+          type: integer
+          format: int64
+          minimum: 0
+        totalPages:
+          type: integer
+          format: int32
+          minimum: 0
+    JugadorResponse:
+      type: object
+      required: [id, nombre, equipo, liga, posicion]
+      properties:
+        id:
+          type: integer
+          format: int64
+        nombre:
+          type: string
+        equipo:
+          type: string
+        liga:
+          type: string
+          enum: [Premier League, Bundesliga, La Liga, Serie A, Ligue 1]
+        posicion:
+          type: string
+    Error:
+      type: object
+      required: [mensaje, timestamp, correlationId]
+      properties:
+        mensaje:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        correlationId:
+          type: string
+    ErrorParametrosInvalidos:
+      description: Uno o mas parametros de consulta son invalidos.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ErrorNoAutorizado:
+      description: JWT ausente, invalido o vencido.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

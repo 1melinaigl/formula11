@@ -25,6 +25,16 @@ app:
   jwt:
     expiration: 3600
     secret: change-me-local-secret-key-must-be-at-least-32-bytes
+  football-api:
+    api-key: ${FOOTBALL_API_KEY:}
+    base-url: ${FOOTBALL_API_BASE_URL:https://api.football-data.org/v4}
+    api-key-header: ${FOOTBALL_API_KEY_HEADER:X-Auth-Token}
+    connect-timeout: ${FOOTBALL_API_CONNECT_TIMEOUT:3s}
+    read-timeout: ${FOOTBALL_API_READ_TIMEOUT:10s}
+    response-timeout: ${FOOTBALL_API_RESPONSE_TIMEOUT:15s}
+    cache-ttl: ${FOOTBALL_API_CACHE_TTL:15m}
+    cache-maximum-size: ${FOOTBALL_API_CACHE_MAXIMUM_SIZE:500}
+    minimum-request-interval: ${FOOTBALL_API_MINIMUM_REQUEST_INTERVAL:0ms}
 logging:
   pattern:
     level: "%5p [corr:%X{correlationId}]"
