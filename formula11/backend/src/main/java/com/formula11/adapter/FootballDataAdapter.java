@@ -57,8 +57,14 @@ public class FootballDataAdapter implements FootballDataPort {
         TeamsResponse response = get("/competitions/{competition}/teams", Map.of("competition", competitionCode), TeamsResponse.class, liga.name(), "teams");
         if (response == null || response.teams() == null) throw invalidResponse(liga.name());
         List<ExternalTeam> teams = response.teams().stream()
-                .filter(team -> team.id() != null && team.name() != null && !team.name().isBlank())
-                .map(team -> new ExternalTeam(String.valueOf(team.id()), team.name().trim(), liga.name()))
+        .filter(team -> team.id() != null && team.name() != null && !team.name().isBlank())
+        .map(team -> {
+            ExternalTeam externo = new ExternalTeam(String.valueOf(team.id()), team.name().trim(), liga.name());
+            if (team.squad() != null && !team.squad().isEmpty()) {
+                cache.put("squad:" + externo.externalId(), mapearJugadores(team.squad(), externo));
+            }
+            return externo;
+        })
                 .toList();
         cache.put(key, teams);
         return teams;
@@ -76,11 +82,7 @@ public class FootballDataAdapter implements FootballDataPort {
         }
         TeamDetailResponse response = get("/teams/{team}", Map.of("team", equipo.externalId()), TeamDetailResponse.class, equipo.liga(), "squad");
         if (response == null || response.squad() == null) throw invalidResponse(equipo.liga());
-        List<ExternalPlayer> players = response.squad().stream()
-                .filter(player -> player.id() != null && player.name() != null && player.position() != null)
-                .map(player -> new ExternalPlayer(
-                        String.valueOf(player.id()), player.name().trim(), equipo.nombre(), equipo.liga(), normalizarPosicion(player.position())))
-                .toList();
+        List<ExternalPlayer> players = mapearJugadores(response.squad(), equipo);
         cache.put(key, players);
         return players;
     }
@@ -165,11 +167,19 @@ public class FootballDataAdapter implements FootballDataPort {
         return "DEL";
     }
 
+    private static List<ExternalPlayer> mapearJugadores(List<PlayerPayload> squad, ExternalTeam equipo) {
+    return squad.stream()
+            .filter(player -> player.id() != null && player.name() != null && player.position() != null)
+            .map(player -> new ExternalPlayer(
+                    String.valueOf(player.id()), player.name().trim(), equipo.nombre(), equipo.liga(), normalizarPosicion(player.position())))
+            .toList();
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     private record TeamsResponse(List<TeamPayload> teams) { }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    private record TeamPayload(Long id, String name) { }
+    private record TeamPayload(Long id, String name, List<PlayerPayload> squad) { }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     private record TeamDetailResponse(List<PlayerPayload> squad) { }
