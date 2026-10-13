@@ -32,5 +32,5 @@ export const handlers = [
 
     return HttpResponse.json({ ...cuenta, ...body, token: 'test-token' }, { status: 201 })
   }),
-  http.get('/api/jugadores', () => HttpResponse.json([])),
+  http.get('/api/jugadores', () => HttpResponse.json({ content: [], page: 0, size: 100, totalElements: 0, totalPages: 0 })),
 ]

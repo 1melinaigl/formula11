@@ -3,6 +3,7 @@ import { endpoints } from '../api/endpoints'
 import { useSesion } from './useSesion'
 
 const filtrosIniciales = { nombre: '', liga: '', posicion: '', equipo: '' }
+const TAMANIO_PAGINA = 100
 
 export function useCatalogo() {
   const { usuario, solicitarProtegida } = useSesion()
@@ -15,16 +16,26 @@ export function useCatalogo() {
     if (!usuario) return undefined
 
     let activo = true
-    solicitarProtegida(endpoints.jugadores)
-      .then((data) => {
-        if (activo) setJugadores(Array.isArray(data) ? data : [])
-      })
-      .catch((requestError) => {
-        if (activo) setError(requestError)
-      })
-      .finally(() => {
-        if (activo) setCargando(false)
-      })
+
+    async function cargarTodo() {
+      const todos = []
+      let pagina = 0
+      let totalPaginas = 1
+
+      while (pagina < totalPaginas) {
+        const data = await solicitarProtegida(`${endpoints.jugadores}?page=${pagina}&size=${TAMANIO_PAGINA}`)
+        todos.push(...(data?.content ?? []))
+        totalPaginas = data?.totalPages ?? 0
+        pagina += 1
+      }
+
+      return todos
+    }
+
+    cargarTodo()
+      .then((lista) => { if (activo) setJugadores(lista) })
+      .catch((requestError) => { if (activo) setError(requestError) })
+      .finally(() => { if (activo) setCargando(false) })
 
     return () => { activo = false }
   }, [solicitarProtegida, usuario])

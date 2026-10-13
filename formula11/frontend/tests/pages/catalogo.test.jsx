@@ -7,7 +7,7 @@ import { SesionProvider } from '../../src/context/SesionContext'
 import { server } from '../../src/test/server'
 
 const jugadores = [
-  { id: 1, nombre: 'Lionel Messi', equipo: 'Inter Miami', liga: 'MLS', posicion: 'DEL' },
+  { id: 1, nombre: 'Enzo Fernandez', equipo: 'Manchester City FC', liga: 'Premier League', posicion: 'MED' },
   { id: 2, nombre: 'Emiliano Martinez', equipo: 'Aston Villa', liga: 'Premier League', posicion: 'POR' },
   { id: 3, nombre: 'Jude Bellingham', equipo: 'Real Madrid', liga: 'La Liga', posicion: 'MED' },
 ]
@@ -33,11 +33,11 @@ describe('catálogo de jugadores', () => {
     const user = userEvent.setup()
     renderCatalogo()
 
-    expect(await screen.findByText('Lionel Messi')).toBeInTheDocument()
+    expect(await screen.findByText('Enzo Fernandez')).toBeInTheDocument()
     expect(solicitudes).toBe(1)
-    await user.click(screen.getByRole('button', { name: /Lionel Messi/ }))
-    expect(screen.getByText('Inter Miami', { selector: 'dd' })).toBeInTheDocument()
-    expect(screen.getByText('Delantero')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /Enzo Fernandez/ }))
+    expect(screen.getByText('Manchester City FC', { selector: 'dd' })).toBeInTheDocument()
+    expect(screen.getByText('Mediocampista')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Volver a la lista' })).toBeInTheDocument()
   })
 
@@ -45,17 +45,17 @@ describe('catálogo de jugadores', () => {
     const user = userEvent.setup()
     server.use(http.get('/api/jugadores', () => HttpResponse.json(jugadores)))
     renderCatalogo()
-    await screen.findByText('Lionel Messi')
+    await screen.findByText('Enzo Fernandez')
 
     await user.selectOptions(screen.getByLabelText('Liga'), 'La Liga')
     await user.selectOptions(screen.getByLabelText('Posición'), 'MED')
     expect(screen.getByText('Jude Bellingham')).toBeInTheDocument()
-    expect(screen.queryByText('Lionel Messi')).not.toBeInTheDocument()
+    expect(screen.queryByText('Enzo Fernandez')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /La Liga/ })).toBeInTheDocument()
     expect(screen.getByText('1 jugadores')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Limpiar' }))
-    expect(screen.getByText('Lionel Messi')).toBeInTheDocument()
+    expect(screen.getByText('Enzo Fernandez')).toBeInTheDocument()
     expect(screen.getByText('3 jugadores')).toBeInTheDocument()
   })
 
@@ -63,7 +63,7 @@ describe('catálogo de jugadores', () => {
     const user = userEvent.setup()
     server.use(http.get('/api/jugadores', () => HttpResponse.json(jugadores)))
     renderCatalogo()
-    await screen.findByText('Lionel Messi')
+    await screen.findByText('Enzo Fernandez')
     await user.type(screen.getByLabelText('Buscar por nombre'), 'inexistente')
     expect(screen.getByText('Sin coincidencias')).toBeInTheDocument()
 
