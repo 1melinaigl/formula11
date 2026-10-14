@@ -12,6 +12,14 @@ const jugadores = [
   { id: 3, nombre: 'Jude Bellingham', equipo: 'Real Madrid', liga: 'La Liga', posicion: 'MED' },
 ]
 
+const paginar = (lista) => ({
+  content: lista,
+  page: 0,
+  size: 100,
+  totalElements: lista.length,
+  totalPages: 1,
+})
+
 function renderCatalogo() {
   window.history.pushState({}, '', '/catalogo')
   window.sessionStorage.setItem('formula11.session', JSON.stringify({ token: 'catalog-token', usuario: { id: 11, nombre: 'Ana Formula' } }))
@@ -27,7 +35,7 @@ describe('catálogo de jugadores', () => {
       solicitudes += 1
       expect(request.headers.get('Authorization')).toBe('Bearer catalog-token')
       expect(request.headers.get('X-Correlation-Id')).toBeTruthy()
-      return HttpResponse.json(jugadores)
+      return HttpResponse.json(paginar(jugadores))
     }))
 
     const user = userEvent.setup()
@@ -43,7 +51,7 @@ describe('catálogo de jugadores', () => {
 
   it('filtra por nombre y filtros combinados y permite limpiar', async () => {
     const user = userEvent.setup()
-    server.use(http.get('/api/jugadores', () => HttpResponse.json(jugadores)))
+    server.use(http.get('/api/jugadores', () => HttpResponse.json(paginar(jugadores))))
     renderCatalogo()
     await screen.findByText('Enzo Fernandez')
 
@@ -61,7 +69,7 @@ describe('catálogo de jugadores', () => {
 
   it('diferencia catálogo vacío y búsqueda sin coincidencias', async () => {
     const user = userEvent.setup()
-    server.use(http.get('/api/jugadores', () => HttpResponse.json(jugadores)))
+    server.use(http.get('/api/jugadores', () => HttpResponse.json(paginar(jugadores))))
     renderCatalogo()
     await screen.findByText('Enzo Fernandez')
     await user.type(screen.getByLabelText('Buscar por nombre'), 'inexistente')
