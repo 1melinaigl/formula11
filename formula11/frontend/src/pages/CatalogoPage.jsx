@@ -4,6 +4,7 @@ import BarraFiltros from '../components/catalogo/BarraFiltros'
 import EstadoCatalogo from '../components/catalogo/EstadoCatalogo'
 import FichaJugador from '../components/catalogo/FichaJugador'
 import ListaJugadores from '../components/catalogo/ListaJugadores'
+import PaginacionCatalogo from '../components/catalogo/PaginacionCatalogo'
 import AccesoDenegadoPage from './AccesoDenegadoPage'
 import { useCatalogo } from '../hooks/useCatalogo'
 import { useSesion } from '../hooks/useSesion'
@@ -25,8 +26,9 @@ export default function CatalogoPage() {
 
   const jugadorVisible = catalogo.resultados.find((jugador) => jugador.id === seleccionado?.id) || null
   const seleccionar = (jugador) => { setSeleccionado(jugador); setMostrarFicha(true) }
-  const estado = catalogo.cargando || catalogo.error || catalogo.jugadores.length === 0 || catalogo.resultados.length === 0
-    ? <EstadoCatalogo cargando={catalogo.cargando} error={catalogo.error} hayJugadores={catalogo.jugadores.length > 0} hayResultados={catalogo.resultados.length > 0} />
+  const hayFiltros = Object.values(catalogo.filtros).some((value) => value.trim())
+  const estado = catalogo.cargando || catalogo.error || catalogo.totalElements === 0
+    ? <EstadoCatalogo cargando={catalogo.cargando} error={catalogo.error} hayJugadores={catalogo.totalElements > 0} hayResultados={catalogo.jugadores.length > 0} hayFiltros={hayFiltros} />
     : null
 
   return (
@@ -34,8 +36,8 @@ export default function CatalogoPage() {
       <div className="catalog-content">
         <div className="catalog-title-row"><div><p className="eyebrow"></p><h1 className="panel-heading">Catálogo de jugadores</h1></div><button className="btn ghost" type="button" onClick={() => navigate('/')}>Menú</button></div>
         <BarraFiltros {...catalogo} />
-        <p className="catalog-count" aria-live="polite">{catalogo.resultados.length} jugadores</p>
         {estado || <div className={`catalog-columns ${mostrarFicha ? 'show-detail' : ''}`}><div className="catalog-list-panel"><ListaJugadores jugadores={catalogo.resultados} seleccionado={jugadorVisible} seleccionar={seleccionar} /></div><div className="catalog-detail-panel"><FichaJugador jugador={jugadorVisible} volver={() => setMostrarFicha(false)} /></div></div>}
+        {!catalogo.cargando && !catalogo.error && <PaginacionCatalogo page={catalogo.page} totalPages={catalogo.totalPages} cambiarPagina={catalogo.cambiarPagina} />}
       </div>
     </section>
   )

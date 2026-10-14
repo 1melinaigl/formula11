@@ -35,7 +35,13 @@ describe('catálogo de jugadores', () => {
       solicitudes += 1
       expect(request.headers.get('Authorization')).toBe('Bearer catalog-token')
       expect(request.headers.get('X-Correlation-Id')).toBeTruthy()
+<<<<<<< Updated upstream
       return HttpResponse.json(paginar(jugadores))
+=======
+      expect(new URL(request.url).searchParams.get('page')).toBe('0')
+      expect(new URL(request.url).searchParams.get('size')).toBe('10')
+      return HttpResponse.json({ content: jugadores, page: 0, size: 10, totalElements: 3, totalPages: 1 })
+>>>>>>> Stashed changes
     }))
 
     const user = userEvent.setup()
@@ -43,44 +49,113 @@ describe('catálogo de jugadores', () => {
 
     expect(await screen.findByText('Enzo Fernandez')).toBeInTheDocument()
     expect(solicitudes).toBe(1)
+<<<<<<< Updated upstream
     await user.click(screen.getByRole('button', { name: /Enzo Fernandez/ }))
     expect(screen.getByText('Manchester City FC', { selector: 'dd' })).toBeInTheDocument()
     expect(screen.getByText('Mediocampista')).toBeInTheDocument()
+=======
+    expect(screen.getByText('Página 1 de 1')).toBeInTheDocument()
+    expect(screen.queryByText(/\d+ jugadores/)).not.toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: 'ID' })).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Por página')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /Lionel Messi/ }))
+    expect(screen.getByText('Inter Miami', { selector: 'dd' })).toBeInTheDocument()
+    expect(screen.getByText('Delantero', { selector: 'dd' })).toBeInTheDocument()
+>>>>>>> Stashed changes
     expect(screen.getByRole('button', { name: 'Volver a la lista' })).toBeInTheDocument()
   })
 
-  it('filtra por nombre y filtros combinados y permite limpiar', async () => {
+  it('envía filtros combinados al backend, reinicia la página y permite limpiar', async () => {
     const user = userEvent.setup()
+<<<<<<< Updated upstream
     server.use(http.get('/api/jugadores', () => HttpResponse.json(paginar(jugadores))))
+=======
+    server.use(http.get('/api/jugadores', ({ request }) => {
+      const params = new URL(request.url).searchParams
+      expect(params.get('size')).toBe('10')
+      if (params.get('liga') === 'La Liga' && params.get('posicion') === 'Mediocampista') {
+        return HttpResponse.json({ content: [jugadores[2]], page: 0, size: 10, totalElements: 1, totalPages: 1 })
+      }
+      return HttpResponse.json({ content: jugadores, page: 0, size: 10, totalElements: 3, totalPages: 1 })
+    }))
+>>>>>>> Stashed changes
     renderCatalogo()
     await screen.findByText('Enzo Fernandez')
 
     await user.selectOptions(screen.getByLabelText('Liga'), 'La Liga')
+<<<<<<< Updated upstream
     await user.selectOptions(screen.getByLabelText('Posición'), 'MED')
     expect(screen.getByText('Jude Bellingham')).toBeInTheDocument()
     expect(screen.queryByText('Enzo Fernandez')).not.toBeInTheDocument()
+=======
+    await user.selectOptions(screen.getByLabelText('Posición'), 'Mediocampista')
+    expect(await screen.findByText('Jude Bellingham')).toBeInTheDocument()
+>>>>>>> Stashed changes
     expect(screen.getByRole('button', { name: /La Liga/ })).toBeInTheDocument()
-    expect(screen.getByText('1 jugadores')).toBeInTheDocument()
+    expect(screen.queryByText(/\d+ jugadores/)).not.toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Limpiar' }))
+<<<<<<< Updated upstream
     expect(screen.getByText('Enzo Fernandez')).toBeInTheDocument()
     expect(screen.getByText('3 jugadores')).toBeInTheDocument()
+=======
+    expect(screen.getByText('Lionel Messi')).toBeInTheDocument()
+    expect(screen.queryByText(/\d+ jugadores/)).not.toBeInTheDocument()
+>>>>>>> Stashed changes
   })
 
-  it('diferencia catálogo vacío y búsqueda sin coincidencias', async () => {
+  it('diferencia catálogo vacío y sin coincidencias filtradas', async () => {
     const user = userEvent.setup()
+<<<<<<< Updated upstream
     server.use(http.get('/api/jugadores', () => HttpResponse.json(paginar(jugadores))))
     renderCatalogo()
     await screen.findByText('Enzo Fernandez')
     await user.type(screen.getByLabelText('Buscar por nombre'), 'inexistente')
     expect(screen.getByText('Sin coincidencias')).toBeInTheDocument()
+=======
+    server.use(http.get('/api/jugadores', ({ request }) => {
+      const equipo = new URL(request.url).searchParams.get('equipo')
+      expect(new URL(request.url).searchParams.get('size')).toBe('10')
+      if (equipo) return HttpResponse.json({ content: [], page: 0, size: 10, totalElements: 0, totalPages: 0 })
+      return HttpResponse.json({ content: [], page: 0, size: 10, totalElements: 0, totalPages: 0 })
+    }))
+    renderCatalogo()
+    expect(await screen.findByText('Catálogo vacío')).toBeInTheDocument()
+    await user.type(screen.getByLabelText('Equipo'), 'inexistente')
+    expect(await screen.findByText('Sin coincidencias')).toBeInTheDocument()
+>>>>>>> Stashed changes
 
     window.sessionStorage.clear()
     window.history.pushState({}, '', '/')
   })
 
+  it('navega páginas y recupera una página fuera de rango una sola vez', async () => {
+    const user = userEvent.setup()
+    const paginas = [
+      { content: jugadores.slice(0, 2), page: 0, size: 10, totalElements: 3, totalPages: 2 },
+      { content: [jugadores[2]], page: 1, size: 10, totalElements: 3, totalPages: 2 },
+    ]
+    const solicitudes = []
+    server.use(http.get('/api/jugadores', ({ request }) => {
+      const page = Number(new URL(request.url).searchParams.get('page'))
+      solicitudes.push(page)
+      expect(new URL(request.url).searchParams.get('size')).toBe('10')
+      if (page >= 2) return HttpResponse.json({ content: [], page, size: 10, totalElements: 3, totalPages: 2 })
+      return HttpResponse.json(paginas[page])
+    }))
+    renderCatalogo()
+    await screen.findByText('Lionel Messi')
+    await user.click(screen.getByRole('button', { name: 'Siguiente' }))
+    expect(await screen.findByText('Jude Bellingham')).toBeInTheDocument()
+    expect(screen.getByText('Página 2 de 2')).toBeInTheDocument()
+    expect(solicitudes).toEqual([0, 1])
+  })
+
   it('limpia la sesión y muestra acceso denegado ante un 401', async () => {
-    server.use(http.get('/api/jugadores', () => HttpResponse.json({ mensaje: 'Sesión vencida.', correlationId: 'catalog-401' }, { status: 401 })))
+    server.use(http.get('/api/jugadores', ({ request }) => {
+      expect(new URL(request.url).searchParams.get('size')).toBe('10')
+      return HttpResponse.json({ mensaje: 'Sesión vencida.', correlationId: 'catalog-401' }, { status: 401 })
+    }))
     renderCatalogo()
 
     expect(await screen.findByText('Sesión vencida.')).toBeInTheDocument()
