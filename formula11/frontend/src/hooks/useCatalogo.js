@@ -9,7 +9,7 @@ export const CAMPOS_ORDEN = [
   ['liga', 'Liga'],
   ['posicion', 'Posición'],
 ]
-const TAMANO_PAGINA = 10
+const TAMANO_PAGINA = 9
 
 const consultaInicial = {
   page: 0,
@@ -49,25 +49,6 @@ export function useCatalogo() {
 
     let activo = true
 
-    async function cargarTodo() {
-      const todos = []
-      let pagina = 0
-      let totalPaginas = 1
-
-      while (pagina < totalPaginas) {
-        const data = await solicitarProtegida(`${endpoints.jugadores}?page=${pagina}&size=${TAMANIO_PAGINA}`)
-        todos.push(...(data?.content ?? []))
-        totalPaginas = data?.totalPages ?? 0
-        pagina += 1
-      }
-
-      return todos
-    }
-
-    cargarTodo()
-      .then((lista) => { if (activo) setJugadores(lista) })
-      .catch((requestError) => { if (activo) setError(requestError) })
-      .finally(() => { if (activo) setCargando(false) })
     solicitarProtegida(construirUrl(consulta))
       .then((data) => {
         if (!activo) return
