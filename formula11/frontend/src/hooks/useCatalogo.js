@@ -2,22 +2,62 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { endpoints } from '../api/endpoints'
 import { useSesion } from './useSesion'
 
-const filtrosIniciales = { nombre: '', liga: '', posicion: '', equipo: '' }
+export const LIGAS = ['Premier League', 'Bundesliga', 'La Liga', 'Serie A', 'Ligue 1']
+export const CAMPOS_ORDEN = [
+  ['nombre', 'Nombre'],
+  ['equipo', 'Equipo'],
+  ['liga', 'Liga'],
+  ['posicion', 'Posición'],
+]
+const TAMANO_PAGINA = 9
+
+const consultaInicial = {
+  page: 0,
+  sort: 'nombre,asc',
+  liga: '',
+  equipo: '',
+  posicion: '',
+}
+
+function construirUrl(consulta) {
+  const params = new URLSearchParams({ page: String(consulta.page), size: String(TAMANO_PAGINA), sort: consulta.sort })
+  for (const nombre of ['liga', 'equipo', 'posicion']) {
+    if (consulta[nombre].trim()) params.set(nombre, consulta[nombre].trim())
+  }
+  return `${endpoints.jugadores}?${params.toString()}`
+}
 
 export function useCatalogo() {
   const { usuario, solicitarProtegida } = useSesion()
-  const [jugadores, setJugadores] = useState([])
-  const [filtros, setFiltros] = useState(filtrosIniciales)
+  const [consulta, setConsulta] = useState(consultaInicial)
+  const [equipoInput, setEquipoInput] = useState('')
+  const [respuesta, setRespuesta] = useState({ content: [], page: 0, totalElements: 0, totalPages: 0 })
   const [cargando, setCargando] = useState(Boolean(usuario))
   const [error, setError] = useState(null)
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setConsulta((actual) => actual.equipo === equipoInput && actual.page === 0
+        ? actual
+        : { ...actual, equipo: equipoInput, page: 0 })
+    }, 300)
+    return () => window.clearTimeout(timer)
+  }, [equipoInput])
 
   useEffect(() => {
     if (!usuario) return undefined
 
     let activo = true
-    solicitarProtegida(endpoints.jugadores)
+
+    solicitarProtegida(construirUrl(consulta))
       .then((data) => {
-        if (activo) setJugadores(Array.isArray(data) ? data : [])
+        if (!activo) return
+        const paginaFinal = data.totalPages - 1
+        if (data.content.length === 0 && data.totalElements > 0 && paginaFinal >= 0 && consulta.page >= data.totalPages) {
+          setConsulta((actual) => actual.page === paginaFinal ? actual : { ...actual, page: paginaFinal })
+          return
+        }
+        setRespuesta(data)
       })
       .catch((requestError) => {
         if (activo) setError(requestError)
@@ -27,28 +67,55 @@ export function useCatalogo() {
       })
 
     return () => { activo = false }
-  }, [solicitarProtegida, usuario])
+  }, [consulta, solicitarProtegida, usuario])
 
   const actualizarFiltro = useCallback((nombre, valor) => {
-    setFiltros((actuales) => ({ ...actuales, [nombre]: valor }))
+    setCargando(true)
+    setError(null)
+    if (nombre === 'equipo') {
+      setEquipoInput(valor)
+      return
+    }
+    setConsulta((actual) => ({ ...actual, [nombre]: valor, page: 0 }))
   }, [])
 
-  const limpiarFiltros = useCallback(() => setFiltros(filtrosIniciales), [])
+  const actualizarOrden = useCallback((campo, direccion) => {
+    setCargando(true)
+    setError(null)
+    setConsulta((actual) => ({ ...actual, sort: `${campo},${direccion}`, page: 0 }))
+  }, [])
 
-  const resultados = useMemo(() => {
-    const nombre = filtros.nombre.trim().toLocaleLowerCase()
-    return jugadores.filter((jugador) => (
-      (!nombre || jugador.nombre?.toLocaleLowerCase().includes(nombre))
-      && (!filtros.liga || jugador.liga === filtros.liga)
-      && (!filtros.posicion || jugador.posicionCodigo === filtros.posicion || jugador.posicion === filtros.posicion)
-      && (!filtros.equipo || jugador.equipo === filtros.equipo)
-    ))
-  }, [filtros, jugadores])
+  const limpiarFiltros = useCallback(() => {
+    setCargando(true)
+    setError(null)
+    setEquipoInput('')
+    setConsulta((actual) => ({ ...actual, liga: '', equipo: '', posicion: '', page: 0 }))
+  }, [])
 
-  const opciones = useMemo(() => ({
-    ligas: [...new Set(jugadores.map((jugador) => jugador.liga).filter(Boolean))].sort(),
-    equipos: [...new Set(jugadores.map((jugador) => jugador.equipo).filter(Boolean))].sort(),
-  }), [jugadores])
+  const cambiarPagina = useCallback((page) => {
+    setCargando(true)
+    setError(null)
+    setConsulta((actual) => ({ ...actual, page }))
+  }, [])
 
-  return { cargando: Boolean(usuario && cargando), error, filtros, jugadores, resultados, opciones, actualizarFiltro, limpiarFiltros }
+  const filtros = useMemo(() => ({ liga: consulta.liga, equipo: equipoInput, posicion: consulta.posicion }), [consulta.liga, consulta.posicion, equipoInput])
+  const [campo, direccion] = consulta.sort.split(',')
+
+  return {
+    cargando: Boolean(usuario && cargando),
+    error,
+    filtros,
+    jugadores: respuesta.content,
+    resultados: respuesta.content,
+    page: respuesta.page,
+    totalElements: respuesta.totalElements,
+    totalPages: respuesta.totalPages,
+    campoOrden: campo,
+    direccionOrden: direccion,
+    opciones: { ligas: LIGAS },
+    actualizarFiltro,
+    actualizarOrden,
+    cambiarPagina,
+    limpiarFiltros,
+  }
 }

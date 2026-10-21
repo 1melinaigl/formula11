@@ -8,7 +8,6 @@ export default function FichaJugador({ jugador, volver }) {
       <div className="player-card-heading"><span>Ficha del jugador</span><PosicionJugador jugador={jugador} /></div>
       <h2>{jugador.nombre}</h2>
       <dl className="player-details">
-        <dt>ID</dt><dd>#{jugador.id}</dd>
         <dt>Equipo</dt><dd>{jugador.equipo}</dd>
         <dt>Liga</dt><dd>{jugador.liga}</dd>
         <dt>Posición</dt><dd>{jugador.posicionNombre || posiciones[jugador.posicion] || jugador.posicion || 'No informada'}</dd>
