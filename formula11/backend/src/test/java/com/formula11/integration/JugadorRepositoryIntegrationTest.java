@@ -7,6 +7,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -61,5 +65,35 @@ class JugadorRepositoryIntegrationTest {
     @Test
     void catalogoVacioDevuelveListaVacia() {
         assertTrue(jugadorRepository.findAllByOrderByNombreAsc().isEmpty());
+    }
+
+    @Test
+    void paginaFiltraOrdenaYCalculaTotalesEnLaBase() {
+        jugadorRepository.saveAllAndFlush(java.util.List.of(
+                new Jugador("Zidane", "Real Madrid", Liga.LA_LIGA, "Mediocampista"),
+                new Jugador("Alonso", "Real Madrid", Liga.LA_LIGA, "Defensa"),
+                new Jugador("Messi", "Inter Miami", Liga.LA_LIGA, "Delantero")));
+
+        Specification<Jugador> filtro = (root, query, builder) -> builder.and(
+                builder.equal(root.get("liga"), Liga.LA_LIGA),
+                builder.like(builder.lower(root.get("equipo")), "%madrid%"));
+        Page<Jugador> pagina = jugadorRepository.findAll(filtro, PageRequest.of(0, 1,
+                Sort.by(Sort.Order.asc("nombre"), Sort.Order.asc("id"))));
+
+        assertEquals(1, pagina.getNumberOfElements());
+        assertEquals("Alonso", pagina.getContent().getFirst().getNombre());
+        assertEquals(2, pagina.getTotalElements());
+        assertEquals(2, pagina.getTotalPages());
+    }
+
+    @Test
+    void paginaFueraDeRangoDevuelveContenidoVacio() {
+        jugadorRepository.saveAndFlush(new Jugador("Messi", "Inter Miami", Liga.LA_LIGA, "Delantero"));
+
+        Page<Jugador> pagina = jugadorRepository.findAll((Specification<Jugador>) null, PageRequest.of(1, 1));
+
+        assertTrue(pagina.getContent().isEmpty());
+        assertEquals(1, pagina.getTotalElements());
+        assertEquals(1, pagina.getTotalPages());
     }
 }

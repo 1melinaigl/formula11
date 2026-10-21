@@ -1,0 +1,115 @@
+openapi: 3.0.3
+info:
+  title: Formula11 - Sincronización de catálogo
+  version: 1.0.0
+  description: Sincronización manual del catálogo local con Football-Data.org v4.
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/jugadores/sincronizacion:
+    post:
+      summary: Sincroniza jugadores desde el proveedor externo
+      description: Endpoint protegido. La apikey se configura en el backend y nunca se envía desde el cliente ni forma parte de esta respuesta.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Sincronización completa o parcial.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SincronizacionResponse'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+        '429':
+          $ref: '#/components/responses/ErrorLimiteProveedor'
+        '502':
+          $ref: '#/components/responses/ErrorProveedor'
+        '503':
+          $ref: '#/components/responses/ErrorIntegracionNoDisponible'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    SincronizacionResponse:
+      type: object
+      required: [estado, ligas, creados, actualizados, omitidos, correlationId]
+      properties:
+        estado:
+          type: string
+          enum: [COMPLETADA, PARCIAL, NO_EJECUTADA]
+        ligas:
+          type: array
+          items:
+            $ref: '#/components/schemas/LigaSyncResultResponse'
+        creados:
+          type: integer
+          format: int32
+        actualizados:
+          type: integer
+          format: int32
+        omitidos:
+          type: integer
+          format: int32
+        correlationId:
+          type: string
+    LigaSyncResultResponse:
+      type: object
+      required: [liga, estado, creados, actualizados, omitidos]
+      properties:
+        liga:
+          type: string
+          enum: [Premier League, Bundesliga, La Liga, Serie A, Ligue 1]
+        estado:
+          type: string
+          enum: [COMPLETADA, FALLIDA]
+        creados:
+          type: integer
+          format: int32
+        actualizados:
+          type: integer
+          format: int32
+        omitidos:
+          type: integer
+          format: int32
+        error:
+          type: string
+          nullable: true
+    Error:
+      type: object
+      required: [mensaje, timestamp, correlationId]
+      properties:
+        mensaje:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        correlationId:
+          type: string
+    ErrorNoAutorizado:
+      description: JWT ausente, inválido o vencido.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ErrorLimiteProveedor:
+      description: El proveedor externo limitó las requests.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ErrorProveedor:
+      description: El proveedor externo rechazó o no pudo procesar la solicitud.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ErrorIntegracionNoDisponible:
+      description: Falta configuración o el proveedor no está disponible.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

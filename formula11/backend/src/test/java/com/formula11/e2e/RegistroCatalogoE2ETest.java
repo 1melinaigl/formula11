@@ -72,9 +72,60 @@ class RegistroCatalogoE2ETest {
 
         mockMvc.perform(get("/api/jugadores").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].nombre").value("Messi"))
-                .andExpect(jsonPath("$[0].liga").value("La Liga"))
-                .andExpect(jsonPath("$[0].precio").doesNotExist());
+                .andExpect(jsonPath("$.content[0].nombre").value("Messi"))
+                .andExpect(jsonPath("$.content[0].liga").value("La Liga"))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(20))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.content[0].precio").doesNotExist());
+    }
+
+    @Test
+    void paginaFiltraOrdenaYRechazaParametrosInvalidos() throws Exception {
+        String respuesta = mockMvc.perform(post("/api/usuarios/registro")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"nombre\":\"Paginacion\",\"email\":\"paginacion-e2e@example.com\",\"password\":\"Secreto123!\"}"))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        String token = objectMapper.readTree(respuesta).get("token").asText();
+        jugadorRepository.saveAllAndFlush(java.util.List.of(
+                new Jugador("Zidane", "Real Madrid", Liga.LA_LIGA, "Mediocampista"),
+                new Jugador("Alonso", "Real Madrid", Liga.LA_LIGA, "Defensa"),
+                new Jugador("Messi", "Inter Miami", Liga.LA_LIGA, "Delantero")));
+
+        mockMvc.perform(get("/api/jugadores")
+                        .param("page", "0")
+                        .param("size", "1")
+                        .param("sort", "nombre,asc")
+                        .param("equipo", " madrid ")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].nombre").value("Alonso"))
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.totalPages").value(2));
+
+        mockMvc.perform(get("/api/jugadores")
+                        .param("page", "2")
+                        .param("size", "1")
+                        .param("equipo", "madrid")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isEmpty())
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.totalPages").value(2));
+
+        mockMvc.perform(get("/api/jugadores").param("unknown", "value")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.mensaje").exists())
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.correlationId").exists());
+
+        mockMvc.perform(get("/api/jugadores").param("page", "not-a-number")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.mensaje").exists());
     }
 
     @Test
