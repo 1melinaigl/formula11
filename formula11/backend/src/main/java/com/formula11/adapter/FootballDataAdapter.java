@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBufferLimitException;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
@@ -24,15 +25,26 @@ public class FootballDataAdapter implements FootballDataPort {
     private final FootballApiProperties properties;
     private final RestClient restClient;
     private final com.github.benmanes.caffeine.cache.Cache<String, Object> cache;
-    private long lastRequestNanos;
+    private long nextRequestNanos;
 
+    @Autowired
     public FootballDataAdapter(FootballApiProperties properties, com.github.benmanes.caffeine.cache.Cache<String, Object> cache) {
+        this(properties, cache, crearRestClient(properties));
+    }
+
+    FootballDataAdapter(FootballApiProperties properties,
+                        com.github.benmanes.caffeine.cache.Cache<String, Object> cache,
+                        RestClient restClient) {
         this.properties = properties;
         this.cache = cache;
+        this.restClient = restClient;
+    }
+
+    private static RestClient crearRestClient(FootballApiProperties properties) {
         HttpClient client = HttpClient.newBuilder().connectTimeout(properties.getConnectTimeout()).build();
         JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(client);
         requestFactory.setReadTimeout(properties.getReadTimeout());
-        this.restClient = RestClient.builder().baseUrl(properties.getBaseUrl()).requestFactory(requestFactory).build();
+        return RestClient.builder().baseUrl(properties.getBaseUrl()).requestFactory(requestFactory).build();
     }
 
     @Override
@@ -101,8 +113,8 @@ public class FootballDataAdapter implements FootballDataPort {
             log.info("football_api_call provider=football-data league={} resource={} status=success durationMs={}", liga, resource, duracionMs(inicio));
             return response;
         } catch (FootballDataException exception) {
-            log.warn("football_api_call provider=football-data league={} resource={} status={} durationMs={}", liga, resource, exception.getTipo(), duracionMs(inicio));
-            throw exception;
+            throw new FootballDataException(exception.getTipo(),
+                    "Error al consultar " + resource + " para la liga " + liga, exception);
         } catch (RestClientResponseException exception) {
             FootballDataException translated = new FootballDataException(tipoPara(exception.getStatusCode().value()), mensajePara(exception.getStatusCode().value(), liga));
             log.warn("football_api_call provider=football-data league={} resource={} status={} durationMs={}", liga, resource, exception.getStatusCode().value(), duracionMs(inicio));
@@ -122,21 +134,25 @@ public class FootballDataAdapter implements FootballDataPort {
         }
     }
 
-    private synchronized void esperarRateLimit() {
+    private void esperarRateLimit() {
         Duration intervalo = properties.getMinimumRequestInterval();
-        long esperaNanos = intervalo.toNanos() - (System.nanoTime() - lastRequestNanos);
-        if (esperaNanos <= 0) {
-            lastRequestNanos = System.nanoTime();
-            return;
-        }
+        long esperaNanos = reservarProximaSolicitud(intervalo.toNanos());
+        if (esperaNanos <= 0) return;
         try {
-            long millis = Math.max(1, esperaNanos / 1_000_000);
-            Thread.sleep(millis);
-            lastRequestNanos = System.nanoTime();
+            long millis = esperaNanos / 1_000_000;
+            int nanos = (int) (esperaNanos % 1_000_000);
+            Thread.sleep(millis, nanos);
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
             throw new FootballDataException(FootballDataException.Tipo.TIMEOUT, "La espera del límite del proveedor fue interrumpida", exception);
         }
+    }
+
+    private synchronized long reservarProximaSolicitud(long intervaloNanos) {
+        long ahora = System.nanoTime();
+        long esperaNanos = nextRequestNanos - ahora;
+        nextRequestNanos = Math.max(ahora, nextRequestNanos) + intervaloNanos;
+        return esperaNanos;
     }
 
     private static FootballDataException.Tipo tipoPara(int status) {

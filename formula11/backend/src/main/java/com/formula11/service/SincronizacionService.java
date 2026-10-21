@@ -69,18 +69,11 @@ public class SincronizacionService {
         List<ExternalTeam> equipos = footballDataPort.obtenerEquipos(liga);
         for (ExternalTeam equipo : equipos) {
             for (ExternalPlayer player : footballDataPort.obtenerJugadores(equipo)) {
-                Liga ligaJugador;
-                try {
-                    ligaJugador = Liga.valueOf(player.liga());
-                } catch (IllegalArgumentException exception) {
+                if (!esValidoParaProcesar(player)) {
                     omitidos++;
                     continue;
                 }
-                if (player.externalId() == null || player.externalId().isBlank()
-                        || player.nombre() == null || player.equipo() == null || player.posicion() == null) {
-                    omitidos++;
-                    continue;
-                }
+                Liga ligaJugador = Liga.valueOf(player.liga());
                 Jugador jugador = jugadorRepository.findByExternalProviderAndExternalId(PROVIDER, player.externalId()).orElse(null);
                 if (jugador == null) {
                     jugadorRepository.save(new Jugador(player.nombre(), player.equipo(), ligaJugador, player.posicion(), PROVIDER, player.externalId()));
@@ -93,5 +86,18 @@ public class SincronizacionService {
             }
         }
         return new int[]{creados, actualizados, omitidos};
+    }
+
+    private boolean esValidoParaProcesar(ExternalPlayer player) {
+        if (player.externalId() == null || player.externalId().isBlank()
+                || player.nombre() == null || player.equipo() == null || player.posicion() == null) {
+            return false;
+        }
+        try {
+            Liga.valueOf(player.liga());
+            return true;
+        } catch (IllegalArgumentException | NullPointerException exception) {
+            return false;
+        }
     }
 }
