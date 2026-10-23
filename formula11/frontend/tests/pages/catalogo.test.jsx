@@ -35,13 +35,9 @@ describe('catálogo de jugadores', () => {
       solicitudes += 1
       expect(request.headers.get('Authorization')).toBe('Bearer catalog-token')
       expect(request.headers.get('X-Correlation-Id')).toBeTruthy()
-<<<<<<< Updated upstream
-      return HttpResponse.json(paginar(jugadores))
-=======
       expect(new URL(request.url).searchParams.get('page')).toBe('0')
       expect(new URL(request.url).searchParams.get('size')).toBe('10')
       return HttpResponse.json({ content: jugadores, page: 0, size: 10, totalElements: 3, totalPages: 1 })
->>>>>>> Stashed changes
     }))
 
     const user = userEvent.setup()
@@ -49,11 +45,6 @@ describe('catálogo de jugadores', () => {
 
     expect(await screen.findByText('Enzo Fernandez')).toBeInTheDocument()
     expect(solicitudes).toBe(1)
-<<<<<<< Updated upstream
-    await user.click(screen.getByRole('button', { name: /Enzo Fernandez/ }))
-    expect(screen.getByText('Manchester City FC', { selector: 'dd' })).toBeInTheDocument()
-    expect(screen.getByText('Mediocampista')).toBeInTheDocument()
-=======
     expect(screen.getByText('Página 1 de 1')).toBeInTheDocument()
     expect(screen.queryByText(/\d+ jugadores/)).not.toBeInTheDocument()
     expect(screen.queryByRole('option', { name: 'ID' })).not.toBeInTheDocument()
@@ -61,15 +52,11 @@ describe('catálogo de jugadores', () => {
     await user.click(screen.getByRole('button', { name: /Lionel Messi/ }))
     expect(screen.getByText('Inter Miami', { selector: 'dd' })).toBeInTheDocument()
     expect(screen.getByText('Delantero', { selector: 'dd' })).toBeInTheDocument()
->>>>>>> Stashed changes
     expect(screen.getByRole('button', { name: 'Volver a la lista' })).toBeInTheDocument()
   })
 
   it('envía filtros combinados al backend, reinicia la página y permite limpiar', async () => {
     const user = userEvent.setup()
-<<<<<<< Updated upstream
-    server.use(http.get('/api/jugadores', () => HttpResponse.json(paginar(jugadores))))
-=======
     server.use(http.get('/api/jugadores', ({ request }) => {
       const params = new URL(request.url).searchParams
       expect(params.get('size')).toBe('10')
@@ -78,41 +65,22 @@ describe('catálogo de jugadores', () => {
       }
       return HttpResponse.json({ content: jugadores, page: 0, size: 10, totalElements: 3, totalPages: 1 })
     }))
->>>>>>> Stashed changes
     renderCatalogo()
     await screen.findByText('Enzo Fernandez')
 
     await user.selectOptions(screen.getByLabelText('Liga'), 'La Liga')
-<<<<<<< Updated upstream
-    await user.selectOptions(screen.getByLabelText('Posición'), 'MED')
-    expect(screen.getByText('Jude Bellingham')).toBeInTheDocument()
-    expect(screen.queryByText('Enzo Fernandez')).not.toBeInTheDocument()
-=======
     await user.selectOptions(screen.getByLabelText('Posición'), 'Mediocampista')
     expect(await screen.findByText('Jude Bellingham')).toBeInTheDocument()
->>>>>>> Stashed changes
     expect(screen.getByRole('button', { name: /La Liga/ })).toBeInTheDocument()
     expect(screen.queryByText(/\d+ jugadores/)).not.toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Limpiar' }))
-<<<<<<< Updated upstream
-    expect(screen.getByText('Enzo Fernandez')).toBeInTheDocument()
-    expect(screen.getByText('3 jugadores')).toBeInTheDocument()
-=======
     expect(screen.getByText('Lionel Messi')).toBeInTheDocument()
     expect(screen.queryByText(/\d+ jugadores/)).not.toBeInTheDocument()
->>>>>>> Stashed changes
   })
 
   it('diferencia catálogo vacío y sin coincidencias filtradas', async () => {
     const user = userEvent.setup()
-<<<<<<< Updated upstream
-    server.use(http.get('/api/jugadores', () => HttpResponse.json(paginar(jugadores))))
-    renderCatalogo()
-    await screen.findByText('Enzo Fernandez')
-    await user.type(screen.getByLabelText('Buscar por nombre'), 'inexistente')
-    expect(screen.getByText('Sin coincidencias')).toBeInTheDocument()
-=======
     server.use(http.get('/api/jugadores', ({ request }) => {
       const equipo = new URL(request.url).searchParams.get('equipo')
       expect(new URL(request.url).searchParams.get('size')).toBe('10')
@@ -123,7 +91,6 @@ describe('catálogo de jugadores', () => {
     expect(await screen.findByText('Catálogo vacío')).toBeInTheDocument()
     await user.type(screen.getByLabelText('Equipo'), 'inexistente')
     expect(await screen.findByText('Sin coincidencias')).toBeInTheDocument()
->>>>>>> Stashed changes
 
     window.sessionStorage.clear()
     window.history.pushState({}, '', '/')
