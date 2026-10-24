@@ -96,4 +96,55 @@ class MercadoServiceTest {
         assertThrows(IllegalArgumentException.class, () -> service.comprar(1L, 3L, 1));
         verify(transacciones, never()).save(any());
     }
+
+    @Test
+    void ventaAcreditaSaldoDevuelveTokensYConservaPromedio() {
+        Tenencia tenencia = new Tenencia(comprador, jugador, 2, new BigDecimal("3.5000"));
+        when(tenencias.findByUsuarioIdAndJugadorIdForUpdate(1L, 3L)).thenReturn(Optional.of(tenencia));
+
+        ResultadoOperacion resultado = service.vender(1L, 3L, 2);
+
+        assertEquals(new BigDecimal("102.0000"), resultado.saldoPosterior());
+        assertEquals(Transaccion.Tipo.VENTA, resultado.transaccion().getTipo());
+        assertEquals(0, tenencia.getCantidad());
+        assertEquals(new BigDecimal("3.5000"), tenencia.getPrecioPromedio());
+        assertEquals(102, stock.getCantidad());
+        verify(transacciones).save(any(Transaccion.class));
+        verify(auditorias).save(any());
+    }
+
+    @Test
+    void ventaRechazaTenenciaInsuficienteSinPersistir() {
+        Tenencia tenencia = new Tenencia(comprador, jugador, 1, BigDecimal.ONE);
+        when(tenencias.findByUsuarioIdAndJugadorIdForUpdate(1L, 3L)).thenReturn(Optional.of(tenencia));
+
+        assertThrows(OperacionNoValidaException.class, () -> service.vender(1L, 3L, 2));
+
+        assertEquals(new BigDecimal("100.0000"), cuenta.getSaldo());
+        assertEquals(1, tenencia.getCantidad());
+        assertEquals(100, stock.getCantidad());
+        verify(transacciones, never()).save(any());
+        verify(auditorias, never()).save(any());
+    }
+
+    @Test
+    void ventaRechazaAlSuperusuario() {
+        when(usuarios.findById(2L)).thenReturn(Optional.of(superusuario));
+
+        assertThrows(SuperusuarioNoOperaException.class, () -> service.vender(2L, 3L, 1));
+
+        verifyNoInteractions(jugadores, cotizaciones, cuentas, tenencias);
+    }
+
+    @Test
+    void ventaNoPersisteSiLaAuditoriaFalla() {
+        Tenencia tenencia = new Tenencia(comprador, jugador, 2, BigDecimal.ONE);
+        when(tenencias.findByUsuarioIdAndJugadorIdForUpdate(1L, 3L)).thenReturn(Optional.of(tenencia));
+        doThrow(new IllegalStateException("fallo de auditoría")).when(auditorias).save(any());
+
+        assertThrows(IllegalStateException.class, () -> service.vender(1L, 3L, 1));
+
+        verify(transacciones).save(any(Transaccion.class));
+        verify(auditorias).save(any());
+    }
 }

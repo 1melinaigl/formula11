@@ -139,6 +139,69 @@ class MercadoE2ETest {
                 .andExpect(status().isUnprocessableEntity());
     }
 
+    @Test
+    void ventaExitosaAcreditaSaldoYConservaTenenciaEnCero() throws Exception {
+        Usuario superusuario = crearSuperusuario("super-venta@example.com");
+        Jugador jugador = jugadores.saveAndFlush(new Jugador("Messi", "Inter Miami", Liga.LA_LIGA, "Delantero"));
+        tenencias.saveAndFlush(new Tenencia(superusuario, jugador, 98, BigDecimal.ONE));
+        String token = registrar("venta-market@example.com", new BigDecimal("100"));
+        Usuario vendedor = usuarios.findByEmail("venta-market@example.com").orElseThrow();
+        Tenencia tenencia = tenencias.saveAndFlush(new Tenencia(vendedor, jugador, 2, new BigDecimal("3.5000")));
+
+        mockMvc.perform(post("/api/ordenes/venta").header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"jugadorId\":" + jugador.getId() + ",\"cantidad\":2}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.tipo").value("VENTA"))
+                .andExpect(jsonPath("$.saldoPosterior").value(102.0000));
+
+        Assertions.assertEquals(1, transacciones.count());
+        Assertions.assertEquals(1, auditorias.count());
+        Assertions.assertEquals(0, tenencias.findById(tenencia.getId()).orElseThrow().getCantidad());
+        Assertions.assertEquals(100, tenencias.findByUsuarioIdAndJugadorId(superusuario.getId(), jugador.getId()).orElseThrow().getCantidad());
+    }
+
+    @Test
+    void ventaRechazaTenenciaInsuficienteCon422YSinCambios() throws Exception {
+        Usuario superusuario = crearSuperusuario("super-venta-422@example.com");
+        Jugador jugador = jugadores.saveAndFlush(new Jugador("Messi", "Inter Miami", Liga.LA_LIGA, "Delantero"));
+        tenencias.saveAndFlush(new Tenencia(superusuario, jugador, 98, BigDecimal.ONE));
+        String token = registrar("venta-422@example.com", new BigDecimal("100"));
+        Usuario vendedor = usuarios.findByEmail("venta-422@example.com").orElseThrow();
+        tenencias.saveAndFlush(new Tenencia(vendedor, jugador, 1, BigDecimal.ONE));
+
+        mockMvc.perform(post("/api/ordenes/venta").header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"jugadorId\":" + jugador.getId() + ",\"cantidad\":2}"))
+                .andExpect(status().isUnprocessableEntity());
+
+        Assertions.assertEquals(0, transacciones.count());
+        Assertions.assertEquals(0, auditorias.count());
+        Assertions.assertEquals(new BigDecimal("100.0000"), cuentas.findByUsuarioId(vendedor.getId()).orElseThrow().getSaldo());
+    }
+
+    @Test
+    void ventaRechazaSuperusuarioCon403() throws Exception {
+        Usuario superusuario = crearSuperusuario("super-venta-403@example.com");
+        String token = jwtService.generarToken(superusuario.getId(), superusuario.getEmail(), Rol.SUPERUSUARIO);
+
+        mockMvc.perform(post("/api/ordenes/venta").header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"jugadorId\":1,\"cantidad\":1}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void ventaRechazaSolicitudInvalidaCon400YFaltaDeAutenticacionCon401() throws Exception {
+        String token = registrar("venta-validacion@example.com", new BigDecimal("100"));
+        mockMvc.perform(post("/api/ordenes/venta").header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"jugadorId\":1,\"cantidad\":0}"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(post("/api/ordenes/venta")
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"jugadorId\":1,\"cantidad\":1}"))
+                .andExpect(status().isUnauthorized());
+    }
+
     private Usuario crearSuperusuario(String email) {
         Usuario usuario = new Usuario("Super", email, "hash");
         usuario.asignarRol(Rol.SUPERUSUARIO);

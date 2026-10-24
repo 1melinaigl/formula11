@@ -57,10 +57,10 @@ description: "Task list for implementing the 007 token market feature"
 
 **Independent Test**: Seed a user holding two tokens, execute a two-token sale, and verify `201`, credited balance, user quantity zero with preserved average price, superuser holding restored, one transaction, and one audit row.
 
-- [ ] T026 [P] [US2] Extend fixed-clock service unit tests for successful sale, insufficient holding `422`, superuser seller `403`, zero-quantity holding retention, and rollback in `backend/src/test/java/com/formula11/unit/service/MercadoServiceTest.java`
-- [ ] T027 [US2] Implement `MercadoService.vender(usuarioId, jugadorId, cantidad)` using the same superuser check, quote, lock ordering, atomic transfer, transaction, and audit path as purchase in `backend/src/main/java/com/formula11/service/MercadoService.java`
-- [ ] T028 [US2] Add `POST /api/ordenes/venta` to `backend/src/main/java/com/formula11/controller/MercadoController.java`, deriving the seller from JWT and delegating exclusively to `MercadoService.vender`
-- [ ] T029 [US2] Extend `MercadoE2ETest.java` with successful sale, insufficient holding `422`, superuser `403`, invalid request `400`, missing JWT `401`, and no-partial-change assertions
+- [x] T026 [P] [US2] Extend fixed-clock service unit tests for successful sale, insufficient holding `422`, superuser seller `403`, zero-quantity holding retention, and rollback in `backend/src/test/java/com/formula11/unit/service/MercadoServiceTest.java`
+- [x] T027 [US2] Implement `MercadoService.vender(usuarioId, jugadorId, cantidad)` using the same superuser check, quote, lock ordering, atomic transfer, transaction, and audit path as purchase in `backend/src/main/java/com/formula11/service/MercadoService.java`
+- [x] T028 [US2] Add `POST /api/ordenes/venta` to `backend/src/main/java/com/formula11/controller/MercadoController.java`, deriving the seller from JWT and delegating exclusively to `MercadoService.vender`
+- [x] T029 [US2] Extend `MercadoE2ETest.java` with successful sale, insufficient holding `422`, superuser `403`, invalid request `400`, missing JWT `401`, and no-partial-change assertions
 
 ## Phase 5: User Story 3 - Consultar mercado (Priority: P1)
 

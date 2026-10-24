@@ -26,4 +26,11 @@ public class MercadoController {
         Long usuarioId = usuarioService.obtenerIdPorEmail(authentication.getName());
         return OperacionResponse.from(mercadoService.comprar(usuarioId, request.jugadorId(), request.cantidad()));
     }
+
+    @PostMapping("/venta")
+    @ResponseStatus(HttpStatus.CREATED)
+    public OperacionResponse vender(@Valid @RequestBody OrdenRequest request, Authentication authentication) {
+        Long usuarioId = usuarioService.obtenerIdPorEmail(authentication.getName());
+        return OperacionResponse.from(mercadoService.vender(usuarioId, request.jugadorId(), request.cantidad()));
+    }
 }
