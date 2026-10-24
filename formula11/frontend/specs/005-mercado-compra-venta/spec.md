@@ -9,7 +9,7 @@
 
 ### Session 2026-10-24
 
-- Q: ¿Qué roles deben poder comprar y vender tokens desde el mercado? → A: Solo `USUARIO` puede comprar y vender; `SUPERUSUARIO` no ve controles de operación o recibe acceso denegado.
+- Q: ¿Qué roles deben poder comprar y vender tokens desde el mercado? → A: Solo `USUARIO` puede comprar y vender; para el `SUPERUSUARIO` el detalle se muestra completo pero sin el panel de operación (es la contraparte de todas las operaciones). El contrato no define una respuesta específica si el superusuario envía una orden.
 - Q: ¿Qué identificador debe usar el frontend al consultar el portfolio del comprador? → A: Construir la ruta exclusivamente con `usuario.id` de la sesión; no permitir otro identificador.
 - Q: ¿Se deben permitir compras y ventas cuando `fechaCotizacion` es `null` y el backend informa el precio inicial de 1 crédito? → A: Permitir compra y venta al precio inicial de 1 crédito; mostrar la marca “precio inicial”.
 - Q: ¿Qué debe hacer la pantalla si la orden devuelve `201` pero falla la actualización posterior del portfolio o de los datos de mercado? → A: Confirmar la operación, mostrar el error de actualización y permitir reintentar solo las consultas de datos, sin reenviar la orden.
@@ -27,7 +27,7 @@ Como usuario autenticado, quiero comprar tokens de un jugador desde su detalle u
 1. **Given** el detalle de un jugador, **Then** el panel "Operar" muestra saldo, tokens del usuario (con precio promedio), tokens disponibles de los emitidos, precio vigente con su fecha y total estimado.
 2. **Given** una cantidad válida, **When** el usuario confirma, **Then** se envía la orden con Bearer y `X-Correlation-Id`, se muestra "Compraste N tokens a P créditos. Total: T créditos. Saldo: S créditos." y se vuelven a pedir portfolio y datos de mercado (saldo, tenencia y disponibilidad).
 3. **Given** una orden en curso, **Then** el botón queda deshabilitado ("Enviando...") para evitar doble envío.
-4. **Given** un `SUPERUSUARIO`, **When** abre el detalle o el mercado, **Then** no puede iniciar una compra ni una venta y recibe el estado de acceso denegado definido por la aplicación.
+4. **Given** un `SUPERUSUARIO`, **When** abre el detalle o el mercado, **Then** ve el detalle del jugador y sus cotizaciones (incluida la comparación de estrategias del 003), pero no se muestra el panel "Operar" ni puede iniciar una compra o una venta.
 
 ### User Story 2 - Vender tokens (Priority: P1)
 
