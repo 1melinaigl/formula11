@@ -56,9 +56,10 @@ posición y liga enviados al backend. No hay cambios de backend ni almacenamient
   colores y corte responsive existentes; la tabla agrega solo la superficie prevista
   por el mockup y los estilos actuales.
 - **Contratos del backend como autoridad**: PASS con dependencia documentada. El
-  contrato pegado de Entrega 2 define el endpoint de ranking y sus formas. La
-  constitución enumera contratos históricos de Entrega 1/2; no se inventan campos y
-  la implementación debe mantener como fuente operativa el contrato de Entrega 2.
+  contrato de Entrega 2 define el endpoint de ranking y sus formas. Conforme a la
+  constitución v1.1.0, la fuente autorizada para esta feature es
+  `backend/specs/005-contratos-entrega2/contracts/openapi.yaml`; no se inventan
+  endpoints, campos ni datos.
 - **Capas y límites explícitos**: PASS. `useRanking` coordina estado y llamadas,
   `ranking.js` normaliza y construye consultas, `TablaRanking` presenta y el cliente
   protegido centraliza transporte.
@@ -71,9 +72,8 @@ posición y liga enviados al backend. No hay cambios de backend ni almacenamient
   encabezados semánticos, el nombre es un enlace, filtros usan `aria-pressed` y los
   tests MSW cubren éxito, vacío, errores, filtros y ausencia de sesión.
 
-No hay violaciones que requieran Complexity Tracking. La diferencia entre la
-constitución histórica y el contrato de Entrega 2 queda como dependencia de gobierno,
-no como una excepción funcional inventada por esta feature.
+No hay violaciones que requieran Complexity Tracking. La feature aplica directamente
+la autoridad contractual definida por la constitución vigente.
 
 ## Project Structure
 

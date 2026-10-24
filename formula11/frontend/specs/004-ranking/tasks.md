@@ -68,7 +68,7 @@ description: "Task list for Formula11 player ranking"
 ### Tests for User Story 2
 
 - [ ] T019 [P] [US2] Agregar en `tests/pages/ranking.test.jsx` un test de filtros que compruebe `POR`, `DEF`, `MED`, `DEL` y el nombre exacto de liga en la query, sin filtrado local.
-- [ ] T020 [P] [US2] Agregar en `tests/pages/ranking.test.jsx` tests de reinicio a `page=0`, `aria-pressed`, botón `Todos`, filtro repetido sin consulta adicional y preservación del puesto recibido por backend.
+- [ ] T020 [P] [US2] Agregar en `tests/pages/ranking.test.jsx` tests de reinicio a `page=0`, `aria-pressed`, botón `Todos`, filtro repetido sin consulta adicional, preservación del puesto recibido por backend y descarte de una respuesta obsoleta cuando cambia el filtro o la página mientras hay una consulta pendiente.
 - [ ] T021 [P] [US2] Agregar en `tests/pages/ranking.test.jsx` tests de `content: []` con filtro (`Sin jugadores`) y de más de una página, verificando `page=1` en la API y `Página 2` en la UI.
 
 ### Implementation for User Story 2
@@ -90,13 +90,13 @@ description: "Task list for Formula11 player ranking"
 
 - [ ] T026 [P] [US3] Agregar en `tests/pages/ranking.test.jsx` un test de carga que exija `Cargando ranking...` mientras la respuesta está pendiente.
 - [ ] T027 [P] [US3] Agregar en `tests/pages/ranking.test.jsx` un test de respuesta vacía sin filtros que muestre `Ranking vacío` y el detalle de que no hubo recálculo.
-- [ ] T028 [P] [US3] Agregar en `tests/pages/ranking.test.jsx` tests de errores `400`, `403` y `5xx` que exijan `mensaje` y `correlationId` y mantengan la pantalla de ranking.
+- [ ] T028 [P] [US3] Agregar en `tests/pages/ranking.test.jsx` tests de errores `400`, `403` y `5xx` que exijan `mensaje` y `correlationId` y mantengan la pantalla de ranking; incluir también un error contractual incompleto que use el `X-Correlation-Id` generado por `clienteApi` cuando falte `correlationId` y muestre `No se pudo completar la solicitud.` cuando falte `mensaje`.
 - [ ] T029 [P] [US3] Agregar en `tests/pages/ranking.test.jsx` un test de `401` que compruebe limpieza de sesión y otro sin sesión que compruebe ausencia de llamada protegida y pantalla de acceso denegado.
 
 ### Implementation for User Story 3
 
 - [ ] T030 [US3] Completar `src/pages/RankingPage.jsx` con los estados `Cargando ranking...`, `Ranking vacío`, `Sin jugadores`, acceso denegado y `AvisoError` sin ocultar `mensaje` ni `correlationId`.
-- [ ] T031 [US3] Ajustar `src/hooks/useRanking.js` para limpiar el error al cambiar filtros o página, conservar la última respuesta solo durante la consulta vigente y evitar actualizar estado tras desmontaje.
+- [ ] T031 [US3] Ajustar `src/hooks/useRanking.js` para limpiar el error al cambiar filtros o página, conservar solo la respuesta de la consulta vigente, descartar actualizaciones obsoletas después de cambios de parámetros y evitar actualizar estado tras desmontaje.
 - [ ] T032 [US3] Mantener en `src/test/handlers.js` solo respuestas por defecto contractuales y configurar `401`, `400`, `403` y `5xx` con `server.use(...)` dentro de cada test.
 
 **Checkpoint**: las tres historias cubren éxito, carga, vacío, filtros, errores y ausencia de sesión.

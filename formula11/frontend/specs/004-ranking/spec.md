@@ -41,6 +41,7 @@ Como usuario, quiero ver el ranking de una sola posición, porque la estrategia 
 1. **Given** el ranking cargado, **When** el usuario elige Portero, Defensor, Mediocampista o Delantero o una liga, **Then** se consulta al backend con `posicion`/`liga`, se vuelve a la página 1 y se muestra el puesto que manda el backend.
 2. **Given** una posición sin jugadores, **Then** se muestra "Sin jugadores".
 3. **Given** el filtro activo, **Then** el botón queda marcado (`aria-pressed`) y "Todos" vuelve a la lista completa.
+4. **Given** una consulta de ranking pendiente, **When** el usuario cambia el filtro o la página, **Then** la respuesta anterior no reemplaza el estado de la consulta vigente y solo se muestra la respuesta asociada a los parámetros actuales.
 
 ### User Story 3 - Estados (Priority: P1)
 
@@ -58,6 +59,9 @@ Como usuario, quiero ver el ranking de una sola posición, porque la estrategia 
 - **FR-005**: Los errores `400`, `401` y `403` muestran el `mensaje` y `correlationId` del esquema `Error`; solo `401` limpia la sesión y `400`/`403` mantienen la pantalla. Aunque esta feature no envía `estrategia`, un `403` del backend se trata como rechazo de autorización de la consulta de la estrategia activa, sin reintentar ni cambiar de estrategia.
 - **FR-006**: Los filtros envían al backend los códigos `POR`, `DEF`, `MED` o `DEL` en `posicion` y un valor del enum `Liga` del contrato, exactamente igual a su etiqueta legible, en `liga`; el frontend no filtra localmente.
 - **FR-007**: Al pulsar `Escape` en la pantalla de ranking, la navegación vuelve a `/`.
+- **FR-008**: Si hay una consulta de ranking pendiente y cambian los filtros o la página,
+  el frontend descarta las actualizaciones obsoletas y solo aplica la respuesta asociada
+  a los parámetros vigentes.
 
 ## Contrato (`backend/specs/005-contratos-entrega2/contracts/openapi.yaml`)
 
