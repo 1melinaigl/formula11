@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Formula11 - Contrato Entrega 2
-  version: 1.0.0
+  version: 1.0.1
   description: |
     Contrato único de la Entrega 2. Lo implementan el backend (A y B) y lo consume el frontend (C) con MSW.
     Solo cambia por PR aprobado por las tres.
@@ -11,7 +11,7 @@ info:
     - Todos los endpoints requieren JWT (bearerAuth), salvo registro y login.
     - Hay dos roles: USUARIO y SUPERUSUARIO. El rol viaja en el JWT y en la respuesta del login.
       Solo el superusuario administra el mercado: elige la estrategia activa, crea versiones de pesos,
-      recalcula cotizaciones, carga métricas y consulta estrategias que no sean la activa.
+      recalcula cotizaciones, carga métricas y consulta cotizaciones, historial o ranking de una estrategia que no sea la activa. La configuración de las estrategias (GET /api/estrategias y sus versiones) es visible para cualquier usuario autenticado.
       El resto de los usuarios ve siempre la estrategia activa. Si un USUARIO llama a algo de administración, recibe 403.
     - El cliente envía X-Correlation-Id; los errores devuelven siempre el esquema Error.
     - Ligas con su nombre legible (Premier League, La Liga, ...). Posiciones: POR, DEF, MED, DEL.
@@ -280,7 +280,7 @@ paths:
       summary: Recalcula las cotizaciones (job manual)
       description: |
         Llama al mismo método que el job semanal. Calcula las dos estrategias para todos los jugadores.
-        Sin cuerpo, recalcula la semana actual. Con desde y hasta, recalcula todas las semanas del rango (backfill histórico).
+        Sin cuerpo, recalcula la última semana cerrada (la que termina el domingo anterior a la fecha del servidor). Con desde y hasta, recalcula todas las semanas del rango (backfill histórico).
         Si una semana ya estaba calculada, la reemplaza. Es transaccional por semana.
       x-feature: 006-estrategias-cotizacion
       x-responsable: A
