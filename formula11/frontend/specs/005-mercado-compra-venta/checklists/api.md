@@ -10,60 +10,60 @@
 
 ## Requirement Completeness
 
-- [ ] CHK001 - ¿Están especificados todos los datos que el panel "Operar" debe mostrar (saldo, tenencia, precio promedio, disponibles de emitidos, precio vigente, fecha y total estimado) y la fuente contractual de cada uno? [Completeness, Spec §User Story 1, Spec §Contrato]
-- [ ] CHK002 - ¿Se definen los requisitos de la venta con el mismo nivel de detalle que la compra (datos visibles, confirmación, recarga posterior)? [Completeness, Spec §User Story 2]
-- [ ] CHK003 - ¿Está documentado qué se muestra mientras se cargan el portfolio y `/mercado` antes de habilitar el formulario? [Gap]
-- [ ] CHK004 - ¿Se especifica el comportamiento cuando falla la consulta del portfolio, separado del fallo de `/mercado`? [Completeness, Spec §User Story 3]
-- [ ] CHK005 - ¿Están documentados los valores iniciales del formulario (tipo de operación y cantidad) y cuándo se restablecen después de una operación? [Gap]
+- [x] CHK001 - ¿Están especificados todos los datos que el panel "Operar" debe mostrar (saldo, tenencia, precio promedio, disponibles de emitidos, precio vigente, fecha y total estimado) y la fuente contractual de cada uno? [Completeness, Spec §User Story 1, Spec §Contrato]
+- [x] CHK002 - ¿Se definen los requisitos de la venta con el mismo nivel de detalle que la compra (datos visibles, confirmación, recarga posterior)? [Completeness, Spec §User Story 2]
+- [x] CHK003 - ¿Está documentado qué se muestra mientras se cargan el portfolio y `/mercado` antes de habilitar el formulario? [Gap]
+- [x] CHK004 - ¿Se especifica el comportamiento cuando falla la consulta del portfolio, separado del fallo de `/mercado`? [Completeness, Spec §User Story 3]
+- [x] CHK005 - ¿Están documentados los valores iniciales del formulario (tipo de operación y cantidad) y cuándo se restablecen después de una operación? [Gap]
 
 ## Requirement Clarity
 
-- [ ] CHK006 - ¿Queda claro que el precio mostrado es referencial y que el precio final, el total y el saldo de la confirmación provienen de `OperacionResponse`? [Clarity, Spec §FR-002]
-- [ ] CHK007 - ¿Está definido con precisión qué significa "cantidad válida" (entero, mínimo 1, máximo 100) y en qué orden se evalúan las validaciones cuando fallan varias a la vez? [Clarity, Spec §User Story 3]
-- [ ] CHK008 - ¿Se especifica cuándo se muestran los mensajes de validación (al escribir, al salir del campo o al enviar)? [Ambiguity, Spec §User Story 3]
-- [ ] CHK009 - ¿Está definido el formato de los montos (decimales, separador y unidad "créditos") en panel, total estimado y confirmación? [Clarity, Gap]
-- [ ] CHK010 - ¿Se define qué valores de `?operacion=` se aceptan y qué ocurre con un valor desconocido? [Clarity, Spec §User Story 2]
+- [x] CHK006 - ¿Queda claro que el precio mostrado es referencial y que el precio final, el total y el saldo de la confirmación provienen de `OperacionResponse`? [Clarity, Spec §FR-002]
+- [x] CHK007 - ¿Está definido con precisión qué significa "cantidad válida" (entero, mínimo 1, máximo 100) y en qué orden se evalúan las validaciones cuando fallan varias a la vez? [Clarity, Spec §User Story 3]
+- [x] CHK008 - ¿Se especifica cuándo se muestran los mensajes de validación (al escribir, al salir del campo o al enviar)? [Ambiguity, Spec §User Story 3]
+- [x] CHK009 - ¿Está definido el formato de los montos (decimales, separador y unidad "créditos") en panel, total estimado y confirmación? [Clarity, Gap]
+- [x] CHK010 - ¿Se define qué valores de `?operacion=` se aceptan y qué ocurre con un valor desconocido? [Clarity, Spec §User Story 2]
 
 ## Requirement Consistency
 
-- [ ] CHK011 - ¿Son consistentes los textos de error de validación entre los escenarios de User Story 3 y los mensajes del backend para `409` y `422`? [Consistency, Spec §User Story 3, Spec §Contrato]
-- [ ] CHK012 - ¿Es consistente la regla de roles entre la aclaración, el escenario 4 de User Story 1 y FR-005 (el superusuario ve el detalle completo pero no el panel)? [Consistency, Spec §Clarifications, Spec §FR-005]
-- [ ] CHK013 - ¿Coinciden el máximo de 100 tokens por orden del spec con el `OrdenRequest` del contrato y con `tokensEmitidos`? [Consistency, Spec §Contrato]
-- [ ] CHK014 - ¿Está alineada la fuente del precio (`/mercado`) entre spec y plan, sin que ninguna sección lo derive de las cotizaciones del detalle? [Consistency, Spec §Contrato, Plan §Technical Context]
+- [x] CHK011 - ¿Son consistentes los textos de error de validación entre los escenarios de User Story 3 y los mensajes del backend para `409` y `422`? [Consistency, Spec §User Story 3, Spec §Contrato]
+- [x] CHK012 - ¿Es consistente la regla de roles entre la aclaración, el escenario 4 de User Story 1 y FR-005 (el superusuario ve el detalle completo pero no el panel)? [Consistency, Spec §Clarifications, Spec §FR-005]
+- [x] CHK013 - ¿Coinciden el máximo de 100 tokens por orden del spec con el `OrdenRequest` del contrato y con `tokensEmitidos`? [Consistency, Spec §Contrato]
+- [x] CHK014 - ¿Está alineada la fuente del precio (`/mercado`) entre spec y plan, sin que ninguna sección lo derive de las cotizaciones del detalle? [Consistency, Spec §Contrato, Plan §Technical Context]
 
 ## Doble envío de órdenes (obligatorio)
 
-- [ ] CHK015 - ¿Está especificado que, mientras una orden está en curso, no se puede enviar otra (botón deshabilitado y envío ignorado), incluyendo el envío por teclado? [Completeness, Spec §User Story 1]
-- [ ] CHK016 - ¿Se define que el reintento posterior a un fallo de actualización solo vuelve a consultar portfolio y `/mercado`, y nunca reenvía la orden? [Clarity, Spec §FR-008]
-- [ ] CHK017 - ¿Está definido qué ocurre si el usuario cambia la cantidad o el tipo de operación mientras una orden está en curso? [Gap, Edge Case]
-- [ ] CHK018 - ¿Se especifica que una respuesta de error de la orden habilita nuevamente el envío sin perder la cantidad ingresada? [Gap, Recovery]
-- [ ] CHK019 - ¿Se documenta que el frontend no reintenta automáticamente una orden ante errores de red o `5xx`? [Gap, Exception Flow]
+- [x] CHK015 - ¿Está especificado que, mientras una orden está en curso, no se puede enviar otra (botón deshabilitado y envío ignorado), incluyendo el envío por teclado? [Completeness, Spec §User Story 1]
+- [x] CHK016 - ¿Se define que el reintento posterior a un fallo de actualización solo vuelve a consultar portfolio y `/mercado`, y nunca reenvía la orden? [Clarity, Spec §FR-008]
+- [x] CHK017 - ¿Está definido qué ocurre si el usuario cambia la cantidad o el tipo de operación mientras una orden está en curso? [Gap, Edge Case]
+- [x] CHK018 - ¿Se especifica que una respuesta de error de la orden habilita nuevamente el envío sin perder la cantidad ingresada? [Gap, Recovery]
+- [x] CHK019 - ¿Se documenta que el frontend no reintenta automáticamente una orden ante errores de red o `5xx`? [Gap, Exception Flow]
 
 ## Acceptance Criteria Quality
 
-- [ ] CHK020 - ¿Cada escenario de error (`404`, `409`, `422`) tiene un resultado observable definido (mensaje, `correlationId` y ausencia de confirmación)? [Measurability, Spec §User Story 3]
-- [ ] CHK021 - ¿Se puede verificar objetivamente que tras una operación exitosa se vuelven a pedir portfolio y `/mercado` y se actualizan saldo, tenencia y disponibilidad? [Measurability, Spec §User Story 1]
-- [ ] CHK022 - ¿Es verificable la marca "precio inicial" (texto exacto y condición `fechaCotizacion` nula)? [Measurability, Spec §FR-007]
+- [x] CHK020 - ¿Cada escenario de error (`404`, `409`, `422`) tiene un resultado observable definido (mensaje, `correlationId` y ausencia de confirmación)? [Measurability, Spec §User Story 3]
+- [x] CHK021 - ¿Se puede verificar objetivamente que tras una operación exitosa se vuelven a pedir portfolio y `/mercado` y se actualizan saldo, tenencia y disponibilidad? [Measurability, Spec §User Story 1]
+- [x] CHK022 - ¿Es verificable la marca "precio inicial" (texto exacto y condición `fechaCotizacion` nula)? [Measurability, Spec §FR-007]
 
 ## Scenario Coverage
 
-- [ ] CHK023 - ¿Están cubiertos los requisitos para un usuario sin tenencia del jugador que elige "Vender"? [Coverage, Spec §User Story 3]
-- [ ] CHK024 - ¿Se definen requisitos para cuando `tokensDisponibles` es 0 (jugador agotado)? [Coverage, Edge Case, Gap]
-- [ ] CHK025 - ¿Se cubre el caso de saldo 0 para la compra? [Coverage, Edge Case]
-- [ ] CHK026 - ¿Está definido el comportamiento ante un `401` durante una orden (limpieza de sesión y acceso denegado)? [Coverage, Exception Flow, Gap]
-- [ ] CHK027 - ¿Se especifica el comportamiento cuando la orden devuelve `201` pero falla la recarga posterior, incluyendo cómo se presenta el reintento? [Coverage, Recovery, Spec §User Story 3]
+- [x] CHK023 - ¿Están cubiertos los requisitos para un usuario sin tenencia del jugador que elige "Vender"? [Coverage, Spec §User Story 3]
+- [x] CHK024 - ¿Se definen requisitos para cuando `tokensDisponibles` es 0 (jugador agotado)? [Coverage, Edge Case, Gap]
+- [x] CHK025 - ¿Se cubre el caso de saldo 0 para la compra? [Coverage, Edge Case]
+- [x] CHK026 - ¿Está definido el comportamiento ante un `401` durante una orden (limpieza de sesión y acceso denegado)? [Coverage, Exception Flow, Gap]
+- [x] CHK027 - ¿Se especifica el comportamiento cuando la orden devuelve `201` pero falla la recarga posterior, incluyendo cómo se presenta el reintento? [Coverage, Recovery, Spec §User Story 3]
 
 ## Non-Functional Requirements
 
-- [ ] CHK028 - ¿Están definidos los requisitos de accesibilidad del selector Comprar/Vender (rol, estado `aria-pressed`, foco visible)? [Accessibility, Gap]
-- [ ] CHK029 - ¿Se especifica que la confirmación y los errores se anuncian a lectores de pantalla (`role="status"` y `role="alert"`)? [Accessibility, Spec §FR-004]
-- [ ] CHK030 - ¿Se documenta que la ruta del portfolio se construye solo con el `usuario.id` de la sesión y que el JWT no se expone en la UI? [Security, Spec §FR-006]
-- [ ] CHK031 - ¿Hay requisitos de presentación responsive del panel en pantallas angostas? [Gap]
+- [x] CHK028 - ¿Están definidos los requisitos de accesibilidad del selector Comprar/Vender (rol, estado `aria-pressed`, foco visible)? [Accessibility, Gap]
+- [x] CHK029 - ¿Se especifica que la confirmación y los errores se anuncian a lectores de pantalla (`role="status"` y `role="alert"`)? [Accessibility, Spec §FR-004]
+- [x] CHK030 - ¿Se documenta que la ruta del portfolio se construye solo con el `usuario.id` de la sesión y que el JWT no se expone en la UI? [Security, Spec §FR-006]
+- [x] CHK031 - ¿Hay requisitos de presentación responsive del panel en pantallas angostas? [Gap]
 
 ## Dependencies & Assumptions
 
-- [ ] CHK032 - ¿Está documentada la dependencia del saldo inicial (a confirmar con el docente) y su impacto en los escenarios? [Assumption, Spec §Contrato]
-- [ ] CHK033 - ¿Se documenta que el contrato no define una respuesta específica si el superusuario envía una orden y que el panel oculto es una decisión de UX del frontend? [Dependency, Spec §Clarifications]
+- [x] CHK032 - ¿Está documentada la dependencia del saldo inicial (a confirmar con el docente) y su impacto en los escenarios? [Assumption, Spec §Contrato]
+- [x] CHK033 - ¿Se documenta que el contrato no define una respuesta específica si el superusuario envía una orden y que el panel oculto es una decisión de UX del frontend? [Dependency, Spec §Clarifications]
 
 ## Notes
 
