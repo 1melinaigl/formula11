@@ -13,26 +13,26 @@ description: "Task list for implementing the 007 token market feature"
 
 ## Phase 1: Setup
 
-- [ ] T001 Confirm the existing Maven/Spring Boot test profile and PostgreSQL/Testcontainers conventions in `backend/pom.xml` and `backend/src/test/java/com/formula11`
-- [ ] T002 [P] Add local/test market configuration defaults (development superuser credentials) and `spring.flyway.out-of-order=true` in `backend/src/main/resources/application-local.yml` and `backend/src/test/resources/application-test.yml`
-- [ ] T003 [P] Add the market configuration properties `mercado.saldo-inicial` (default `100`) and superuser email/password bound to `SUPERUSUARIO_EMAIL`/`SUPERUSUARIO_PASSWORD` in `backend/src/main/resources/application.yml`
-- [ ] T004 [P] Add the market operation contract examples to the maintained Postman collection under `backend/postman/` and keep paths aligned with `backend/specs/005-contratos-entrega2/contracts/openapi.yaml`
+- [x] T001 Confirm the existing Maven/Spring Boot test profile and PostgreSQL/Testcontainers conventions in `backend/pom.xml` and `backend/src/test/java/com/formula11`
+- [x] T002 [P] Add local/test market configuration defaults (development superuser credentials) and `spring.flyway.out-of-order=true` in `backend/src/main/resources/application-local.yml` and `backend/src/test/resources/application-test.yml`
+- [x] T003 [P] Add the market configuration properties `mercado.saldo-inicial` (default `100`) and superuser email/password bound to `SUPERUSUARIO_EMAIL`/`SUPERUSUARIO_PASSWORD` in `backend/src/main/resources/application.yml`
+- [x] T004 [P] Add the market operation contract examples to the maintained Postman collection under `backend/postman/` and keep paths aligned with `backend/specs/005-contratos-entrega2/contracts/openapi.yaml`
 - [ ] T005 [P] Open the contract PR from branch `005-contrato-403-superusuario` adding a specific `ErrorSuperusuarioNoOpera` response (`403`, "El superusuario no puede operar en el mercado") to `POST /api/ordenes/compra`, `POST /api/ordenes/venta` and `GET /api/usuarios/{usuarioId}/portfolio` in `backend/specs/005-contratos-entrega2/contracts/openapi.yaml`; it needs approval from all three members and MUST be merged before T045
 
 ## Phase 2: Foundational
 
-- [ ] T006 Create Flyway migration `backend/src/main/resources/db/migration/V20__agregar_rol_usuario.sql` to add the non-null `USUARIO`/`SUPERUSUARIO` role column with a `CHECK`, backfilling existing rows as `USUARIO`, plus a partial unique index allowing at most one `SUPERUSUARIO`
-- [ ] T007 Create Flyway migration `backend/src/main/resources/db/migration/V21__crear_cuentas.sql` with only the `cuentas` table structure (unique `usuario_id` FK, `saldo NUMERIC(19,4) NOT NULL CHECK (saldo >= 0)`); it inserts no rows
-- [ ] T008 Create Flyway migration `backend/src/main/resources/db/migration/V22__crear_tenencias.sql` for `tenencias` with FKs, unique `(usuario_id, jugador_id)`, `CHECK (cantidad >= 0)`, non-negative `precio_promedio NUMERIC(19,4)`, and an index on `jugador_id`
-- [ ] T009 Create Flyway migration `backend/src/main/resources/db/migration/V23__crear_transacciones.sql` for `COMPRA`/`VENTA`, user/player/counterparty FKs, positive quantity, four-decimal unit price/total, nullable strategy/version, `TIMESTAMPTZ` date, and an index on `(usuario_id, fecha DESC)`
-- [ ] T010 Create Flyway migration `backend/src/main/resources/db/migration/V24__crear_auditoria_mercado.sql` for append-only audit rows with author FK, operation FK, `jsonb` before/after snapshots, and timestamp
-- [ ] T011 Create Flyway migration `backend/src/main/resources/db/migration/V25__backfill_cuentas_existentes.sql` assigning every existing `USUARIO` exactly one account with `100.0000` credits
-- [ ] T012 Add `Rol`, `Cuenta`, `Tenencia`, `Transaccion`, and `AuditoriaMercado` domain entities with explicit constructors/mutators enforcing non-negative balances, non-negative holdings, positive transaction quantities, and four-decimal monetary normalization in `backend/src/main/java/com/formula11/model/`
-- [ ] T013 Extend `backend/src/main/java/com/formula11/model/Usuario.java` with the role value, default `USUARIO` behavior, and an `esSuperusuario()` query, without breaking existing constructors/tests
-- [ ] T014 Add repository interfaces and pessimistic-lock queries for accounts and holdings in `backend/src/main/java/com/formula11/persistence/CuentaRepository.java`, `TenenciaRepository.java`, `TransaccionRepository.java`, and `AuditoriaMercadoRepository.java`; expose no audit update/delete workflow
-- [ ] T015 Update `backend/src/main/java/com/formula11/security/JwtService.java` and `JwtAuthenticationFilter.java` to emit/read the `rol` claim while preserving existing `usuarioId` and email authentication
-- [ ] T016 Add `backend/src/main/java/com/formula11/config/ClockConfig.java` with an injectable `Clock`, and `MercadoProperties` with profile-aware validation of superuser credentials in `backend/src/main/java/com/formula11/config/`
-- [ ] T017 Add domain exceptions (including `SuperusuarioNoOperaException`) and map them to `400`, `403`, `404`, `409`, and `422` with Spanish `Error` responses in `backend/src/main/java/com/formula11/exception/GlobalExceptionHandler.java`
+- [x] T006 Create Flyway migration `backend/src/main/resources/db/migration/V20__agregar_rol_usuario.sql` to add the non-null `USUARIO`/`SUPERUSUARIO` role column with a `CHECK`, backfilling existing rows as `USUARIO`, plus a partial unique index allowing at most one `SUPERUSUARIO`
+- [x] T007 Create Flyway migration `backend/src/main/resources/db/migration/V21__crear_cuentas.sql` with only the `cuentas` table structure (unique `usuario_id` FK, `saldo NUMERIC(19,4) NOT NULL CHECK (saldo >= 0)`); it inserts no rows
+- [x] T008 Create Flyway migration `backend/src/main/resources/db/migration/V22__crear_tenencias.sql` for `tenencias` with FKs, unique `(usuario_id, jugador_id)`, `CHECK (cantidad >= 0)`, non-negative `precio_promedio NUMERIC(19,4)`, and an index on `jugador_id`
+- [x] T009 Create Flyway migration `backend/src/main/resources/db/migration/V23__crear_transacciones.sql` for `COMPRA`/`VENTA`, user/player/counterparty FKs, positive quantity, four-decimal unit price/total, nullable strategy/version, `TIMESTAMPTZ` date, and an index on `(usuario_id, fecha DESC)`
+- [x] T010 Create Flyway migration `backend/src/main/resources/db/migration/V24__crear_auditoria_mercado.sql` for append-only audit rows with author FK, operation FK, `jsonb` before/after snapshots, and timestamp
+- [x] T011 Create Flyway migration `backend/src/main/resources/db/migration/V25__backfill_cuentas_existentes.sql` assigning every existing `USUARIO` exactly one account with `100.0000` credits
+- [x] T012 Add `Rol`, `Cuenta`, `Tenencia`, `Transaccion`, and `AuditoriaMercado` domain entities with explicit constructors/mutators enforcing non-negative balances, non-negative holdings, positive transaction quantities, and four-decimal monetary normalization in `backend/src/main/java/com/formula11/model/`
+- [x] T013 Extend `backend/src/main/java/com/formula11/model/Usuario.java` with the role value, default `USUARIO` behavior, and an `esSuperusuario()` query, without breaking existing constructors/tests
+- [x] T014 Add repository interfaces and pessimistic-lock queries for accounts and holdings in `backend/src/main/java/com/formula11/persistence/CuentaRepository.java`, `TenenciaRepository.java`, `TransaccionRepository.java`, and `AuditoriaMercadoRepository.java`; expose no audit update/delete workflow
+- [x] T015 Update `backend/src/main/java/com/formula11/security/JwtService.java` and `JwtAuthenticationFilter.java` to emit/read the `rol` claim while preserving existing `usuarioId` and email authentication
+- [x] T016 Add `backend/src/main/java/com/formula11/config/ClockConfig.java` with an injectable `Clock`, and `MercadoProperties` with profile-aware validation of superuser credentials in `backend/src/main/java/com/formula11/config/`
+- [x] T017 Add domain exceptions (including `SuperusuarioNoOperaException`) and map them to `400`, `403`, `404`, `409`, and `422` with Spanish `Error` responses in `backend/src/main/java/com/formula11/exception/GlobalExceptionHandler.java`
 
 **Checkpoint**: Migrations validate against the existing schema, entities/repositories compile, JWT roles are available, and no user story starts before these prerequisites pass.
 
@@ -42,14 +42,14 @@ description: "Task list for implementing the 007 token market feature"
 
 **Independent Test**: With 100 superuser tokens and a user balance of 100 credits, execute a two-token purchase and verify `201`, balance 98, buyer quantity 2, superuser holding 98, one transaction, and one audit row with both sides before/after.
 
-- [ ] T018 [P] [US1] Add unit tests for `Cuenta`, `Tenencia`, weighted-average purchase, and invalid non-positive states in `backend/src/test/java/com/formula11/unit/model/MercadoModelTest.java`
-- [ ] T019 [P] [US1] Add fixed-clock unit tests for successful purchase, insufficient balance `422`, insufficient superuser stock `409`, superuser buyer `403`, invalid quote, and atomic failure in `backend/src/test/java/com/formula11/unit/service/MercadoServiceTest.java`
-- [ ] T020 [US1] Define `CotizacionVigentePort` and its quote value object in `backend/src/main/java/com/formula11/service/CotizacionVigentePort.java`
-- [ ] T021 [US1] Implement `CotizacionFijaAdapter` returning price `1.0000` with null strategy/version/date in `backend/src/main/java/com/formula11/adapter/CotizacionFijaAdapter.java`
-- [ ] T022 [US1] Implement `MercadoService.comprar(usuarioId, jugadorId, cantidad)`: reject the superuser, resolve player and superuser, get the quote with the `Clock` date, lock user account → superuser holding → user holding, validate balance/stock, debit the user balance, transfer tokens, update the weighted average, persist the transaction and an audit row with user balance, user tokens and superuser tokens before/after, all in one transaction, in `backend/src/main/java/com/formula11/service/MercadoService.java`
-- [ ] T023 [US1] Add `OrdenRequest`, `OperacionResponse`, and market mapping helpers matching the exact contract fields and four-decimal monetary representation in `backend/src/main/java/com/formula11/dto/`
-- [ ] T024 [US1] Add `POST /api/ordenes/compra` to `backend/src/main/java/com/formula11/controller/MercadoController.java`, deriving the buyer from JWT and delegating exclusively to `MercadoService.comprar`
-- [ ] T025 [US1] Add E2E coverage for successful purchase and `400/401/403/404/409/422` responses in `backend/src/test/java/com/formula11/e2e/MercadoE2ETest.java`
+- [x] T018 [P] [US1] Add unit tests for `Cuenta`, `Tenencia`, weighted-average purchase, and invalid non-positive states in `backend/src/test/java/com/formula11/unit/model/MercadoModelTest.java`
+- [x] T019 [P] [US1] Add fixed-clock unit tests for successful purchase, insufficient balance `422`, insufficient superuser stock `409`, superuser buyer `403`, invalid quote, and atomic failure in `backend/src/test/java/com/formula11/unit/service/MercadoServiceTest.java`
+- [x] T020 [US1] Define `CotizacionVigentePort` and its quote value object in `backend/src/main/java/com/formula11/service/CotizacionVigentePort.java`
+- [x] T021 [US1] Implement `CotizacionFijaAdapter` returning price `1.0000` with null strategy/version/date in `backend/src/main/java/com/formula11/adapter/CotizacionFijaAdapter.java`
+- [x] T022 [US1] Implement `MercadoService.comprar(usuarioId, jugadorId, cantidad)`: reject the superuser, resolve player and superuser, get the quote with the `Clock` date, lock user account → superuser holding → user holding, validate balance/stock, debit the user balance, transfer tokens, update the weighted average, persist the transaction and an audit row with user balance, user tokens and superuser tokens before/after, all in one transaction, in `backend/src/main/java/com/formula11/service/MercadoService.java`
+- [x] T023 [US1] Add `OrdenRequest`, `OperacionResponse`, and market mapping helpers matching the exact contract fields and four-decimal monetary representation in `backend/src/main/java/com/formula11/dto/`
+- [x] T024 [US1] Add `POST /api/ordenes/compra` to `backend/src/main/java/com/formula11/controller/MercadoController.java`, deriving the buyer from JWT and delegating exclusively to `MercadoService.comprar`
+- [x] T025 [US1] Add E2E coverage for successful purchase and `400/401/403/404/409/422` responses in `backend/src/test/java/com/formula11/e2e/MercadoE2ETest.java`
 
 ## Phase 4: User Story 2 - Vender tokens (Priority: P1)
 

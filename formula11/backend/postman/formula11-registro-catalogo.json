@@ -42,6 +42,30 @@
         "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
         "url": {"raw": "{{baseUrl}}/api/jugadores", "host": ["{{baseUrl}}", "api", "jugadores"]}
       }
+    },
+    {
+      "name": "Comprar tokens",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{token}}"},
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {"mode": "raw", "raw": "{\"jugadorId\":1,\"cantidad\":2}"},
+        "url": {"raw": "{{baseUrl}}/api/ordenes/compra", "host": ["{{baseUrl}}"], "path": ["api", "ordenes", "compra"]}
+      }
+    },
+    {
+      "name": "Vender tokens",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{token}}"},
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {"mode": "raw", "raw": "{\"jugadorId\":1,\"cantidad\":1}"},
+        "url": {"raw": "{{baseUrl}}/api/ordenes/venta", "host": ["{{baseUrl}}", "api", "ordenes", "venta"], "path": ["api", "ordenes", "venta"]}
+      }
     }
   ]
 }

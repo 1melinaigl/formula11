@@ -48,6 +48,12 @@ public class UsuarioService {
         return LoginResponse.from(usuario, jwtService.generarToken(usuario.getId(), usuario.getEmail()));
     }
 
+    public Long obtenerIdPorEmail(String email) {
+        return usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new com.formula11.exception.RecursoNoEncontradoException("El usuario no existe"))
+                .getId();
+    }
+
     public static class EmailDuplicadoException extends RuntimeException {
         public EmailDuplicadoException() { super("El email ya está registrado"); }
     }

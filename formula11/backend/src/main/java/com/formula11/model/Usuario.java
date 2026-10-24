@@ -17,6 +17,9 @@ public class Usuario {
     private String passwordHash;
     @Column(name = "fecha_registro", nullable = false)
     private Instant fechaRegistro;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Rol rol = Rol.USUARIO;
 
     protected Usuario() { }
 
@@ -43,4 +46,7 @@ public class Usuario {
     public String getEmail() { return email; }
     public String getPasswordHash() { return passwordHash; }
     public Instant getFechaRegistro() { return fechaRegistro; }
+    public Rol getRol() { return rol; }
+    public boolean esSuperusuario() { return rol == Rol.SUPERUSUARIO; }
+    public void asignarRol(Rol rol) { this.rol = java.util.Objects.requireNonNull(rol, "El rol es obligatorio"); }
 }
