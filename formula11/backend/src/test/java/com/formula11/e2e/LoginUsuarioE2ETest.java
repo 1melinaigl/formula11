@@ -6,6 +6,7 @@ import com.formula11.persistence.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -48,10 +49,14 @@ class LoginUsuarioE2ETest {
     private ObjectMapper objectMapper;
     @Autowired
     private UsuarioRepository usuarioRepository;
+    @Autowired
+    private JdbcTemplate jdbc;
 
     @BeforeEach
     void limpiarUsuarios() {
-        usuarioRepository.deleteAll();
+        // El SuperusuarioInitializer crea al superusuario con sus tenencias: se conserva y se borran los usuarios comunes.
+        jdbc.update("DELETE FROM cuentas");
+        jdbc.update("DELETE FROM usuarios WHERE rol = 'USUARIO'");
     }
 
     @Test

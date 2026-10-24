@@ -6,6 +6,7 @@ import com.formula11.adapter.ExternalTeam;
 import com.formula11.adapter.FootballDataPort;
 import com.formula11.model.Liga;
 import com.formula11.persistence.JugadorRepository;
+import com.formula11.persistence.TenenciaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,11 +55,14 @@ class JugadorSincronizacionE2ETest {
     private ObjectMapper objectMapper;
     @Autowired
     private JugadorRepository jugadorRepository;
+    @Autowired
+    private TenenciaRepository tenenciaRepository;
     @MockitoBean
     private FootballDataPort footballDataPort;
 
     @BeforeEach
     void limpiar() {
+        tenenciaRepository.deleteAll();
         jugadorRepository.deleteAll();
         when(footballDataPort.estaConfigurado()).thenReturn(true);
         when(footballDataPort.obtenerEquipos(any(Liga.class))).thenAnswer(invocation -> {
