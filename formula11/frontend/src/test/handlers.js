@@ -39,6 +39,7 @@ export const handlers = [
     totalElements: 0,
     totalPages: 0,
   })),
+  http.get('/api/jugadores/ranking', () => HttpResponse.json([])),
   http.get('/api/jugadores/:id', ({ params }) => HttpResponse.json({
     id: Number(params.id),
     nombre: 'Nicolò Barella',

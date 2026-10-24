@@ -7,6 +7,12 @@ const breadcrumbs = {
   '/registro': 'Crear cuenta',
   '/cuenta-creada': 'Cuenta creada',
   '/catalogo': 'Catálogo de jugadores',
+  '/ranking': 'Ranking',
+}
+
+function obtenerBreadcrumb(pathname) {
+  if (pathname.startsWith('/jugadores/')) return 'Detalle del jugador'
+  return breadcrumbs[pathname] || 'Formula 11'
 }
 
 export default function Encabezado() {
@@ -16,7 +22,7 @@ export default function Encabezado() {
   return (
     <header className="site-header">
       <div className="logo" aria-label="Formula 11">FORMULA <strong>11</strong></div>
-      <div className="breadcrumb">{breadcrumbs[pathname] || 'Formula 11'}</div>
+      <div className="breadcrumb">{obtenerBreadcrumb(pathname)}</div>
       <div className={`session-chip ${usuario ? 'active' : ''}`}>
         <span>{usuario ? usuario.nombre : 'Sin sesión'}</span>
       </div>

@@ -28,7 +28,7 @@ describe('menú principal', () => {
   it('muestra las opciones futuras bloqueadas', () => {
     renderApp()
 
-    expect(screen.getAllByText('PRÓXIMAMENTE')).toHaveLength(2)
+    expect(screen.getAllByText('PRÓXIMAMENTE')).toHaveLength(1)
     expect(screen.getByText('Sin sesión')).toBeInTheDocument()
   })
 })
