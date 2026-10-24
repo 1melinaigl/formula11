@@ -33,12 +33,14 @@ Carga, error del portfolio con `mensaje` y `correlationId`, y sin sesión (acces
 ## Requirements
 
 - **FR-001**: Las rutas viven en `src/api/endpoints.js` (`portfolio`, `evolucionPortfolio`).
-- **FR-002**: Si el backend manda `valorActual`, `invertido` o `ganancia`, se usan; si no, se calculan con `cantidad`, `precioPromedio` y `precioActual`.
+- **FR-002**: Los totales y los valores de cada posición vienen calculados por el backend; el front solo suma saldo + valor de las tenencias para el valor total y muestra la fecha de valuación.
 - **FR-003**: Colores de gráficos validados con el validador de paletas contra el fondo `#06210f` (banda de luminosidad, croma, separación para daltonismo y contraste).
 - **FR-004**: Sin desborde horizontal a 375px: tabla con columnas opcionales ocultas y gráficos que se achican.
 - **FR-005**: La página se carga en diferido porque usa Recharts.
 
-## Assumptions (a confirmar con `backend/specs/005-contratos-entrega2`)
+## Contrato (`backend/specs/005-contratos-entrega2/contracts/openapi.yaml`)
 
-- `GET /api/usuarios/{id}/portfolio` → `{ saldo, tenencias: [{ jugadorId | jugador: { id, nombre, posicion }, nombre?, cantidad, precioPromedio, precioActual, valorActual?, invertido?, ganancia? }] }`.
-- `GET /api/usuarios/{id}/portfolio/evolucion` → `[{ fecha, valor, invertido }]` (lo arma B en `009-portfolio-historial`).
+- `GET /api/usuarios/{usuarioId}/portfolio` → `PortfolioResponse { usuarioId, fechaValuacion, saldo, invertido, valorTenencias, ganancia, gananciaPorcentaje, posiciones }`, valuado con la cotización vigente. 403 si el id no es el del JWT.
+- `PosicionPortfolio { jugador, cantidad, precioPromedio, precioActual, invertido, valorActual, ganancia, gananciaPorcentaje }`, una por jugador con cantidad mayor a cero. Alcanza para los gráficos de composición y de ganancia por jugador.
+- `GET /api/usuarios/{usuarioId}/portfolio/evolucion[?desde=&hasta=]` → `{ usuarioId, puntos: [{ fecha, valor, invertido }] }`, un punto por fecha de cotización.
+- Porcentajes como número (12.5 = 12,5 %); el front los convierte a fracción.

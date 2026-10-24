@@ -5,13 +5,13 @@ import EstadoCarga from '../components/comun/EstadoCarga'
 import { GraficoComposicion, GraficoEvolucionPortfolio, GraficoGanancias } from '../components/portfolio/GraficosPortfolio'
 import ResumenPortfolio from '../components/portfolio/ResumenPortfolio'
 import TablaTenencias from '../components/portfolio/TablaTenencias'
-import { composicion, gananciasPorJugador, resumenPortfolio } from '../components/portfolio/portfolio'
+import { formatearFecha } from '../components/cotizaciones/cotizaciones'
+import { composicion, gananciasPorJugador } from '../components/portfolio/portfolio'
 import { usePortfolio } from '../hooks/usePortfolio'
 import { useSesion } from '../hooks/useSesion'
 import AccesoDenegadoPage from './AccesoDenegadoPage'
 
-function ContenidoPortfolio({ saldo, tenencias, evolucion, errorEvolucion }) {
-  const resumen = resumenPortfolio(tenencias, saldo)
+function ContenidoPortfolio({ resumen, tenencias, evolucion, errorEvolucion }) {
 
   if (tenencias.length === 0) {
     return (
@@ -58,7 +58,10 @@ export default function PortfolioPage() {
     <section className="screen catalog-screen">
       <div className="catalog-content">
         <div className="catalog-title-row">
-          <div><p className="eyebrow"></p><h1 className="panel-heading">Mi portfolio</h1></div>
+          <div>
+            <p className="eyebrow">{portfolio.resumen.fechaValuacion && `Valuado al ${formatearFecha(portfolio.resumen.fechaValuacion)}`}</p>
+            <h1 className="panel-heading">Mi portfolio</h1>
+          </div>
           <button className="btn ghost" type="button" onClick={() => navigate('/')}>Menú</button>
         </div>
         {portfolio.cargando && <EstadoCarga mensaje="Cargando portfolio..." />}

@@ -4,7 +4,7 @@
 
 ## Technical Context
 
-Apilada sobre 005: reutiliza `endpoints.portfolio`, `normalizarPortfolio` y el `?operacion=venta` del panel de operación; de 003 usa Recharts, los formateadores y el estilo de los gráficos. Sin dependencias nuevas.
+Apilada sobre 005: reutiliza `endpoints.portfolio` y el `?operacion=venta` del panel de operación; de 003 usa Recharts, los formateadores y el estilo de los gráficos. Sin dependencias nuevas.
 
 ## Estructura
 

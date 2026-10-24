@@ -41,4 +41,4 @@ description: "Task list for Formula11 user portfolio and charts"
 
 - [X] T015 Revisión visual en el navegador (API simulada) a 1100px y 375px: sin desborde y sin choques de etiquetas.
 - [X] T016 `npm test`, `npm run lint` y `npm run build` en verde.
-- [ ] T017 Alinear rutas y formas con el contrato `005-contratos-entrega2` y con la serie de evolución que defina `009-portfolio-historial`.
+- [X] T017 Alinear con el contrato `005-contratos-entrega2`: totales y `posiciones` del `PortfolioResponse`, `fechaValuacion` y `puntos` de la evolución.

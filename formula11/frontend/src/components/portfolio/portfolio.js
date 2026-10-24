@@ -1,3 +1,5 @@
+import { porcentajeAFraccion } from '../cotizaciones/cotizaciones'
+
 // Colores validados contra el fondo oscuro de la cancha (#06210f) con el validador de paletas:
 // banda de luminosidad, croma y separación para daltonismo.
 export const COLORES = {
@@ -9,55 +11,41 @@ export const COLORES = {
 
 const MAXIMO_COMPOSICION = 7
 
-function numero(valor) {
-  return valor == null || valor === '' ? null : Number(valor)
+// PosicionPortfolio del contrato: { jugador, cantidad, precioPromedio, precioActual, invertido, valorActual,
+// ganancia, gananciaPorcentaje (%) }, ya valuada por el backend con la cotización vigente.
+export function enriquecerTenencias(posiciones) {
+  return posiciones.map(({ jugador = {}, ...posicion }) => ({
+    ...jugador,
+    jugadorId: jugador.id,
+    cantidad: Number(posicion.cantidad),
+    precioPromedio: Number(posicion.precioPromedio),
+    precioActual: Number(posicion.precioActual),
+    invertido: Number(posicion.invertido),
+    valorActual: Number(posicion.valorActual),
+    ganancia: Number(posicion.ganancia),
+    rendimiento: porcentajeAFraccion(posicion.gananciaPorcentaje),
+  }))
 }
 
-// Completa cada tenencia con los datos del jugador y calcula lo que el backend no mande.
-export function enriquecerTenencias(tenencias) {
-  return tenencias.map((tenencia) => {
-    const jugador = tenencia.jugador || {}
-    const cantidad = Number(tenencia.cantidad ?? 0)
-    const precioPromedio = numero(tenencia.precioPromedio)
-    const precioActual = numero(tenencia.precioActual ?? tenencia.cotizacionActual ?? jugador.precioActual)
-    const invertido = numero(tenencia.invertido) ?? (precioPromedio == null ? null : cantidad * precioPromedio)
-    const valorActual = numero(tenencia.valorActual) ?? (precioActual == null ? null : cantidad * precioActual)
-    const ganancia = numero(tenencia.ganancia) ?? (valorActual == null || invertido == null ? null : valorActual - invertido)
-    return {
-      ...tenencia,
-      jugadorId: tenencia.jugadorId ?? jugador.id,
-      nombre: tenencia.nombre ?? jugador.nombre ?? `Jugador ${tenencia.jugadorId ?? jugador.id}`,
-      equipo: tenencia.equipo ?? jugador.equipo,
-      posicion: tenencia.posicion ?? jugador.posicion,
-      cantidad,
-      precioPromedio,
-      precioActual,
-      invertido,
-      valorActual,
-      ganancia,
-      rendimiento: ganancia != null && invertido ? ganancia / invertido : null,
-    }
-  })
-}
-
-export function resumenPortfolio(tenencias, saldo) {
-  const sumar = (campo) => tenencias.reduce((total, tenencia) => total + (tenencia[campo] ?? 0), 0)
-  const invertido = sumar('invertido')
-  const valorActual = sumar('valorActual')
-  const ganancia = valorActual - invertido
+// Totales de PortfolioResponse; el valor total suma el saldo disponible y el valor de las tenencias.
+export function resumenPortfolio(data) {
+  const saldo = Number(data?.saldo ?? 0)
+  const invertido = Number(data?.invertido ?? 0)
+  const valorActual = Number(data?.valorTenencias ?? 0)
   return {
     saldo,
     invertido,
     valorActual,
-    ganancia,
-    rendimiento: invertido ? ganancia / invertido : null,
+    ganancia: Number(data?.ganancia ?? 0),
+    rendimiento: invertido > 0 ? porcentajeAFraccion(data.gananciaPorcentaje) : null,
     total: saldo + valorActual,
+    fechaValuacion: data?.fechaValuacion ?? null,
   }
 }
 
+// EvolucionPortfolioResponse: { usuarioId, puntos: [{ fecha, valor, invertido }] }.
 export function normalizarEvolucion(data) {
-  const lista = Array.isArray(data) ? data : data?.content || data?.puntos || []
-  return lista
+  return (data?.puntos || [])
     .filter((punto) => punto?.fecha && Number.isFinite(Number(punto.valor)))
     .map((punto) => ({ fecha: punto.fecha, valor: Number(punto.valor), invertido: Number(punto.invertido ?? 0) }))
     .sort((a, b) => a.fecha.localeCompare(b.fecha))

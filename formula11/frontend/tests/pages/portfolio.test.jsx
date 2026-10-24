@@ -6,19 +6,31 @@ import App from '../../src/App'
 import { SesionProvider } from '../../src/context/SesionContext'
 import { server } from '../../src/test/server'
 
+// PortfolioResponse del contrato: totales y posiciones ya valuados por el backend; porcentajes en %.
 const portfolio = {
+  usuarioId: 11,
+  fechaValuacion: '2026-10-19',
   saldo: 20,
-  tenencias: [
-    { jugador: { id: 5, nombre: 'Harry Kane', posicion: 'DEL' }, cantidad: 10, precioPromedio: 1, precioActual: 1.5 },
-    { jugadorId: 7, nombre: 'Nicolò Barella', posicion: 'MED', cantidad: 4, precioPromedio: 1.25, precioActual: 1 },
-    { jugadorId: 9, nombre: 'Vendido', cantidad: 0, precioPromedio: 1, precioActual: 1 },
+  invertido: 15,
+  valorTenencias: 19,
+  ganancia: 4,
+  gananciaPorcentaje: 26.67,
+  posiciones: [
+    {
+      jugador: { id: 5, nombre: 'Harry Kane', equipo: 'FC Bayern München', liga: 'Bundesliga', posicion: 'DEL' },
+      cantidad: 10, precioPromedio: 1, precioActual: 1.5, invertido: 10, valorActual: 15, ganancia: 5, gananciaPorcentaje: 50,
+    },
+    {
+      jugador: { id: 7, nombre: 'Nicolò Barella', equipo: 'FC Internazionale Milano', liga: 'Serie A', posicion: 'MED' },
+      cantidad: 4, precioPromedio: 1.25, precioActual: 1, invertido: 5, valorActual: 4, ganancia: -1, gananciaPorcentaje: -20,
+    },
   ],
 }
 
 function renderPortfolio({ ruta = '/portfolio', sesion = true } = {}) {
   window.history.pushState({}, '', ruta)
   if (sesion) {
-    window.sessionStorage.setItem('formula11.session', JSON.stringify({ token: 'portfolio-token', usuario: { id: 11, nombre: 'Ana Formula' } }))
+    window.sessionStorage.setItem('formula11.session', JSON.stringify({ token: 'portfolio-token', usuario: { id: 11, nombre: 'Ana Formula', rol: 'USUARIO' } }))
   }
   return render(<SesionProvider><App /></SesionProvider>)
 }
@@ -33,10 +45,13 @@ describe('portfolio del usuario', () => {
         expect(request.headers.get('Authorization')).toBe('Bearer portfolio-token')
         return HttpResponse.json(portfolio)
       }),
-      http.get('/api/usuarios/:id/portfolio/evolucion', () => HttpResponse.json([
-        { fecha: '2026-10-12', valor: 15, invertido: 15 },
-        { fecha: '2026-10-19', valor: 19, invertido: 15 },
-      ])),
+      http.get('/api/usuarios/:id/portfolio/evolucion', () => HttpResponse.json({
+        usuarioId: 11,
+        puntos: [
+          { fecha: '2026-10-12', valor: 15, invertido: 15 },
+          { fecha: '2026-10-19', valor: 19, invertido: 15 },
+        ],
+      })),
     )
     renderPortfolio()
 
@@ -59,7 +74,8 @@ describe('portfolio del usuario', () => {
     expect(within(filas[1]).getByText('+5,00')).toHaveClass('up')
     expect(within(filas[2]).getByText('-1,00')).toHaveClass('down')
     expect(within(filas[2]).getByRole('link', { name: 'Vender tokens de Nicolò Barella' })).toHaveAttribute('href', '/jugadores/7?operacion=venta')
-    expect(screen.queryByText('Vendido')).not.toBeInTheDocument()
+    expect(within(filas[1]).getByText('(+50,0%)')).toBeInTheDocument()
+    expect(screen.getByText('Valuado al 19/10/2026')).toBeInTheDocument()
   })
 
   it('invita a comprar cuando no hay tokens', async () => {
