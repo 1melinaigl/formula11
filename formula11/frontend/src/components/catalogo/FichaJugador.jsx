@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import PosicionJugador from './PosicionJugador'
 import { posiciones } from './posiciones'
 
@@ -12,6 +13,7 @@ export default function FichaJugador({ jugador, volver }) {
         <dt>Liga</dt><dd>{jugador.liga}</dd>
         <dt>Posición</dt><dd>{jugador.posicionNombre || posiciones[jugador.posicion] || jugador.posicion || 'No informada'}</dd>
       </dl>
+      <Link className="btn quote-link" to={`/jugadores/${jugador.id}`}>Ver cotizaciones</Link>
       <button className="btn ghost back-to-list" type="button" onClick={volver}>Volver a la lista</button>
     </article>
   )

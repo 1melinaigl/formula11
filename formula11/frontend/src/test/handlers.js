@@ -39,4 +39,12 @@ export const handlers = [
     totalElements: 0,
     totalPages: 0,
   })),
+  http.get('/api/jugadores/:id', ({ params }) => HttpResponse.json({
+    id: Number(params.id),
+    nombre: 'Nicolò Barella',
+    equipo: 'FC Internazionale Milano',
+    liga: 'Serie A',
+    posicion: 'MED',
+  })),
+  http.get('/api/jugadores/:id/cotizaciones', () => HttpResponse.json([])),
 ]
