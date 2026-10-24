@@ -67,4 +67,13 @@ export const handlers = [
     estrategia: new URL(request.url).searchParams.get('estrategia') || 'RENDIMIENTO_POSICION',
     cotizaciones: [],
   })),
+  http.get('/api/usuarios/:id/portfolio', () => HttpResponse.json({ saldo: 100, tenencias: [] })),
+  http.post('/api/ordenes/compra', async ({ request }) => {
+    const { cantidad } = await request.json()
+    return HttpResponse.json({ id: 1, tipo: 'COMPRA', cantidad, precio: 1, total: cantidad }, { status: 201 })
+  }),
+  http.post('/api/ordenes/venta', async ({ request }) => {
+    const { cantidad } = await request.json()
+    return HttpResponse.json({ id: 2, tipo: 'VENTA', cantidad, precio: 1, total: cantidad }, { status: 201 })
+  }),
 ]
