@@ -30,7 +30,8 @@ function ContenidoHistorial({ operaciones, tipo }) {
 export default function HistorialPage() {
   const { usuario } = useSesion()
   const navigate = useNavigate()
-  const historial = useHistorial()
+  const esSuperusuario = usuario?.rol === 'SUPERUSUARIO'
+  const historial = useHistorial({ habilitado: !esSuperusuario })
 
   useEffect(() => {
     const volver = (event) => { if (event.key === 'Escape') navigate('/portfolio') }
@@ -47,16 +48,25 @@ export default function HistorialPage() {
           <div><p className="eyebrow"></p><h1 className="panel-heading">Historial de operaciones</h1></div>
           <button className="btn ghost" type="button" onClick={() => navigate('/portfolio')}>Mi portfolio</button>
         </div>
-        <div className="ranking-filters" role="group" aria-label="Filtrar por tipo de operación">
-          {FILTROS.map(([codigo, nombre]) => (
-            <button aria-pressed={historial.tipo === codigo} className="filter-chip" key={codigo || 'todas'} type="button" onClick={() => historial.cambiarTipo(codigo)}>{nombre}</button>
-          ))}
-        </div>
-        {historial.cargando && <EstadoCarga mensaje="Cargando operaciones..." />}
-        {!historial.cargando && historial.error && <AvisoError error={historial.error} />}
-        {!historial.cargando && !historial.error && <ContenidoHistorial operaciones={historial.operaciones} tipo={historial.tipo} />}
-        {!historial.cargando && !historial.error && historial.totalPages > 1 && (
-          <PaginacionCatalogo cambiarPagina={historial.cambiarPagina} etiqueta="Paginación del historial" page={historial.page} totalPages={historial.totalPages} />
+        {esSuperusuario ? (
+          <div className="empty-state" role="status">
+            <h2>Sin operaciones propias</h2>
+            <p>El superusuario es la contraparte del mercado y no tiene operaciones propias.</p>
+          </div>
+        ) : (
+          <>
+          <div className="ranking-filters" role="group" aria-label="Filtrar por tipo de operación">
+            {FILTROS.map(([codigo, nombre]) => (
+              <button aria-pressed={historial.tipo === codigo} className="filter-chip" key={codigo || 'todas'} type="button" onClick={() => historial.cambiarTipo(codigo)}>{nombre}</button>
+            ))}
+          </div>
+          {historial.cargando && <EstadoCarga mensaje="Cargando operaciones..." />}
+          {!historial.cargando && historial.error && <AvisoError error={historial.error} />}
+          {!historial.cargando && !historial.error && <ContenidoHistorial operaciones={historial.operaciones} tipo={historial.tipo} />}
+          {!historial.cargando && !historial.error && historial.totalPages > 1 && (
+            <PaginacionCatalogo cambiarPagina={historial.cambiarPagina} etiqueta="Paginación del historial" page={historial.page} totalPages={historial.totalPages} />
+          )}
+          </>
         )}
       </div>
     </section>

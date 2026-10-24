@@ -123,3 +123,133 @@ describe('historial de operaciones', () => {
     window.history.pushState({}, '', '/')
   })
 })
+
+function renderComo(usuario, ruta = '/operaciones') {
+  window.history.pushState({}, '', ruta)
+  window.sessionStorage.setItem('formula11.session', JSON.stringify({ token: 'historial-token', usuario }))
+  return render(<SesionProvider><App /></SesionProvider>)
+}
+
+describe('historial: precio inicial, roles, paginación y estados (007)', () => {
+  beforeEach(() => window.sessionStorage.clear())
+
+  it('marca las operaciones hechas al precio inicial', async () => {
+    server.use(http.get('/api/usuarios/:id/transacciones', () => HttpResponse.json(pagina([venta, compra]))))
+    renderHistorial()
+    const [, filaVenta, filaCompra] = within(await screen.findByRole('table', { name: 'Historial de operaciones' })).getAllByRole('row')
+    expect(within(filaCompra).getByText('(precio inicial)')).toBeInTheDocument()
+    expect(within(filaVenta).queryByText('(precio inicial)')).not.toBeInTheDocument()
+  })
+
+  it('al superusuario le muestra un aviso y no consulta la API', async () => {
+    let consultas = 0
+    server.use(http.get('/api/usuarios/:id/transacciones', () => { consultas += 1; return HttpResponse.json(pagina([compra])) }))
+    renderComo({ id: 1, nombre: 'Admin', rol: 'SUPERUSUARIO' })
+    expect(await screen.findByText('El superusuario es la contraparte del mercado y no tiene operaciones propias.')).toBeInTheDocument()
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+    expect(consultas).toBe(0)
+  })
+
+  it('vuelve una sola vez a la última página válida si la pedida quedó fuera de rango', async () => {
+    const paginas = []
+    server.use(http.get('/api/usuarios/:id/transacciones', ({ request }) => {
+      const page = Number(new URL(request.url).searchParams.get('page'))
+      paginas.push(page)
+      // Hasta pedir la página 3 hay 21 operaciones; ahí el total ya bajó a 11 (2 páginas).
+      const encogio = paginas.includes(2)
+      if (page === 0) return HttpResponse.json({ content: [venta], page: 0, size: 10, totalElements: 21, totalPages: 3 })
+      if (page === 1) return HttpResponse.json({ content: [compra], page: 1, size: 10, totalElements: encogio ? 11 : 21, totalPages: encogio ? 2 : 3 })
+      return HttpResponse.json({ content: [], page, size: 10, totalElements: 11, totalPages: 2 })
+    }))
+    const user = userEvent.setup()
+    renderHistorial()
+    await screen.findByRole('table')
+    await user.click(screen.getByRole('button', { name: 'Siguiente' }))
+    await screen.findByText('Página 2 de 3')
+    await user.click(screen.getByRole('button', { name: 'Siguiente' }))
+
+    expect(await screen.findByRole('link', { name: 'Harry Kane' })).toBeInTheDocument()
+    expect(screen.getByText('Página 2 de 2')).toBeInTheDocument()
+    expect(paginas).toEqual([0, 1, 2, 1])
+  })
+
+  it('una respuesta lenta del filtro anterior no pisa la del filtro vigente', async () => {
+    const pendientes = {}
+    server.use(http.get('/api/usuarios/:id/transacciones', ({ request }) => {
+      const tipo = new URL(request.url).searchParams.get('tipo') ?? 'TODAS'
+      if (tipo === 'TODAS' && !pendientes.primera) {
+        pendientes.primera = true
+        return HttpResponse.json(pagina([venta, compra]))
+      }
+      return new Promise((resolve) => { pendientes[tipo] = resolve })
+    }))
+    const user = userEvent.setup()
+    renderHistorial()
+    await screen.findByRole('table')
+
+    await user.click(screen.getByRole('button', { name: 'Compras' }))
+    await user.click(screen.getByRole('button', { name: 'Ventas' }))
+    pendientes.VENTA(HttpResponse.json(pagina([venta])))
+    expect(await screen.findByRole('link', { name: 'Nicolò Barella' })).toBeInTheDocument()
+    pendientes.COMPRA(HttpResponse.json(pagina([compra])))
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(screen.queryByRole('link', { name: 'Harry Kane' })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Nicolò Barella' })).toBeInTheDocument()
+  })
+
+  it('pasar de página conserva el filtro activo', async () => {
+    const consultas = []
+    server.use(http.get('/api/usuarios/:id/transacciones', ({ request }) => {
+      const params = new URL(request.url).searchParams
+      consultas.push(`${params.get('page')}|${params.get('tipo') ?? ''}`)
+      return HttpResponse.json(pagina([venta], Number(params.get('page')), 2))
+    }))
+    const user = userEvent.setup()
+    renderHistorial()
+    await screen.findByRole('table')
+    await user.click(screen.getByRole('button', { name: 'Ventas' }))
+    await screen.findByRole('table')
+    await user.click(screen.getByRole('button', { name: 'Siguiente' }))
+    await screen.findByText('Página 2 de 2')
+    expect(consultas).toEqual(['0|', '0|VENTA', '1|VENTA'])
+  })
+
+  it('muestra el estado de carga', async () => {
+    let responder
+    server.use(http.get('/api/usuarios/:id/transacciones', () => new Promise((resolve) => { responder = resolve })))
+    renderHistorial()
+    expect(await screen.findByText('Cargando operaciones...')).toBeInTheDocument()
+    responder(HttpResponse.json(pagina([compra])))
+    expect(await screen.findByRole('table')).toBeInTheDocument()
+  })
+
+  it('un 401 limpia la sesión y muestra el acceso denegado', async () => {
+    server.use(http.get('/api/usuarios/:id/transacciones', () => HttpResponse.json(
+      { mensaje: 'Sesión vencida.', timestamp: '2026-10-24T12:00:00Z', correlationId: 'hist-401' },
+      { status: 401 },
+    )))
+    renderHistorial()
+    expect(await screen.findByRole('heading', { name: 'Acceso denegado' })).toBeInTheDocument()
+    expect(window.sessionStorage.getItem('formula11.session')).toBeNull()
+  })
+
+  it('llega desde "Ver historial" después de una compra y vuelve al portfolio con Escape', async () => {
+    const user = userEvent.setup()
+    renderHistorial('/jugadores/7')
+    const panel = within(await screen.findByRole('region', { name: 'Operar' }))
+    await user.click(panel.getByRole('button', { name: 'Comprar 1 token' }))
+    await user.click(await panel.findByRole('link', { name: 'Ver historial' }))
+    expect(await screen.findByRole('heading', { name: 'Historial de operaciones' })).toBeInTheDocument()
+
+    await user.keyboard('{Escape}')
+    expect(await screen.findByRole('heading', { name: 'Mi portfolio' })).toBeInTheDocument()
+    window.history.pushState({}, '', '/')
+  })
+
+  it('no muestra el token de la sesión en la página', async () => {
+    server.use(http.get('/api/usuarios/:id/transacciones', () => HttpResponse.json(pagina([compra]))))
+    renderHistorial()
+    await screen.findByRole('table')
+    expect(document.body.textContent).not.toContain('historial-token')
+  })
+})

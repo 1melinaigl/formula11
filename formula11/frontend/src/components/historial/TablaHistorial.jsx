@@ -33,7 +33,10 @@ export default function TablaHistorial({ operaciones }) {
                 </span>
               </td>
               <td className="ranking-number">{operacion.cantidad}</td>
-              <td className="ranking-number history-optional">{formatearPrecio(operacion.precioUnitario)}</td>
+              <td className="ranking-number history-optional">
+                {formatearPrecio(operacion.precioUnitario)}
+                {operacion.estrategia == null && <small className="history-initial"> (precio inicial)</small>}
+              </td>
               <td className="ranking-number"><span className={`quote-change ${efecto < 0 ? 'down' : 'up'}`}>{formatearConSigno(efecto)}</span></td>
               <td className="ranking-number history-optional">{formatearPrecio(operacion.saldoPosterior)}</td>
               <td className="history-optional">{operacion.contraparte || '—'}</td>

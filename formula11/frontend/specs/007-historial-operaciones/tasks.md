@@ -26,9 +26,9 @@ Frontend único en `formula11/frontend`: código en `src/`, pruebas en `tests/`.
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-- [ ] T001 [P] Verificar que `src/api/endpoints.js` exponga `transacciones(usuarioId)` y que la consulta no envíe `sort` ni `jugadorId` (FR-001, FR-002).
-- [ ] T002 [P] Verificar en `src/test/handlers.js` la respuesta por defecto con la forma de `TransaccionesPageResponse`, sin ids ni parámetros especiales.
-- [ ] T003 [P] Verificar que `src/components/catalogo/PaginacionCatalogo.jsx` acepte la prop `etiqueta` y muestre "Página N de M".
+- [X] T001 [P] Verificar que `src/api/endpoints.js` exponga `transacciones(usuarioId)` y que la consulta no envíe `sort` ni `jugadorId` (FR-001, FR-002).
+- [X] T002 [P] Verificar en `src/test/handlers.js` la respuesta por defecto con la forma de `TransaccionesPageResponse`, sin ids ni parámetros especiales.
+- [X] T003 [P] Verificar que `src/components/catalogo/PaginacionCatalogo.jsx` acepte la prop `etiqueta` y muestre "Página N de M".
 
 ---
 
@@ -36,9 +36,9 @@ Frontend único en `formula11/frontend`: código en `src/`, pruebas en `tests/`.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Verificar en `src/components/historial/historial.js` la normalización de `OperacionResponse`, el descarte de tipos desconocidos, el formato de fechas de FR-004 y `efectoEnSaldo` con el `total` del backend (FR-003, FR-004, FR-007).
-- [ ] T005 Agregar en `src/hooks/useHistorial.js` la recuperación única de una página fuera de rango (`totalElements` > 0, `content` vacío y `page` ≥ `totalPages`).
-- [ ] T006 Agregar en `src/hooks/useHistorial.js` la opción `habilitado` para no consultar la API cuando el rol es `SUPERUSUARIO` (FR-006).
+- [X] T004 Verificar en `src/components/historial/historial.js` la normalización de `OperacionResponse`, el descarte de tipos desconocidos, el formato de fechas de FR-004 y `efectoEnSaldo` con el `total` del backend (FR-003, FR-004, FR-007).
+- [X] T005 Agregar en `src/hooks/useHistorial.js` la recuperación única de una página fuera de rango (`totalElements` > 0, `content` vacío y `page` ≥ `totalPages`).
+- [X] T006 Agregar en `src/hooks/useHistorial.js` la opción `habilitado` para no consultar la API cuando el rol es `SUPERUSUARIO` (FR-006).
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -52,17 +52,17 @@ Frontend único en `formula11/frontend`: código en `src/`, pruebas en `tests/`.
 
 ### Tests for User Story 1
 
-- [ ] T007 [P] [US1] Verificar en `tests/pages/historial.test.jsx` la tabla, la consulta enviada (`page`, `size`, sin `sort`) con el `usuario.id` de la sesión y la navegación portfolio ↔ historial (FR-002, FR-009).
-- [ ] T008 [P] [US1] Agregar en `tests/pages/historial.test.jsx` un test de la marca "(precio inicial)" para una operación con `estrategia` en null y su ausencia en las demás.
-- [ ] T009 [P] [US1] Agregar en `tests/pages/historial.test.jsx` un test con `rol: 'SUPERUSUARIO'` que muestre el aviso y no consulte la API (FR-006).
-- [ ] T010 [P] [US1] Agregar en `tests/pages/historial.test.jsx` un test de página fuera de rango que vuelva una sola vez a la última página válida.
-- [ ] T025 [P] [US1] Agregar en `tests/pages/historial.test.jsx` un test donde, desde una compra confirmada en el detalle, el link "Ver historial" lleva a `/operaciones`, y otro donde `Escape` en el historial vuelve al portfolio.
+- [X] T007 [P] [US1] Verificar en `tests/pages/historial.test.jsx` la tabla, la consulta enviada (`page`, `size`, sin `sort`) con el `usuario.id` de la sesión y la navegación portfolio ↔ historial (FR-002, FR-009).
+- [X] T008 [P] [US1] Agregar en `tests/pages/historial.test.jsx` un test de la marca "(precio inicial)" para una operación con `estrategia` en null y su ausencia en las demás.
+- [X] T009 [P] [US1] Agregar en `tests/pages/historial.test.jsx` un test con `rol: 'SUPERUSUARIO'` que muestre el aviso y no consulte la API (FR-006).
+- [X] T010 [P] [US1] Agregar en `tests/pages/historial.test.jsx` un test de página fuera de rango que vuelva una sola vez a la última página válida.
+- [X] T025 [P] [US1] Agregar en `tests/pages/historial.test.jsx` un test donde, desde una compra confirmada en el detalle, el link "Ver historial" lleva a `/operaciones`, y otro donde `Escape` en el historial vuelve al portfolio.
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Mostrar en `src/components/historial/TablaHistorial.jsx` la marca "(precio inicial)" junto al precio unitario cuando `estrategia` es null.
-- [ ] T012 [US1] Mostrar en `src/pages/HistorialPage.jsx` el aviso del superusuario y pasarle `habilitado` a `useHistorial`.
-- [ ] T013 [US1] Verificar en `src/components/historial/TablaHistorial.jsx` el `caption`, los encabezados, el tipo como texto y el movimiento con signo y color (FR-007, FR-008).
+- [X] T011 [US1] Mostrar en `src/components/historial/TablaHistorial.jsx` la marca "(precio inicial)" junto al precio unitario cuando `estrategia` es null.
+- [X] T012 [US1] Mostrar en `src/pages/HistorialPage.jsx` el aviso del superusuario y pasarle `habilitado` a `useHistorial`.
+- [X] T013 [US1] Verificar en `src/components/historial/TablaHistorial.jsx` el `caption`, los encabezados, el tipo como texto y el movimiento con signo y color (FR-007, FR-008).
 
 **Checkpoint**: La tabla funciona de forma independiente.
 
@@ -76,13 +76,13 @@ Frontend único en `formula11/frontend`: código en `src/`, pruebas en `tests/`.
 
 ### Tests for User Story 2
 
-- [ ] T014 [P] [US2] Verificar en `tests/pages/historial.test.jsx` los filtros, la vuelta a la página 1 y que repetir el filtro activo no consulta.
-- [ ] T015 [P] [US2] Agregar en `tests/pages/historial.test.jsx` un test donde la respuesta del filtro anterior llega tarde y no reemplaza la del filtro vigente.
-- [ ] T016 [P] [US2] Agregar en `tests/pages/historial.test.jsx` un test de que pasar de página conserva el filtro activo.
+- [X] T014 [P] [US2] Verificar en `tests/pages/historial.test.jsx` los filtros, la vuelta a la página 1 y que repetir el filtro activo no consulta.
+- [X] T015 [P] [US2] Agregar en `tests/pages/historial.test.jsx` un test donde la respuesta del filtro anterior llega tarde y no reemplaza la del filtro vigente.
+- [X] T016 [P] [US2] Agregar en `tests/pages/historial.test.jsx` un test de que pasar de página conserva el filtro activo.
 
 ### Implementation for User Story 2
 
-- [ ] T017 [US2] Verificar en `src/hooks/useHistorial.js` que la página conserve el filtro y que las respuestas de consultas no vigentes se descarten.
+- [X] T017 [US2] Verificar en `src/hooks/useHistorial.js` que la página conserve el filtro y que las respuestas de consultas no vigentes se descarten.
 
 **Checkpoint**: Filtro y paginación funcionan juntos.
 
@@ -96,12 +96,12 @@ Frontend único en `formula11/frontend`: código en `src/`, pruebas en `tests/`.
 
 ### Tests for User Story 3
 
-- [ ] T018 [P] [US3] Verificar en `tests/pages/historial.test.jsx` el estado vacío, el error del backend y la ausencia de consultas sin sesión.
-- [ ] T019 [P] [US3] Agregar en `tests/pages/historial.test.jsx` un test del estado de carga y uno de `401` que limpie la sesión.
+- [X] T018 [P] [US3] Verificar en `tests/pages/historial.test.jsx` el estado vacío, el error del backend y la ausencia de consultas sin sesión.
+- [X] T019 [P] [US3] Agregar en `tests/pages/historial.test.jsx` un test del estado de carga y uno de `401` que limpie la sesión.
 
 ### Implementation for User Story 3
 
-- [ ] T020 [US3] Verificar en `src/pages/HistorialPage.jsx` los textos de carga y vacío por filtro del spec.
+- [X] T020 [US3] Verificar en `src/pages/HistorialPage.jsx` los textos de carga y vacío por filtro del spec.
 
 **Checkpoint**: Todas las historias funcionan de forma independiente.
 
@@ -109,9 +109,9 @@ Frontend único en `formula11/frontend`: código en `src/`, pruebas en `tests/`.
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T021 [P] Agregar en `tests/pages/historial.test.jsx` una verificación de que el token de la sesión no aparece en la página (FR-009).
-- [ ] T022 [P] Verificar en `src/styles/screens.css` las columnas ocultas hasta 760px (FR-005).
-- [ ] T023 Correr `npm test`, `npm run lint` y `npm run build` desde `formula11/frontend`.
+- [X] T021 [P] Agregar en `tests/pages/historial.test.jsx` una verificación de que el token de la sesión no aparece en la página (FR-009).
+- [X] T022 [P] Verificar en `src/styles/screens.css` las columnas ocultas hasta 760px (FR-005).
+- [X] T023 Correr `npm test`, `npm run lint` y `npm run build` desde `formula11/frontend`.
 - [ ] T024 Ejecutar manualmente los escenarios de `specs/007-historial-operaciones/quickstart.md` con el backend y registrar desviaciones en `plan.md`.
 
 ---

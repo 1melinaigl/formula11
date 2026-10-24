@@ -204,6 +204,7 @@
 .history-type { display: inline-block; padding: 2px 8px; border: 1px solid currentColor; font-size: 12px; font-weight: 600; text-transform: uppercase; }
 .history-type.compra { color: var(--cyan); }
 .history-type.venta { color: var(--gold); }
+.history-initial { color: var(--muted); font-weight: 400; }
 
 @media (max-width: 760px) {
   .history-optional, .history-table .player-position { display: none; }
