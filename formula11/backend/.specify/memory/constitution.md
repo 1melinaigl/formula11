@@ -61,6 +61,16 @@ Un requerimiento está terminado cuando:
 - Nombres del dominio en español, sin acentos ni ñ en identificadores (ej. `Cotizacion`, `Transaccion`, `Jugador`, `Portfolio`).
 - Términos técnicos y normativos en inglés (ej. `Scraper`, `Job`, `Scheduler`, `Cache`, `Adapters`).
 
+## 9. Tiempo controlable y reproducible
+
+- Todo Service que use la fecha u hora actual debe recibir un `java.time.Clock` inyectado.
+- Nunca se debe llamar directamente a `LocalDate.now()` ni a `Instant.now()` desde un Service. Las fechas y horas actuales deben obtenerse a partir del `Clock` inyectado para permitir simular fechas en tests, procesar cargas históricas y reproducir escenarios de demo.
+
+## 10. Operaciones de tokens reutilizables
+
+- La compra y la venta de tokens deben implementarse como métodos reutilizables del Service.
+- El Controller solo traduce HTTP y delega en esos métodos; cualquier otro disparador, como una compra iniciada desde una alerta, debe invocar el mismo método del Service y no duplicar la lógica de negocio.
+
 ---
 
-**Version**: 2.0.2 | **Ratified**: 2026-08-31 | **Last Amended**: 2026-09-23
+**Version**: 2.1.0 | **Ratified**: 2026-08-31 | **Last Amended**: 2026-10-24
