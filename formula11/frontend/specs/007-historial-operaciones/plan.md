@@ -47,7 +47,9 @@ no cambia.
   aceptada en el spec).
 - **II. Contratos del backend como autoridad**: PASS. Fuente:
   `backend/specs/005-contratos-entrega2/contracts/openapi.yaml` (constitución v1.1.0).
-  No se envía `sort`, que el contrato no define; `jugadorId` existe pero queda sin uso.
+  No se envía `sort`, que el contrato no define. `construirConsultaHistorial` todavía
+  acepta `jugadorId` (y un test existente lo cubre), pero la UI no lo usa ni lo envía:
+  queda como capacidad del helper para una feature futura, sin modificar ese test.
 - **III. Capas y límites explícitos**: PASS. `HistorialPage` compone, `useHistorial`
   coordina la consulta paginada, `historial.js` normaliza y formatea.
 - **IV. Validación, seguridad y trazabilidad**: PASS. Errores en español con

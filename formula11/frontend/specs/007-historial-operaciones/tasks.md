@@ -56,6 +56,7 @@ Frontend único en `formula11/frontend`: código en `src/`, pruebas en `tests/`.
 - [ ] T008 [P] [US1] Agregar en `tests/pages/historial.test.jsx` un test de la marca "(precio inicial)" para una operación con `estrategia` en null y su ausencia en las demás.
 - [ ] T009 [P] [US1] Agregar en `tests/pages/historial.test.jsx` un test con `rol: 'SUPERUSUARIO'` que muestre el aviso y no consulte la API (FR-006).
 - [ ] T010 [P] [US1] Agregar en `tests/pages/historial.test.jsx` un test de página fuera de rango que vuelva una sola vez a la última página válida.
+- [ ] T025 [P] [US1] Agregar en `tests/pages/historial.test.jsx` un test donde, desde una compra confirmada en el detalle, el link "Ver historial" lleva a `/operaciones`, y otro donde `Escape` en el historial vuelve al portfolio.
 
 ### Implementation for User Story 1
 
