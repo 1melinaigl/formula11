@@ -4,6 +4,7 @@ export const ESTRATEGIAS = {
   CONSISTENCIA: { nombre: 'Consistencia', color: '#f4e9b8' },
 }
 const COLORES_EXTRA = ['#3ddc84', '#ff3b4e', '#b9d4b0']
+const CODIGOS_ESTRATEGIA = Object.keys(ESTRATEGIAS)
 
 const formatoPrecio = new Intl.NumberFormat('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const formatoPorcentaje = new Intl.NumberFormat('es-AR', { minimumFractionDigits: 1, maximumFractionDigits: 1, signDisplay: 'exceptZero' })
@@ -34,6 +35,16 @@ export function normalizarCotizaciones(data) {
     .sort((a, b) => a.fecha.localeCompare(b.fecha))
 }
 
+export function obtenerEstrategiaActiva(estrategias) {
+  const activas = (Array.isArray(estrategias) ? estrategias : []).filter((estrategia) => estrategia?.activa === true)
+  if (activas.length !== 1 || !CODIGOS_ESTRATEGIA.includes(activas[0].codigo)) {
+    const error = new Error('No se pudo identificar una única estrategia activa.')
+    error.api = { mensaje: error.message }
+    throw error
+  }
+  return activas[0].codigo
+}
+
 export function estrategiasPresentes(cotizaciones) {
   const presentes = [...new Set(cotizaciones.map((cotizacion) => cotizacion.estrategia))]
   const conocidas = Object.keys(ESTRATEGIAS)
@@ -55,11 +66,11 @@ export function seriesPorFecha(cotizaciones) {
   return [...filas.values()].sort((a, b) => a.fecha.localeCompare(b.fecha))
 }
 
-export function resumenPorEstrategia(cotizaciones) {
-  return estrategiasPresentes(cotizaciones).map((estrategia) => {
+export function resumenPorEstrategia(cotizaciones, estrategias = estrategiasPresentes(cotizaciones)) {
+  return estrategias.map((estrategia) => {
     const propias = cotizaciones.filter((cotizacion) => cotizacion.estrategia === estrategia)
     const actual = propias.at(-1)
-    return { estrategia, actual, variacion: actual.variacion ?? null }
+    return { estrategia, actual: actual || null, variacion: actual?.variacion ?? null }
   })
 }
 

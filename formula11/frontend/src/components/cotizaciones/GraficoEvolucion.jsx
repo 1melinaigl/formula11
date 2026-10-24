@@ -3,7 +3,7 @@ import { colorEstrategia, estrategiasPresentes, formatearFecha, formatearPrecio,
 
 const EJE = { fill: '#b9d4b0', fontSize: 12 }
 
-export default function GraficoEvolucion({ cotizaciones }) {
+export default function GraficoEvolucion({ cotizaciones, estrategiaActiva }) {
   const estrategias = estrategiasPresentes(cotizaciones)
   const datos = seriesPorFecha(cotizaciones)
 
@@ -19,7 +19,7 @@ export default function GraficoEvolucion({ cotizaciones }) {
             labelFormatter={(fecha) => formatearFecha(fecha)}
             formatter={(precio, estrategia) => [`${formatearPrecio(precio)} créditos`, nombreEstrategia(estrategia)]}
           />
-          {estrategias.length > 1 && <Legend formatter={nombreEstrategia} />}
+          {estrategias.length > 1 && <Legend formatter={(estrategia) => `${nombreEstrategia(estrategia)}${estrategia === estrategiaActiva ? ' · Activa' : ''}`} />}
           {estrategias.map((estrategia, indice) => (
             <Line
               connectNulls

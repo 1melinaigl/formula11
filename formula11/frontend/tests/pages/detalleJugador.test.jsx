@@ -89,8 +89,45 @@ describe('detalle de jugador con cotizaciones', () => {
     expect(within(rendimiento).getByText('Rendimiento por posición')).toBeInTheDocument()
     expect(within(consistencia).getByText('Consistencia')).toBeInTheDocument()
     expect(within(consistencia).getByText('-9,5% vs. semana anterior')).toHaveClass('down')
+    expect(within(rendimiento).getByText(/Activa/)).toBeInTheDocument()
     expect(estrategiasPedidas.sort()).toEqual(['CONSISTENCIA', 'RENDIMIENTO_POSICION'])
     expect(within(screen.getByRole('table')).getAllByRole('row')).toHaveLength(5)
+  })
+
+  it('mantiene visible la activa si falla la consulta de la alternativa', async () => {
+    server.use(
+      http.get('/api/jugadores/:id/cotizaciones', ({ request }) => {
+        const estrategia = new URL(request.url).searchParams.get('estrategia')
+        if (estrategia === 'CONSISTENCIA') {
+          return HttpResponse.json(
+            { mensaje: 'No se pudo consultar la estrategia alternativa.', timestamp: '2026-10-24T12:00:00Z', correlationId: 'alternative-500' },
+            { status: 500 },
+          )
+        }
+        return HttpResponse.json(historial.RENDIMIENTO_POSICION)
+      }),
+    )
+    renderDetalle('/jugadores/7', true, 'SUPERUSUARIO')
+
+    const resumen = await screen.findByRole('list', { name: 'Cotización vigente' })
+    expect(within(resumen).getByText('Rendimiento por posición')).toBeInTheDocument()
+    expect(screen.getByRole('alert')).toHaveTextContent('No se pudo consultar la estrategia alternativa.')
+    expect(screen.getByText(/alternative-500/)).toBeInTheDocument()
+  })
+
+  it('muestra Sin cotizaciones para la alternativa sin inventar un precio', async () => {
+    server.use(http.get('/api/jugadores/:id/cotizaciones', ({ request }) => {
+      const estrategia = new URL(request.url).searchParams.get('estrategia')
+      return HttpResponse.json(estrategia === 'CONSISTENCIA'
+        ? { jugadorId: 7, estrategia, cotizaciones: [] }
+        : historial.RENDIMIENTO_POSICION)
+    }))
+    renderDetalle('/jugadores/7', true, 'SUPERUSUARIO')
+
+    const resumen = await screen.findByRole('list', { name: 'Cotización vigente' })
+    const consistencia = within(resumen).getAllByRole('listitem')[1]
+    expect(within(consistencia).getByText('Sin cotizaciones')).toBeInTheDocument()
+    expect(within(consistencia).queryByText(/créditos/)).not.toBeInTheDocument()
   })
 
   it('indica que no hay cotización anterior en la primera semana', async () => {
@@ -118,6 +155,44 @@ describe('detalle de jugador con cotizaciones', () => {
     expect(await screen.findByRole('heading', { name: 'Nicolò Barella' })).toBeInTheDocument()
     expect(screen.getByRole('alert')).toHaveTextContent('No se pudieron obtener las cotizaciones.')
     expect(screen.getByText(/quotes-500/)).toBeInTheDocument()
+  })
+
+  it('limpia la sesión cuando una consulta protegida responde 401', async () => {
+    const response = await fetch('/api/jugadores/401', { headers: { 'X-Correlation-Id': 'session-401' } })
+    const error = await response.json()
+    expect(response.status).toBe(401)
+    expect(error.mensaje).toBe('La sesión expiró.')
+    expect(error.correlationId).toBe('session-401')
+
+    renderDetalle('/jugadores/401')
+    expect(await screen.findByRole('heading', { name: 'Acceso denegado' })).toBeInTheDocument()
+    expect(window.sessionStorage.getItem('formula11.session')).toBeNull()
+  })
+
+  it('conserva mensaje y correlationId para un 403 de estrategia alternativa', async () => {
+    const response = await fetch('/api/jugadores/7/cotizaciones?estrategia=NO_PERMITIDA', {
+      headers: { 'X-Correlation-Id': 'alternative-403' },
+    })
+    const error = await response.json()
+    expect(response.status).toBe(403)
+    expect(error.mensaje).toBe('La estrategia no está permitida para este usuario.')
+    expect(error.correlationId).toBe('alternative-403')
+  })
+
+  it('muestra el error trazable si falla GET /api/estrategias', async () => {
+    server.use(http.get('/api/estrategias', ({ request }) => HttpResponse.json(
+      { mensaje: 'No se pudo obtener la configuración de estrategias.', timestamp: '2026-10-24T12:00:00Z', correlationId: request.headers.get('X-Correlation-Id') },
+      { status: 503 },
+    )))
+    server.use(http.get('/api/jugadores/:id/cotizaciones', ({ request }) => {
+      const estrategia = new URL(request.url).searchParams.get('estrategia')
+      return HttpResponse.json(historial[estrategia])
+    }))
+    renderDetalle('/jugadores/7', true, 'SUPERUSUARIO')
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('No se pudo obtener la configuración de estrategias.')
+    expect(screen.getByText(/correlationId:/)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Nicolò Barella' })).toBeInTheDocument()
   })
 
   it('informa el error si el jugador no existe', async () => {

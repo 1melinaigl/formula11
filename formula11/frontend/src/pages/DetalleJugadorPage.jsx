@@ -8,25 +8,29 @@ import EstadoVacio from '../components/comun/EstadoVacio'
 import GraficoEvolucion from '../components/cotizaciones/GraficoEvolucion'
 import ResumenCotizacion from '../components/cotizaciones/ResumenCotizacion'
 import TablaCotizaciones from '../components/cotizaciones/TablaCotizaciones'
-import { resumenPorEstrategia } from '../components/cotizaciones/cotizaciones'
+import { ESTRATEGIAS, resumenPorEstrategia } from '../components/cotizaciones/cotizaciones'
 import { useDetalleJugador } from '../hooks/useDetalleJugador'
 import { useSesion } from '../hooks/useSesion'
 import AccesoDenegadoPage from './AccesoDenegadoPage'
 
-function PanelCotizaciones({ cotizaciones, error }) {
-  if (error) return <AvisoError error={error} />
+function PanelCotizaciones({ cotizaciones, error, estrategiaActiva, puedeComparar }) {
+  if (error && cotizaciones.length === 0) return <AvisoError error={error} />
   if (cotizaciones.length === 0) return <EstadoVacio titulo="Sin cotizaciones" detalle="Este jugador todavía no tiene cotizaciones calculadas." />
   return (
     <>
-      <ResumenCotizacion resumen={resumenPorEstrategia(cotizaciones)} />
-      <GraficoEvolucion cotizaciones={cotizaciones} />
+      {error && <AvisoError error={error} />}
+      <ResumenCotizacion
+        resumen={resumenPorEstrategia(cotizaciones, puedeComparar ? Object.keys(ESTRATEGIAS) : undefined)}
+        estrategiaActiva={estrategiaActiva}
+      />
+      <GraficoEvolucion cotizaciones={cotizaciones} estrategiaActiva={estrategiaActiva} />
       <TablaCotizaciones cotizaciones={cotizaciones} />
     </>
   )
 }
 
 function DetalleJugador({ id }) {
-  const { jugador, cotizaciones, cargando, error, errorCotizaciones } = useDetalleJugador(id)
+  const { jugador, cotizaciones, cargando, error, errorCotizaciones, estrategiaActiva, puedeComparar } = useDetalleJugador(id)
 
   if (cargando) return <EstadoCarga mensaje="Cargando jugador..." />
   if (error) return <AvisoError error={error} />
@@ -44,7 +48,7 @@ function DetalleJugador({ id }) {
       </article>
       <section className="player-card quote-panel" aria-labelledby="titulo-cotizaciones">
         <div className="player-card-heading"><span id="titulo-cotizaciones">Evolución de la cotización</span></div>
-        <PanelCotizaciones cotizaciones={cotizaciones} error={errorCotizaciones} />
+        <PanelCotizaciones cotizaciones={cotizaciones} error={errorCotizaciones} estrategiaActiva={estrategiaActiva} puedeComparar={puedeComparar} />
       </section>
     </div>
   )

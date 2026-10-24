@@ -3,6 +3,7 @@ import {
   estrategiasPresentes,
   formatearFecha,
   normalizarCotizaciones,
+  obtenerEstrategiaActiva,
   porcentajeAFraccion,
   resumenPorEstrategia,
   seriesPorFecha,
@@ -53,5 +54,17 @@ describe('helpers de cotizaciones', () => {
   it('formatea fechas ISO sin correrlas por zona horaria', () => {
     expect(formatearFecha('2026-01-01')).toBe('01/01/2026')
     expect(formatearFecha('2026-01-01T00:00:00Z', { corta: true })).toBe('01/01')
+  })
+
+  it('identifica una única estrategia activa', () => {
+    expect(obtenerEstrategiaActiva([
+      { codigo: 'RENDIMIENTO_POSICION', activa: true },
+      { codigo: 'CONSISTENCIA', activa: false },
+    ])).toBe('RENDIMIENTO_POSICION')
+    expect(() => obtenerEstrategiaActiva([])).toThrow('No se pudo identificar')
+    expect(() => obtenerEstrategiaActiva([
+      { codigo: 'RENDIMIENTO_POSICION', activa: true },
+      { codigo: 'CONSISTENCIA', activa: true },
+    ])).toThrow('No se pudo identificar')
   })
 })
