@@ -5,6 +5,14 @@
 **Status**: Draft
 **Input**: Plan de desarrollo Entrega 2, track C: "007-historial-operaciones". Documento de visión §3.4 (el portfolio incluye el historial de operaciones) y endpoint `GET /users/:id/transactions`.
 
+## Clarifications
+
+### Session 2026-10-24
+
+- Q: ¿Qué ve el `SUPERUSUARIO` en el historial de operaciones? → A: No tiene historial propio: si entra a `/operaciones` por la URL ve un aviso y no se consulta la API.
+- Q: ¿El historial ofrece filtrar por jugador? → A: No, queda fuera de alcance; el historial filtra solo por tipo.
+- Q: ¿Cómo se muestra una operación hecha al precio inicial (`estrategia` null)? → A: Con la marca "(precio inicial)" junto al precio unitario; las demás no muestran estrategia.
+
 ## User Scenarios & Testing
 
 ### User Story 1 - Ver mis operaciones (Priority: P1)
@@ -15,8 +23,9 @@ Como usuario autenticado, quiero ver mis compras y ventas para saber qué hice y
 
 1. **Given** el portfolio, **When** pulso "Historial", **Then** navego a `/operaciones`; el encabezado muestra "Historial de operaciones" y "Mi portfolio" vuelve al portfolio (también con `Escape`).
 2. **Given** una compra o venta confirmada en el detalle, **Then** el mensaje de confirmación tiene un link "Ver historial".
-3. **Given** operaciones, **Then** la tabla muestra, de la más reciente a la más antigua: fecha y hora, tipo (Compra/Venta como texto), jugador con link al detalle, tokens, precio unitario, movimiento en el saldo (compra en rojo con signo menos, venta en verde con signo más), saldo final y contraparte.
+3. **Given** operaciones, **Then** la tabla muestra, de la más reciente a la más antigua: fecha y hora, tipo (Compra/Venta como texto), jugador con link al detalle, tokens, precio unitario (con la marca "(precio inicial)" si la operación tiene `estrategia` en null), movimiento en el saldo (compra en rojo con signo menos, venta en verde con signo más), saldo final y contraparte.
 4. **Given** más de una página, **Then** aparece la paginación (10 por página) y se navega con Anterior/Siguiente.
+5. **Given** un `SUPERUSUARIO`, **When** entra a `/operaciones` por la URL, **Then** ve el aviso "El superusuario es la contraparte del mercado y no tiene operaciones propias." y no se consultan las transacciones (tampoco ve el acceso desde el portfolio, que no tiene; ver 006).
 
 ### User Story 2 - Filtrar por tipo (Priority: P2)
 
@@ -30,10 +39,11 @@ Carga; vacío ("Sin operaciones", con mensaje según el filtro y links a ranking
 ## Requirements
 
 - **FR-001**: La ruta vive en `src/api/endpoints.js` (`transacciones`).
-- **FR-002**: La consulta envía `page`, `size=10` y `tipo`/`jugadorId` solo si hay filtro.
+- **FR-002**: La consulta envía `page`, `size=10` y `tipo` solo si hay filtro. El filtro por jugador (`jugadorId`) queda fuera de alcance: la pantalla no lo ofrece ni lo envía.
 - **FR-003**: La respuesta es siempre una página (`content`, `page`, `size`, `totalElements`, `totalPages`); tipos desconocidos se descartan.
 - **FR-004**: Las fechas `YYYY-MM-DD` se muestran sin correrse por zona horaria; los instantes, en hora local de 24 h.
 - **FR-005**: A 375px se ocultan precio, saldo final, contraparte y la insignia de posición, sin desborde horizontal.
+- **FR-006**: El historial es solo para el rol `USUARIO` (una sesión sin `rol` cuenta como `USUARIO`); para el `SUPERUSUARIO` no se consulta la API.
 
 ## Contrato (`backend/specs/005-contratos-entrega2/contracts/openapi.yaml`)
 
