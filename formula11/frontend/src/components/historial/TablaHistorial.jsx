@@ -14,7 +14,8 @@ export default function TablaHistorial({ operaciones }) {
           <th scope="col">Jugador</th>
           <th className="ranking-number" scope="col">Tokens</th>
           <th className="ranking-number history-optional" scope="col">Precio</th>
-          <th className="ranking-number" scope="col">Saldo</th>
+          <th className="ranking-number" scope="col">Movimiento</th>
+          <th className="ranking-number history-optional" scope="col">Saldo final</th>
           <th className="history-optional" scope="col">Contraparte</th>
         </tr>
       </thead>
@@ -32,8 +33,9 @@ export default function TablaHistorial({ operaciones }) {
                 </span>
               </td>
               <td className="ranking-number">{operacion.cantidad}</td>
-              <td className="ranking-number history-optional">{formatearPrecio(operacion.precio)}</td>
+              <td className="ranking-number history-optional">{formatearPrecio(operacion.precioUnitario)}</td>
               <td className="ranking-number"><span className={`quote-change ${efecto < 0 ? 'down' : 'up'}`}>{formatearConSigno(efecto)}</span></td>
+              <td className="ranking-number history-optional">{formatearPrecio(operacion.saldoPosterior)}</td>
               <td className="history-optional">{operacion.contraparte || '—'}</td>
             </tr>
           )

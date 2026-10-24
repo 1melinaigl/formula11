@@ -39,4 +39,4 @@ description: "Task list for Formula11 operations history"
 
 - [X] T013 Estilos responsive; verificado en el navegador (API simulada) sin desborde a 375px.
 - [X] T014 `npm test`, `npm run lint` y `npm run build` en verde.
-- [ ] T015 Alinear ruta, parámetros (`tipo`, `sort`) y forma de la transacción con el contrato `005-contratos-entrega2`.
+- [X] T015 Alinear con el contrato `005-contratos-entrega2`: `OperacionResponse` (precio unitario y saldo posterior), sin `sort` y con `jugadorId` opcional.

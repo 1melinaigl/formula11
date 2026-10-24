@@ -9,30 +9,24 @@ export const TIPOS_OPERACION = {
 
 const formatoFechaHora = new Intl.DateTimeFormat('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
 
-// Acepta transacciones planas o con el jugador anidado, en lista o paginadas.
+// TransaccionesPageResponse: página de OperacionResponse
+// { id, tipo, jugador, cantidad, precioUnitario, total, saldoPosterior, contraparte, fecha, estrategia, version }.
 export function normalizarHistorial(data) {
-  const lista = Array.isArray(data) ? data : data?.content || data?.transacciones || []
-  const operaciones = lista
-    .filter((operacion) => operacion && TIPOS_OPERACION[String(operacion.tipo).toUpperCase()])
-    .map((operacion) => {
-      const jugador = operacion.jugador || {}
-      const cantidad = Number(operacion.cantidad ?? 0)
-      const precio = Number(operacion.precio ?? 0)
-      return {
-        ...operacion,
-        tipo: String(operacion.tipo).toUpperCase(),
-        jugadorId: operacion.jugadorId ?? jugador.id,
-        nombre: operacion.nombre ?? jugador.nombre ?? `Jugador ${operacion.jugadorId ?? jugador.id}`,
-        posicion: operacion.posicion ?? jugador.posicion,
-        cantidad,
-        precio,
-        total: operacion.total == null ? cantidad * precio : Number(operacion.total),
-      }
-    })
   return {
-    operaciones,
-    page: Array.isArray(data) ? 0 : Number(data?.page ?? 0),
-    totalPages: Array.isArray(data) ? (operaciones.length ? 1 : 0) : Number(data?.totalPages ?? (operaciones.length ? 1 : 0)),
+    operaciones: (data?.content || [])
+      .filter((operacion) => TIPOS_OPERACION[operacion?.tipo])
+      .map(({ jugador = {}, ...operacion }) => ({
+        ...operacion,
+        jugadorId: jugador.id,
+        nombre: jugador.nombre,
+        posicion: jugador.posicion,
+        cantidad: Number(operacion.cantidad),
+        precioUnitario: Number(operacion.precioUnitario),
+        total: Number(operacion.total),
+        saldoPosterior: Number(operacion.saldoPosterior),
+      })),
+    page: Number(data?.page ?? 0),
+    totalPages: Number(data?.totalPages ?? 0),
   }
 }
 
@@ -49,8 +43,10 @@ export function efectoEnSaldo(operacion) {
   return operacion.tipo === 'COMPRA' ? -operacion.total : operacion.total
 }
 
-export function construirConsultaHistorial({ page, tipo }) {
-  const params = new URLSearchParams({ page: String(page), size: String(TAMANO_PAGINA_HISTORIAL), sort: 'fecha,desc' })
+// El backend ya ordena de la más nueva a la más vieja; tipo y jugadorId son filtros opcionales.
+export function construirConsultaHistorial({ page, tipo, jugadorId }) {
+  const params = new URLSearchParams({ page: String(page), size: String(TAMANO_PAGINA_HISTORIAL) })
   if (tipo) params.set('tipo', tipo)
+  if (jugadorId != null) params.set('jugadorId', String(jugadorId))
   return params.toString()
 }

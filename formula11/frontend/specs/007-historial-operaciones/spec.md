@@ -15,7 +15,7 @@ Como usuario autenticado, quiero ver mis compras y ventas para saber qué hice y
 
 1. **Given** el portfolio, **When** pulso "Historial", **Then** navego a `/operaciones`; el encabezado muestra "Historial de operaciones" y "Mi portfolio" vuelve al portfolio (también con `Escape`).
 2. **Given** una compra o venta confirmada en el detalle, **Then** el mensaje de confirmación tiene un link "Ver historial".
-3. **Given** operaciones, **Then** la tabla muestra, de la más reciente a la más antigua: fecha (y hora si viene), tipo (Compra/Venta como texto), jugador con link al detalle, tokens, precio, efecto en el saldo (compra en rojo con signo menos, venta en verde con signo más) y contraparte.
+3. **Given** operaciones, **Then** la tabla muestra, de la más reciente a la más antigua: fecha y hora, tipo (Compra/Venta como texto), jugador con link al detalle, tokens, precio unitario, movimiento en el saldo (compra en rojo con signo menos, venta en verde con signo más), saldo final y contraparte.
 4. **Given** más de una página, **Then** aparece la paginación (10 por página) y se navega con Anterior/Siguiente.
 
 ### User Story 2 - Filtrar por tipo (Priority: P2)
@@ -30,12 +30,13 @@ Carga; vacío ("Sin operaciones", con mensaje según el filtro y links a ranking
 ## Requirements
 
 - **FR-001**: La ruta vive en `src/api/endpoints.js` (`transacciones`).
-- **FR-002**: La consulta envía `page`, `size=10`, `sort=fecha,desc` y `tipo` solo si hay filtro.
-- **FR-003**: Se acepta una respuesta paginada (`content`, `page`, `totalPages`) o una lista simple; tipos desconocidos se descartan.
+- **FR-002**: La consulta envía `page`, `size=10` y `tipo`/`jugadorId` solo si hay filtro.
+- **FR-003**: La respuesta es siempre una página (`content`, `page`, `size`, `totalElements`, `totalPages`); tipos desconocidos se descartan.
 - **FR-004**: Las fechas `YYYY-MM-DD` se muestran sin correrse por zona horaria; los instantes, en hora local de 24 h.
-- **FR-005**: A 375px se ocultan precio, contraparte y la insignia de posición, sin desborde horizontal.
+- **FR-005**: A 375px se ocultan precio, saldo final, contraparte y la insignia de posición, sin desborde horizontal.
 
-## Assumptions (a confirmar con `backend/specs/005-contratos-entrega2`)
+## Contrato (`backend/specs/005-contratos-entrega2/contracts/openapi.yaml`)
 
-- `GET /api/usuarios/{id}/transacciones?page=&size=&sort=&tipo=`.
-- Transacción: `{ id, tipo: 'COMPRA' | 'VENTA', jugadorId | jugador: { id, nombre, posicion }, cantidad, precio, total?, contraparte?, fecha }` (modelo `transaccion` del plan: tipo, cantidad, precio, contraparte, fecha).
+- `GET /api/usuarios/{usuarioId}/transacciones?page=&size=&tipo=&jugadorId=` → `TransaccionesPageResponse` (página de `OperacionResponse`), de la más nueva a la más vieja. 403 si el id no es el del JWT.
+- `OperacionResponse { id, tipo: COMPRA | VENTA, jugador, cantidad, precioUnitario, total, saldoPosterior, contraparte, fecha (date-time), estrategia, version }`.
+- No hay parámetro de orden: lo fija el backend.
