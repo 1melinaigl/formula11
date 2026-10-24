@@ -212,3 +212,184 @@ describe('mercado: compra y venta de tokens', () => {
     expect(panel.queryByLabelText('Cantidad de tokens')).not.toBeInTheDocument()
   })
 })
+
+function renderConUsuario(usuario, ruta = '/jugadores/7') {
+  window.history.pushState({}, '', ruta)
+  window.sessionStorage.setItem('formula11.session', JSON.stringify({ token: 'mercado-token', usuario }))
+  return render(<SesionProvider><App /></SesionProvider>)
+}
+
+describe('mercado: roles, doble envío y recuperación (005)', () => {
+  beforeEach(() => window.sessionStorage.clear())
+
+  it('no habilita un segundo envío mientras la orden está en curso', async () => {
+    usarDatos({ portfolios: [portfolio(50, [posicion(5)])] })
+    let ordenes = 0
+    let responder
+    server.use(
+      http.post('/api/ordenes/compra', () => { ordenes += 1; return new Promise((resolve) => { responder = resolve }) }),
+      http.post('/api/ordenes/venta', () => { ordenes += 1; return HttpResponse.json(operacion('VENTA', 1, 1.2, 51.2), { status: 201 }) }),
+    )
+    const user = userEvent.setup()
+    renderDetalle()
+    const panel = await panelOperar()
+
+    await user.click(panel.getByRole('button', { name: 'Comprar 1 token' }))
+    expect(panel.getByRole('button', { name: 'Enviando...' })).toBeDisabled()
+    expect(panel.getByRole('button', { name: 'Vender' })).toBeDisabled()
+    expect(panel.getByLabelText('Cantidad de tokens')).toBeDisabled()
+
+    await user.click(panel.getByRole('button', { name: 'Vender' }))
+    await user.type(panel.getByLabelText('Cantidad de tokens'), '3{Enter}')
+    expect(panel.getByRole('button', { name: 'Enviando...' })).toBeDisabled()
+
+    responder(HttpResponse.json(operacion('COMPRA', 1, 1.2, 48.8), { status: 201 }))
+    expect(await panel.findByRole('status')).toHaveTextContent('Compraste 1 token')
+    expect(ordenes).toBe(1)
+  })
+
+  it('al superusuario le muestra el detalle sin el panel de operación ni consultas de mercado', async () => {
+    const llamadas = usarDatos({ portfolios: [portfolio(50)] })
+    renderConUsuario({ id: 1, nombre: 'Admin', rol: 'SUPERUSUARIO' })
+
+    expect(await screen.findByRole('heading', { name: 'Nicolò Barella' })).toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Operar' })).not.toBeInTheDocument()
+    expect(llamadas).toEqual({ portfolio: 0, mercado: 0 })
+  })
+
+  it('trata una sesión sin rol como USUARIO', async () => {
+    usarDatos({ portfolios: [portfolio(50)] })
+    renderConUsuario({ id: 11, nombre: 'Ana Formula' })
+    expect(await panelOperar()).toBeTruthy()
+  })
+
+  it('muestra la carga, arranca en Comprar con cantidad 1 y conserva el tipo tras operar', async () => {
+    let responderPortfolio
+    server.use(
+      http.get('/api/usuarios/:id/portfolio', () => (responderPortfolio
+        ? HttpResponse.json(portfolio(3.6, [posicion(1)]))
+        : new Promise((resolve) => { responderPortfolio = resolve }))),
+      http.get('/api/jugadores/:id/mercado', () => HttpResponse.json(mercado())),
+      http.post('/api/ordenes/venta', () => HttpResponse.json(operacion('VENTA', 1, 1.2, 3.6), { status: 201 })),
+    )
+    const user = userEvent.setup()
+    renderDetalle()
+
+    expect(await screen.findByText('Cargando tu saldo...')).toBeInTheDocument()
+    responderPortfolio(HttpResponse.json(portfolio(2.4, [posicion(2)])))
+    const panel = await panelOperar()
+    expect(panel.getByRole('button', { name: 'Comprar' })).toHaveAttribute('aria-pressed', 'true')
+    expect(panel.getByLabelText('Cantidad de tokens')).toHaveValue(1)
+
+    await user.click(panel.getByRole('button', { name: 'Vender' }))
+    await user.click(panel.getByRole('button', { name: 'Vender 1 token' }))
+    expect(await panel.findByRole('status')).toHaveTextContent('Vendiste 1 token')
+    expect(panel.getByRole('button', { name: 'Vender' })).toHaveAttribute('aria-pressed', 'true')
+    expect(panel.getByLabelText('Cantidad de tokens')).toHaveValue(1)
+  })
+
+  it.each([
+    ['/jugadores/7?operacion=COMPRA', 'Comprar'],
+    ['/jugadores/7?operacion=Venta', 'Vender'],
+    ['/jugadores/7?operacion=otra', 'Comprar'],
+  ])('con %s abre en %s', async (ruta, tipo) => {
+    usarDatos({ portfolios: [portfolio(50, [posicion(2)])] })
+    renderDetalle(ruta)
+    const panel = await panelOperar()
+    expect(panel.getByRole('button', { name: tipo })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('conserva la confirmación si falla la recarga y Reintentar no reenvía la orden', async () => {
+    let consultasPortfolio = 0
+    let ordenes = 0
+    server.use(
+      http.get('/api/usuarios/:id/portfolio', () => {
+        consultasPortfolio += 1
+        if (consultasPortfolio === 2) {
+          return HttpResponse.json({ mensaje: 'Portfolio no disponible.', timestamp: '2026-10-24T12:00:00Z', correlationId: 'recarga-503' }, { status: 503 })
+        }
+        return HttpResponse.json(consultasPortfolio === 1 ? portfolio(10) : portfolio(8.8, [posicion(1, 1.2)]))
+      }),
+      http.get('/api/jugadores/:id/mercado', () => HttpResponse.json(mercado())),
+      http.post('/api/ordenes/compra', () => { ordenes += 1; return HttpResponse.json(operacion('COMPRA', 1, 1.2, 8.8), { status: 201 }) }),
+    )
+    const user = userEvent.setup()
+    renderDetalle()
+    const panel = await panelOperar()
+
+    await user.click(panel.getByRole('button', { name: 'Comprar 1 token' }))
+    expect(await panel.findByRole('alert')).toHaveTextContent('Portfolio no disponible.')
+    expect(panel.getByText(/recarga-503/)).toBeInTheDocument()
+    expect(panel.getByRole('status')).toHaveTextContent('Compraste 1 token')
+
+    await user.click(panel.getByRole('button', { name: 'Reintentar' }))
+    await waitFor(() => expect(panel.queryByRole('alert')).not.toBeInTheDocument())
+    expect(panel.getByText('8,80 créditos')).toBeInTheDocument()
+    expect(panel.getByRole('status')).toHaveTextContent('Compraste 1 token')
+    expect(consultasPortfolio).toBe(3)
+    expect(ordenes).toBe(1)
+  })
+
+  it('después de un error de la orden habilita el envío y conserva la cantidad', async () => {
+    usarDatos({ portfolios: [portfolio(50)] })
+    server.use(http.post('/api/ordenes/compra', () => HttpResponse.json(
+      { mensaje: 'El usuario no tiene saldo suficiente.', timestamp: '2026-10-24T12:00:00Z', correlationId: 'orden-422' },
+      { status: 422 },
+    )))
+    const user = userEvent.setup()
+    renderDetalle()
+    const panel = await panelOperar()
+    const cantidad = panel.getByLabelText('Cantidad de tokens')
+
+    await user.clear(cantidad)
+    await user.type(cantidad, '3')
+    await user.click(panel.getByRole('button', { name: 'Comprar 3 tokens' }))
+    expect(await panel.findByRole('alert')).toHaveTextContent('El usuario no tiene saldo suficiente.')
+    expect(cantidad).toHaveValue(3)
+    expect(panel.getByRole('button', { name: 'Comprar 3 tokens' })).toBeEnabled()
+  })
+
+  it('un 401 en la orden limpia la sesión y muestra el acceso denegado', async () => {
+    usarDatos({ portfolios: [portfolio(50)] })
+    server.use(http.post('/api/ordenes/compra', () => HttpResponse.json(
+      { mensaje: 'Sesión vencida.', timestamp: '2026-10-24T12:00:00Z', correlationId: 'orden-401' },
+      { status: 401 },
+    )))
+    const user = userEvent.setup()
+    renderDetalle()
+    const panel = await panelOperar()
+
+    await user.click(panel.getByRole('button', { name: 'Comprar 1 token' }))
+    expect(await screen.findByRole('heading', { name: 'Acceso denegado' })).toBeInTheDocument()
+    expect(window.sessionStorage.getItem('formula11.session')).toBeNull()
+  })
+
+  it('si falla el portfolio muestra el error y no el formulario', async () => {
+    server.use(
+      http.get('/api/usuarios/:id/portfolio', () => HttpResponse.json(
+        { mensaje: 'Portfolio no disponible.', timestamp: '2026-10-24T12:00:00Z', correlationId: 'portfolio-503' },
+        { status: 503 },
+      )),
+      http.get('/api/jugadores/:id/mercado', () => HttpResponse.json(mercado())),
+    )
+    renderDetalle()
+    const panel = await panelOperar()
+    expect(panel.getByRole('alert')).toHaveTextContent('Portfolio no disponible.')
+    expect(panel.getByText(/portfolio-503/)).toBeInTheDocument()
+    expect(panel.queryByLabelText('Cantidad de tokens')).not.toBeInTheDocument()
+  })
+
+  it('no muestra el token de la sesión en el panel ni en los errores', async () => {
+    usarDatos({ portfolios: [portfolio(50)] })
+    server.use(http.post('/api/ordenes/compra', () => HttpResponse.json(
+      { mensaje: 'El superusuario no tiene tokens suficientes de ese jugador.', timestamp: '2026-10-24T12:00:00Z', correlationId: 'orden-409' },
+      { status: 409 },
+    )))
+    const user = userEvent.setup()
+    renderDetalle()
+    const panel = await panelOperar()
+    await user.click(panel.getByRole('button', { name: 'Comprar 1 token' }))
+    await panel.findByRole('alert')
+    expect(document.body.textContent).not.toContain('mercado-token')
+  })
+})

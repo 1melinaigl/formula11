@@ -28,8 +28,8 @@ Frontend único en `formula11/frontend`: código en `src/`, pruebas en `tests/`.
 
 **Purpose**: Rutas y respuestas por defecto del contrato.
 
-- [ ] T001 [P] Verificar que `src/api/endpoints.js` exponga `mercadoJugador(id)`, `comprar`, `vender` y `portfolio(usuarioId)` según `contracts/frontend-api.md`.
-- [ ] T002 [P] Verificar en `src/test/handlers.js` respuestas por defecto con las formas del contrato para `/api/jugadores/:id/mercado`, `/api/usuarios/:id/portfolio` y las dos órdenes, sin ids ni parámetros especiales.
+- [X] T001 [P] Verificar que `src/api/endpoints.js` exponga `mercadoJugador(id)`, `comprar`, `vender` y `portfolio(usuarioId)` según `contracts/frontend-api.md`.
+- [X] T002 [P] Verificar en `src/test/handlers.js` respuestas por defecto con las formas del contrato para `/api/jugadores/:id/mercado`, `/api/usuarios/:id/portfolio` y las dos órdenes, sin ids ni parámetros especiales.
 
 ---
 
@@ -39,10 +39,10 @@ Frontend único en `formula11/frontend`: código en `src/`, pruebas en `tests/`.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 Verificar en `src/components/mercado/mercado.js` `normalizarMercado`, `normalizarPortfolio`, `tenenciaDe` y `describirResultado` contra `MercadoJugadorResponse`, `PortfolioResponse` y `OperacionResponse`.
-- [ ] T004 Implementar en `validarOperacion` de `src/components/mercado/mercado.js` el orden de validación de `data-model.md`, incluido el mensaje "No quedan tokens disponibles de este jugador." cuando `tokensDisponibles` es 0.
-- [ ] T005 [P] Agregar en `tests/components/mercado.test.js` los casos del orden de validación y del jugador agotado.
-- [ ] T006 Corregir `src/hooks/useMercado.js` para que limpiar el resultado de una operación no modifique `enviando`, y exponer `reintentar()` que solo vuelve a consultar portfolio y `/mercado`.
+- [X] T003 Verificar en `src/components/mercado/mercado.js` `normalizarMercado`, `normalizarPortfolio`, `tenenciaDe` y `describirResultado` contra `MercadoJugadorResponse`, `PortfolioResponse` y `OperacionResponse`.
+- [X] T004 Implementar en `validarOperacion` de `src/components/mercado/mercado.js` el orden de validación de `data-model.md`, incluido el mensaje "No quedan tokens disponibles de este jugador." cuando `tokensDisponibles` es 0.
+- [X] T005 [P] Agregar en `tests/components/mercado.test.js` los casos del orden de validación y del jugador agotado.
+- [X] T006 Corregir `src/hooks/useMercado.js` para que limpiar el resultado de una operación no modifique `enviando`, y exponer `reintentar()` que solo vuelve a consultar portfolio y `/mercado`.
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -56,16 +56,16 @@ Frontend único en `formula11/frontend`: código en `src/`, pruebas en `tests/`.
 
 ### Tests for User Story 1
 
-- [ ] T007 [P] [US1] Verificar en `tests/pages/mercado.test.jsx` la compra completa: datos del panel, cuerpo de la orden, confirmación, recarga y que el portfolio se pide con el `usuario.id` de la sesión (FR-006).
-- [ ] T008 [P] [US1] Agregar en `tests/pages/mercado.test.jsx` un test donde, con la orden en curso, cambiar de tipo, editar la cantidad o reenviar no habilita un segundo envío (una sola orden recibida).
-- [ ] T009 [P] [US1] Agregar en `tests/pages/mercado.test.jsx` un test con `rol: 'SUPERUSUARIO'` que verifique que el detalle se ve y el panel "Operar" no, y otro con una sesión sin `rol` que sí lo muestre (FR-005).
-- [ ] T010 [P] [US1] Agregar en `tests/pages/mercado.test.jsx` un test del estado "Cargando tu saldo..." y de los valores iniciales (Comprar, cantidad 1) y del reinicio de la cantidad a 1 tras una operación exitosa.
+- [X] T007 [P] [US1] Verificar en `tests/pages/mercado.test.jsx` la compra completa: datos del panel, cuerpo de la orden, confirmación, recarga y que el portfolio se pide con el `usuario.id` de la sesión (FR-006).
+- [X] T008 [P] [US1] Agregar en `tests/pages/mercado.test.jsx` un test donde, con la orden en curso, cambiar de tipo, editar la cantidad o reenviar no habilita un segundo envío (una sola orden recibida).
+- [X] T009 [P] [US1] Agregar en `tests/pages/mercado.test.jsx` un test con `rol: 'SUPERUSUARIO'` que verifique que el detalle se ve y el panel "Operar" no, y otro con una sesión sin `rol` que sí lo muestre (FR-005).
+- [X] T010 [P] [US1] Agregar en `tests/pages/mercado.test.jsx` un test del estado "Cargando tu saldo..." y de los valores iniciales (Comprar, cantidad 1) y del reinicio de la cantidad a 1 tras una operación exitosa.
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Deshabilitar en `src/components/mercado/PanelOperacion.jsx` el selector Comprar/Vender y el campo de cantidad mientras `enviando` sea verdadero, e ignorar el envío del formulario en ese estado.
-- [ ] T012 [US1] Mostrar el panel en `src/pages/DetalleJugadorPage.jsx` solo cuando el rol de la sesión no sea `SUPERUSUARIO` (una sesión sin `rol` cuenta como `USUARIO`).
-- [ ] T013 [US1] Verificar en `src/components/mercado/PanelOperacion.jsx` el estado de carga, los datos visibles (saldo, tenencia con promedio, "N de M" disponibles, precio con fecha o "precio inicial" (FR-007), total estimado con el formato de montos de FR-010) y el reinicio de la cantidad tras operar.
+- [X] T011 [US1] Deshabilitar en `src/components/mercado/PanelOperacion.jsx` el selector Comprar/Vender y el campo de cantidad mientras `enviando` sea verdadero, e ignorar el envío del formulario en ese estado.
+- [X] T012 [US1] Mostrar el panel en `src/pages/DetalleJugadorPage.jsx` solo cuando el rol de la sesión no sea `SUPERUSUARIO` (una sesión sin `rol` cuenta como `USUARIO`).
+- [X] T013 [US1] Verificar en `src/components/mercado/PanelOperacion.jsx` el estado de carga, los datos visibles (saldo, tenencia con promedio, "N de M" disponibles, precio con fecha o "precio inicial" (FR-007), total estimado con el formato de montos de FR-010) y el reinicio de la cantidad tras operar.
 
 **Checkpoint**: La compra funciona de punta a punta y no admite doble envío.
 
@@ -79,12 +79,12 @@ Frontend único en `formula11/frontend`: código en `src/`, pruebas en `tests/`.
 
 ### Tests for User Story 2
 
-- [ ] T014 [P] [US2] Verificar en `tests/pages/mercado.test.jsx` la venta y la preselección con `?operacion=venta`.
-- [ ] T015 [P] [US2] Agregar en `tests/pages/mercado.test.jsx` un caso con `?operacion=COMPRA` (mayúsculas) y uno con un valor desconocido que abra en "Comprar".
+- [X] T014 [P] [US2] Verificar en `tests/pages/mercado.test.jsx` la venta y la preselección con `?operacion=venta`.
+- [X] T015 [P] [US2] Agregar en `tests/pages/mercado.test.jsx` un caso con `?operacion=COMPRA` (mayúsculas) y uno con un valor desconocido que abra en "Comprar".
 
 ### Implementation for User Story 2
 
-- [ ] T016 [US2] Verificar en `src/pages/DetalleJugadorPage.jsx` y `PanelOperacion.jsx` que `?operacion=` no distinga mayúsculas y que un valor desconocido abra en "Comprar".
+- [X] T016 [US2] Verificar en `src/pages/DetalleJugadorPage.jsx` y `PanelOperacion.jsx` que `?operacion=` no distinga mayúsculas y que un valor desconocido abra en "Comprar".
 
 **Checkpoint**: Compra y venta funcionan de forma independiente.
 
@@ -98,16 +98,16 @@ Frontend único en `formula11/frontend`: código en `src/`, pruebas en `tests/`.
 
 ### Tests for User Story 3
 
-- [ ] T017 [P] [US3] Verificar en `tests/pages/mercado.test.jsx` las validaciones del cliente sin envío, los errores `409`/`422`, el fallo de `/mercado` y la marca "precio inicial" (FR-007).
-- [ ] T018 [P] [US3] Agregar en `tests/pages/mercado.test.jsx` un test donde la orden devuelve `201`, falla la recarga, se conserva la confirmación, se muestra el error y "Reintentar" vuelve a pedir los datos con una sola orden enviada en total.
-- [ ] T019 [P] [US3] Agregar en `tests/pages/mercado.test.jsx` un test donde un error de la orden habilita de nuevo el envío y conserva la cantidad ingresada.
-- [ ] T020 [P] [US3] Agregar en `tests/pages/mercado.test.jsx` un test de `401` en la orden que limpie la sesión y muestre el acceso denegado.
-- [ ] T021 [P] [US3] Agregar en `tests/pages/mercado.test.jsx` un test del fallo del portfolio (sin formulario y con `correlationId`).
+- [X] T017 [P] [US3] Verificar en `tests/pages/mercado.test.jsx` las validaciones del cliente sin envío, los errores `409`/`422`, el fallo de `/mercado` y la marca "precio inicial" (FR-007).
+- [X] T018 [P] [US3] Agregar en `tests/pages/mercado.test.jsx` un test donde la orden devuelve `201`, falla la recarga, se conserva la confirmación, se muestra el error y "Reintentar" vuelve a pedir los datos con una sola orden enviada en total.
+- [X] T019 [P] [US3] Agregar en `tests/pages/mercado.test.jsx` un test donde un error de la orden habilita de nuevo el envío y conserva la cantidad ingresada.
+- [X] T020 [P] [US3] Agregar en `tests/pages/mercado.test.jsx` un test de `401` en la orden que limpie la sesión y muestre el acceso denegado.
+- [X] T021 [P] [US3] Agregar en `tests/pages/mercado.test.jsx` un test del fallo del portfolio (sin formulario y con `correlationId`).
 
 ### Implementation for User Story 3
 
-- [ ] T022 [US3] Agregar en `src/components/mercado/PanelOperacion.jsx` el botón "Reintentar" junto al error de actualización, conectado a `reintentar()` de `useMercado`.
-- [ ] T023 [US3] Verificar en `src/components/mercado/PanelOperacion.jsx` que un error de la orden conserve la cantidad, habilite el envío y no muestre confirmación.
+- [X] T022 [US3] Agregar en `src/components/mercado/PanelOperacion.jsx` el botón "Reintentar" junto al error de actualización, conectado a `reintentar()` de `useMercado`.
+- [X] T023 [US3] Verificar en `src/components/mercado/PanelOperacion.jsx` que un error de la orden conserve la cantidad, habilite el envío y no muestre confirmación.
 
 **Checkpoint**: Todas las historias funcionan de forma independiente.
 
@@ -117,10 +117,10 @@ Frontend único en `formula11/frontend`: código en `src/`, pruebas en `tests/`.
 
 **Purpose**: Accesibilidad, responsive y cierre.
 
-- [ ] T024 [P] Verificar en `src/components/mercado/PanelOperacion.jsx` el grupo "Tipo de operación" con `aria-pressed`, el campo con label, `aria-invalid` y `aria-describedby`, la confirmación con `role="status"` y los errores con `role="alert"`.
-- [ ] T025 [P] Agregar en `tests/pages/mercado.test.jsx` una verificación de que el token de la sesión no aparece en el panel ni en los mensajes de error (FR-012).
-- [ ] T026 [P] Verificar en `src/styles/screens.css` que el panel ocupe el ancho completo debajo de la ficha hasta 820px sin desborde horizontal.
-- [ ] T027 Correr `npm test`, `npm run lint` y `npm run build` desde `formula11/frontend`.
+- [X] T024 [P] Verificar en `src/components/mercado/PanelOperacion.jsx` el grupo "Tipo de operación" con `aria-pressed`, el campo con label, `aria-invalid` y `aria-describedby`, la confirmación con `role="status"` y los errores con `role="alert"`.
+- [X] T025 [P] Agregar en `tests/pages/mercado.test.jsx` una verificación de que el token de la sesión no aparece en el panel ni en los mensajes de error (FR-012).
+- [X] T026 [P] Verificar en `src/styles/screens.css` que el panel ocupe el ancho completo debajo de la ficha hasta 820px sin desborde horizontal.
+- [X] T027 Correr `npm test`, `npm run lint` y `npm run build` desde `formula11/frontend`.
 - [ ] T028 Ejecutar manualmente los escenarios de `specs/005-mercado-compra-venta/quickstart.md` con el backend y registrar desviaciones en `plan.md`.
 
 ---

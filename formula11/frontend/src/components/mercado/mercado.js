@@ -44,6 +44,7 @@ export function validarOperacion({ tipo, cantidad, precio, saldo, tenencia = 0, 
   if (tipo === 'VENTA' && numero > tenencia) {
     return tenencia === 0 ? 'No tenés tokens de este jugador para vender.' : `Solo tenés ${tenencia} tokens para vender.`
   }
+  if (tipo === 'COMPRA' && disponibles === 0) return 'No quedan tokens disponibles de este jugador.'
   if (tipo === 'COMPRA' && disponibles != null && numero > disponibles) return `Solo quedan ${disponibles} tokens disponibles.`
   if (tipo === 'COMPRA' && numero * precio > saldo) return `Saldo insuficiente: necesitás ${formatearPrecio(numero * precio)} créditos.`
   return null

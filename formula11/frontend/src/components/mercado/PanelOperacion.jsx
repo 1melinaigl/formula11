@@ -42,26 +42,32 @@ export default function PanelOperacion({ mercado, operacionInicial = 'COMPRA' })
   return (
     <section className="player-card market-panel" aria-labelledby="titulo-operar">
       <div className="player-card-heading"><span id="titulo-operar">Operar</span></div>
-      {mercado.error && <AvisoError error={mercado.error} />}
+      {mercado.error && (
+        <>
+          <AvisoError error={mercado.error} />
+          <button className="btn ghost market-retry" type="button" onClick={mercado.reintentar}>Reintentar</button>
+        </>
+      )}
       <dl className="player-details market-balance">
         <dt>Saldo</dt><dd>{formatearPrecio(mercado.saldo)} créditos</dd>
         <dt>Tus tokens</dt>
         <dd>{tenencia}{mercado.tenencia?.precioPromedio != null && ` · promedio ${formatearPrecio(mercado.tenencia.precioPromedio)}`}</dd>
         {disponibles != null && <><dt>Disponibles</dt><dd>{disponibles}{emitidos != null && ` de ${emitidos}`}</dd></>}
       </dl>
-      {precio == null
-        ? <p className="market-note">No se pudo obtener el precio vigente, por ahora no se puede operar.</p>
+      {precio == null || mercado.error
+        ? <p className="market-note">No se pudieron obtener los datos del mercado, por ahora no se puede operar.</p>
         : (
           <form className="market-form" noValidate onSubmit={enviar}>
             <div className="market-type" role="group" aria-label="Tipo de operación">
               {Object.entries(OPERACIONES).map(([clave, { verbo }]) => (
-                <button aria-pressed={tipo === clave} className="filter-chip" key={clave} type="button" onClick={() => cambiarTipo(clave)}>{verbo}</button>
+                <button aria-pressed={tipo === clave} className="filter-chip" disabled={mercado.enviando} key={clave} type="button" onClick={() => cambiarTipo(clave)}>{verbo}</button>
               ))}
             </div>
             <label htmlFor="cantidad-tokens">Cantidad de tokens</label>
             <input
               aria-describedby="total-operacion error-operacion"
               aria-invalid={Boolean(tocado && error)}
+              disabled={mercado.enviando}
               id="cantidad-tokens"
               inputMode="numeric"
               max={MAXIMO_TOKENS_POR_ORDEN}

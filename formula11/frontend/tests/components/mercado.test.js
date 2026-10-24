@@ -36,3 +36,15 @@ describe('helpers del mercado', () => {
       .toBe('Compraste 1 token a 1,00 créditos. Total: 1,00 créditos. Saldo: 99,00 créditos.')
   })
 })
+
+describe('orden de validación y jugador agotado (005)', () => {
+  it('avisa que no quedan tokens cuando el jugador está agotado', () => {
+    expect(validarOperacion({ tipo: 'COMPRA', cantidad: '1', precio: 1, saldo: 10, disponibles: 0 })).toBe('No quedan tokens disponibles de este jugador.')
+  })
+
+  it('muestra solo la primera validación que falla, en el orden del spec', () => {
+    expect(validarOperacion({ tipo: 'VENTA', cantidad: '101', precio: 1, saldo: 0, tenencia: 0 })).toBe('Podés operar hasta 100 tokens por orden.')
+    expect(validarOperacion({ tipo: 'COMPRA', cantidad: '5', precio: 10, saldo: 1, disponibles: 3 })).toBe('Solo quedan 3 tokens disponibles.')
+    expect(validarOperacion({ tipo: 'COMPRA', cantidad: '', precio: 1, saldo: 0, disponibles: 0 })).toBe('Ingresá una cantidad de tokens.')
+  })
+})

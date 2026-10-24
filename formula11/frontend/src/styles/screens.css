@@ -175,3 +175,5 @@
 .market-submit:disabled { cursor: progress; opacity: .6; }
 .market-success { margin: 12px 0 0; padding: 10px 12px; border: 1px solid var(--green); color: var(--green); }
 .market-note { color: var(--muted); }
+.market-retry { margin: 0 0 12px; padding: 6px 14px; font-size: 16px; }
+.market-form input:disabled, .market-type .filter-chip:disabled { cursor: not-allowed; opacity: .6; }

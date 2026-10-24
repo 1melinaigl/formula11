@@ -5,14 +5,15 @@ import { useSesion } from './useSesion'
 
 // Saldo y tenencia salen del portfolio; precio y disponibilidad, de /jugadores/{id}/mercado.
 // Después de cada operación se vuelven a pedir los dos: el backend es la fuente de verdad.
-export function useMercado(jugadorId) {
+// Con habilitado=false (superusuario) no se consulta nada: el panel no se muestra.
+export function useMercado(jugadorId, { habilitado = true } = {}) {
   const { usuario, solicitarProtegida } = useSesion()
-  const [datos, setDatos] = useState({ portfolio: null, mercado: normalizarMercado(null), cargando: Boolean(usuario), error: null })
+  const [datos, setDatos] = useState({ portfolio: null, mercado: normalizarMercado(null), cargando: Boolean(usuario && habilitado), error: null })
   const [operacion, setOperacion] = useState({ enviando: false, resultado: null, error: null })
   const [version, setVersion] = useState(0)
 
   useEffect(() => {
-    if (!usuario) return undefined
+    if (!usuario || !habilitado) return undefined
 
     let activo = true
 
@@ -28,7 +29,7 @@ export function useMercado(jugadorId) {
       })
 
     return () => { activo = false }
-  }, [jugadorId, solicitarProtegida, usuario, version])
+  }, [habilitado, jugadorId, solicitarProtegida, usuario, version])
 
   const operar = useCallback(async (tipo, cantidad) => {
     setOperacion({ enviando: true, resultado: null, error: null })
@@ -44,10 +45,14 @@ export function useMercado(jugadorId) {
     }
   }, [jugadorId, solicitarProtegida])
 
-  const limpiarOperacion = useCallback(() => setOperacion({ enviando: false, resultado: null, error: null }), [])
+  // Limpiar el resultado anterior nunca toca una orden en curso: si no, el botón se rehabilitaría (doble envío).
+  const limpiarOperacion = useCallback(() => setOperacion((actual) => (actual.enviando ? actual : { enviando: false, resultado: null, error: null })), [])
+
+  // Solo vuelve a consultar portfolio y /mercado; nunca reenvía la orden.
+  const reintentar = useCallback(() => setVersion((actual) => actual + 1), [])
 
   return {
-    cargando: Boolean(usuario && datos.cargando),
+    cargando: Boolean(usuario && habilitado && datos.cargando),
     error: datos.error,
     saldo: datos.portfolio?.saldo ?? 0,
     tenencia: datos.portfolio ? tenenciaDe(datos.portfolio, jugadorId) : null,
@@ -57,5 +62,6 @@ export function useMercado(jugadorId) {
     errorOperacion: operacion.error,
     operar,
     limpiarOperacion,
+    reintentar,
   }
 }

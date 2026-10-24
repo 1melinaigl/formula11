@@ -31,9 +31,9 @@ function PanelCotizaciones({ cotizaciones, error, estrategiaActiva, puedeCompara
   )
 }
 
-function DetalleJugador({ id, operacionInicial }) {
+function DetalleJugador({ id, operacionInicial, puedeOperar }) {
   const { jugador, cotizaciones, cargando, error, errorCotizaciones, estrategiaActiva, puedeComparar } = useDetalleJugador(id)
-  const mercado = useMercado(id)
+  const mercado = useMercado(id, { habilitado: puedeOperar })
 
   if (cargando) return <EstadoCarga mensaje="Cargando jugador..." />
   if (error) return <AvisoError error={error} />
@@ -50,7 +50,7 @@ function DetalleJugador({ id, operacionInicial }) {
             <dt>Posición</dt><dd>{jugador.posicionNombre || posiciones[jugador.posicion] || jugador.posicion || 'No informada'}</dd>
           </dl>
         </article>
-        <PanelOperacion mercado={mercado} operacionInicial={operacionInicial} />
+        {puedeOperar && <PanelOperacion mercado={mercado} operacionInicial={operacionInicial} />}
       </div>
       <section className="player-card quote-panel" aria-labelledby="titulo-cotizaciones">
         <div className="player-card-heading"><span id="titulo-cotizaciones">Evolución de la cotización</span></div>
@@ -78,7 +78,12 @@ export default function DetalleJugadorPage() {
     <section className="screen catalog-screen">
       <div className="catalog-content">
         <div className="catalog-title-row"><div><p className="eyebrow"></p><h1 className="panel-heading">Detalle del jugador</h1></div><button className="btn ghost" type="button" onClick={() => navigate('/catalogo')}>Volver al catálogo</button></div>
-        <DetalleJugador id={id} key={id} operacionInicial={parametros.get('operacion')?.toUpperCase()} />
+        <DetalleJugador
+          id={id}
+          key={id}
+          operacionInicial={parametros.get('operacion')?.toUpperCase()}
+          puedeOperar={usuario.rol !== 'SUPERUSUARIO'}
+        />
       </div>
     </section>
   )
