@@ -19,13 +19,15 @@ describe('useCatalogo', () => {
     const solicitudes = []
     server.use(http.get('/api/jugadores', ({ request }) => {
       solicitudes.push(new URL(request.url))
-      return HttpResponse.json({ content: [], page: 0, size: 10, totalElements: 0, totalPages: 0 })
+      return HttpResponse.json({ content: [], page: 0, size: 9, totalElements: 0, totalPages: 0 })
     }))
 
     const { result } = renderHook(() => useCatalogo(), { wrapper })
     await waitFor(() => expect(solicitudes).toHaveLength(1))
     expect(solicitudes[0].searchParams.get('page')).toBe('0')
-    expect(solicitudes[0].searchParams.get('size')).toBe('10')
+    expect(solicitudes[0].searchParams.get('size')).toBe('9')
+    expect(solicitudes[0].searchParams.get('sort')).toBe('nombre,asc')
+    for (const vacio of ['liga', 'equipo', 'posicion']) expect(solicitudes[0].searchParams.has(vacio)).toBe(false)
 
     act(() => result.current.cambiarPagina(3))
     await waitFor(() => expect(solicitudes).toHaveLength(2))
@@ -43,10 +45,10 @@ describe('useCatalogo', () => {
     server.use(http.get('/api/jugadores', ({ request }) => {
       const url = new URL(request.url)
       const page = Number(url.searchParams.get('page'))
-      expect(url.searchParams.get('size')).toBe('10')
+      expect(url.searchParams.get('size')).toBe('9')
       solicitudes.push(page)
-      if (page >= 2) return HttpResponse.json({ content: [], page, size: 10, totalElements: 21, totalPages: 2 })
-      return HttpResponse.json({ content: page === 1 ? [{ id: 21, nombre: 'Último' }] : [], page, size: 10, totalElements: 21, totalPages: 2 })
+      if (page >= 2) return HttpResponse.json({ content: [], page, size: 9, totalElements: 21, totalPages: 2 })
+      return HttpResponse.json({ content: page === 1 ? [{ id: 21, nombre: 'Último' }] : [], page, size: 9, totalElements: 21, totalPages: 2 })
     }))
 
     const { result } = renderHook(() => useCatalogo(), { wrapper })

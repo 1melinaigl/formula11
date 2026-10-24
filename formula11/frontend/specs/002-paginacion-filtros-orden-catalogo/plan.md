@@ -8,7 +8,7 @@
 
 ## Summary
 
-Reemplazar la carga única y el filtrado local de `useCatalogo` por un flujo de consulta paginada contra `GET /api/jugadores`. El hook mantendrá por separado la consulta (`page` base 0, `sort`, `liga`, `equipo`, `posicion`), la respuesta paginada y el estado de carga/error; construirá siempre `size=10`, añadirá query params solo para valores activos y conservará `solicitarProtegida` para JWT, correlation ID y manejo de `401`. `BarraFiltros` dejará de derivar opciones desde los datos, incorporará las cinco ligas fijas, equipo como texto con debounce, posición y orden sin ID. `CatalogoPage` mostrará solo navegación de páginas, mantendrá la ficha actual y distinguirá catálogo vacío de sin coincidencias usando `totalElements` internamente. MSW y los tests migrarán de arrays a respuestas paginadas.
+Reemplazar la carga única y el filtrado local de `useCatalogo` por un flujo de consulta paginada contra `GET /api/jugadores`. El hook mantendrá por separado la consulta (`page` base 0, `sort`, `liga`, `equipo`, `posicion`), la respuesta paginada y el estado de carga/error; construirá siempre `size=9`, añadirá query params solo para valores activos y conservará `solicitarProtegida` para JWT, correlation ID y manejo de `401`. `BarraFiltros` dejará de derivar opciones desde los datos, incorporará las cinco ligas fijas, equipo como texto con debounce, posición y orden sin ID. `CatalogoPage` mostrará solo navegación de páginas, mantendrá la ficha actual y distinguirá catálogo vacío de sin coincidencias usando `totalElements` internamente. MSW y los tests migrarán de arrays a respuestas paginadas.
 
 ## Technical Context
 
@@ -47,9 +47,9 @@ No se requiere una dependencia nueva ni una excepción de arquitectura.
 
 ### Query state and request lifecycle
 
-1. `useCatalogo` inicializa `page=0`, orden `nombre,asc` y filtros vacíos; cada URL fija `size=10`.
+1. `useCatalogo` inicializa `page=0`, orden `nombre,asc` y filtros vacíos; cada URL fija `size=9`.
 2. El hook mantiene `respuesta` con `content` y metadatos, `cargando`, `error` y la última página válida conocida.
-3. Una función de construcción de URL serializa `page`, `size=10`, `sort`, `liga`, `equipo` y `posicion`, omitiendo valores vacíos y conservando los filtros al cambiar de página.
+3. Una función de construcción de URL serializa `page`, `size=9`, `sort`, `liga`, `equipo` y `posicion`, omitiendo valores vacíos y conservando los filtros al cambiar de página.
 4. Cambiar filtro u orden actualiza el estado de consulta con `page=0`; cambiar de página solo modifica `page`.
 5. El valor de `equipo` se estabiliza con un debounce cercano a 300 ms antes de actualizar la consulta enviada. El cleanup cancela timers y respuestas de efectos desmontados.
 6. El hook no ejecuta filtrado, ordenamiento ni paginación local: `content` se entrega tal como llega del backend.
@@ -112,7 +112,7 @@ frontend/
 
 ## Implementation Sequence
 
-1. Definir constantes de ligas, campos de orden visibles (sin `id`), direcciones y el tamaño fijo 10 en el ámbito del catálogo.
+1. Definir constantes de ligas, campos de orden visibles (sin `id`), direcciones y el tamaño fijo 9 en el ámbito del catálogo.
 2. Refactorizar `useCatalogo` para respuesta paginada, query params, reinicio a página 0, debounce de equipo y recuperación fuera de rango.
 3. Actualizar `BarraFiltros` para retirar nombre/equipos derivados y añadir liga fija, equipo libre, posición y orden sin selector de tamaño.
 4. Añadir `PaginacionCatalogo` o integrar sus controles en el toolbar, mostrando solo páginas base 1, total de páginas y disabled states.
