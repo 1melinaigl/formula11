@@ -100,8 +100,8 @@ describe('detalle de jugador con cotizaciones', () => {
         const estrategia = new URL(request.url).searchParams.get('estrategia')
         if (estrategia === 'CONSISTENCIA') {
           return HttpResponse.json(
-            { mensaje: 'No se pudo consultar la estrategia alternativa.', timestamp: '2026-10-24T12:00:00Z', correlationId: 'alternative-500' },
-            { status: 500 },
+            { mensaje: 'La estrategia alternativa no está permitida.', timestamp: '2026-10-24T12:00:00Z', correlationId: 'alternative-403' },
+            { status: 403 },
           )
         }
         return HttpResponse.json(historial.RENDIMIENTO_POSICION)
@@ -111,8 +111,8 @@ describe('detalle de jugador con cotizaciones', () => {
 
     const resumen = await screen.findByRole('list', { name: 'Cotización vigente' })
     expect(within(resumen).getByText('Rendimiento por posición')).toBeInTheDocument()
-    expect(screen.getByRole('alert')).toHaveTextContent('No se pudo consultar la estrategia alternativa.')
-    expect(screen.getByText(/alternative-500/)).toBeInTheDocument()
+    expect(screen.getByRole('alert')).toHaveTextContent('La estrategia alternativa no está permitida.')
+    expect(screen.getByText(/alternative-403/)).toBeInTheDocument()
   })
 
   it('muestra Sin cotizaciones para la alternativa sin inventar un precio', async () => {
@@ -158,25 +158,13 @@ describe('detalle de jugador con cotizaciones', () => {
   })
 
   it('limpia la sesión cuando una consulta protegida responde 401', async () => {
-    const response = await fetch('/api/jugadores/401', { headers: { 'X-Correlation-Id': 'session-401' } })
-    const error = await response.json()
-    expect(response.status).toBe(401)
-    expect(error.mensaje).toBe('La sesión expiró.')
-    expect(error.correlationId).toBe('session-401')
-
-    renderDetalle('/jugadores/401')
+    server.use(http.get('/api/jugadores/:id', ({ request }) => HttpResponse.json(
+      { mensaje: 'La sesión expiró.', timestamp: '2026-10-24T12:00:00Z', correlationId: request.headers.get('X-Correlation-Id') },
+      { status: 401 },
+    )))
+    renderDetalle()
     expect(await screen.findByRole('heading', { name: 'Acceso denegado' })).toBeInTheDocument()
     expect(window.sessionStorage.getItem('formula11.session')).toBeNull()
-  })
-
-  it('conserva mensaje y correlationId para un 403 de estrategia alternativa', async () => {
-    const response = await fetch('/api/jugadores/7/cotizaciones?estrategia=NO_PERMITIDA', {
-      headers: { 'X-Correlation-Id': 'alternative-403' },
-    })
-    const error = await response.json()
-    expect(response.status).toBe(403)
-    expect(error.mensaje).toBe('La estrategia no está permitida para este usuario.')
-    expect(error.correlationId).toBe('alternative-403')
   })
 
   it('muestra el error trazable si falla GET /api/estrategias', async () => {

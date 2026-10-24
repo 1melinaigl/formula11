@@ -49,7 +49,7 @@ description: "Task list for Formula11 player detail with quote history"
 ### Tests for User Story 1
 
 - [X] T010 [P] [US1] Agregar pruebas de `GET /api/jugadores/:id` y `GET /api/jugadores/:id/cotizaciones` en `tests/pages/detalleJugador.test.jsx`, comprobando headers protegidos y la forma contractual de la respuesta.
-- [X] T011 [P] [US1] Agregar pruebas de autorizaciÃ³n en `tests/pages/detalleJugador.test.jsx` que exijan una sola estrategia activa para `USUARIO`, ambas estrategias para `SUPERUSUARIO` y `403` para una estrategia alternativa no permitida.
+- [X] T011 [P] [US1] Agregar pruebas de autorizaciÃ³n en `tests/pages/detalleJugador.test.jsx` que exijan una sola estrategia activa para `USUARIO` y ambas estrategias para `SUPERUSUARIO`; el usuario comÃºn no solicita la alternativa.
 - [X] T012 [P] [US1] Agregar pruebas de la tarjeta en `tests/pages/detalleJugador.test.jsx` para precio, score, fecha, variaciÃ³n positiva/negativa y el texto `Sin cotizaciÃ³n anterior` cuando `variacion` es `null`.
 
 ### Implementation for User Story 1
@@ -96,13 +96,13 @@ description: "Task list for Formula11 player detail with quote history"
 ### Tests for User Story 3
 
 - [X] T025 [P] [US3] Agregar pruebas de carga, jugador sin cotizaciones, error de cotizaciones, error `404` del jugador y ausencia de sesiÃ³n en `tests/pages/detalleJugador.test.jsx`.
-- [X] T026 [P] [US3] Agregar pruebas de `401`, `403` y error de `GET /api/estrategias` en `tests/pages/detalleJugador.test.jsx`, verificando limpieza de sesiÃ³n, `mensaje` y `correlationId`.
+- [X] T026 [P] [US3] Agregar pruebas de `401` y error de `GET /api/estrategias` en `tests/pages/detalleJugador.test.jsx`, verificando limpieza de sesiÃ³n, `mensaje` y `correlationId`; el `403` de la alternativa queda cubierto por el test de fallo de esa consulta.
 
 ### Implementation for User Story 3
 
 - [X] T027 [US3] Ajustar `src/pages/DetalleJugadorPage.jsx` y `src/components/comun/AvisoError.jsx` para distinguir error de ficha, error de cotizaciones y error de estrategia activa, manteniendo la ficha cuando el fallo es parcial.
 - [X] T028 [US3] Ajustar `src/hooks/useDetalleJugador.js` para cancelar actualizaciones despuÃ©s de desmontar o cambiar de jugador y para no iniciar consultas protegidas cuando `usuario` es nulo.
-- [X] T029 [US3] Completar `src/test/handlers.js` con respuestas controlables para `401`, `403`, `404`, errores de proveedor y ausencia de cotizaciones, manteniendo `correlationId` en cada error.
+- [X] T029 [US3] Mantener en `src/test/handlers.js` respuestas contractuales por defecto para estrategias, jugador y cotizaciones; configurar las respuestas `401`, `403`, `404` y de proveedor con `server.use` dentro de cada test.
 
 **Checkpoint**: Las tres historias tienen estados de Ã©xito, vacÃ­o y excepciÃ³n cubiertos por MSW.
 
