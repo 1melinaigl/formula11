@@ -27,7 +27,7 @@ Como usuario autenticado, quiero comprar tokens de un jugador desde su detalle u
 1. **Given** el detalle de un jugador, **Then** el panel "Operar" muestra saldo, tokens del usuario (con precio promedio), tokens disponibles de los emitidos, precio vigente con su fecha y total estimado.
 2. **Given** una cantidad válida, **When** el usuario confirma, **Then** se envía la orden con Bearer y `X-Correlation-Id`, se muestra "Compraste N tokens a P créditos. Total: T créditos. Saldo: S créditos." y se vuelven a pedir portfolio y datos de mercado (saldo, tenencia y disponibilidad).
 3. **Given** una orden en curso, **Then** el botón queda deshabilitado ("Enviando..."), el selector Comprar/Vender y el campo de cantidad también quedan deshabilitados, y cualquier nuevo envío (incluido Enter desde el campo) se ignora hasta que la orden termine, para evitar el doble envío.
-4. **Given** un `SUPERUSUARIO`, **When** abre el detalle o el mercado, **Then** ve el detalle del jugador y sus cotizaciones (incluida la comparación de estrategias del 003), pero no se muestra el panel "Operar" ni puede iniciar una compra o una venta.
+4. **Given** un `SUPERUSUARIO`, **When** abre el detalle de un jugador, **Then** ve el detalle del jugador y sus cotizaciones (incluida la comparación de estrategias del 003), pero no se muestra el panel "Operar" ni puede iniciar una compra o una venta.
 5. **Given** el detalle abierto, **When** todavía se están consultando el portfolio y `/mercado`, **Then** el panel muestra "Cargando tu saldo..." y no muestra el formulario.
 6. **Given** el panel listo, **Then** el formulario arranca en "Comprar" (o en la operación indicada por `?operacion=`) con cantidad 1; después de una operación exitosa la cantidad vuelve a 1 y se conserva el tipo elegido.
 
@@ -54,7 +54,7 @@ Como usuario autenticado, quiero comprar tokens de un jugador desde su detalle u
 - **FR-002**: El precio mostrado es referencial; el backend fija el precio final y la respuesta es la fuente de la confirmación.
 - **FR-003**: Las validaciones del cliente no reemplazan las del backend; sus errores se muestran tal cual.
 - **FR-004**: El campo de cantidad tiene label, `aria-invalid`, `aria-describedby` al total y al error; la confirmación usa `role="status"`.
-- **FR-005**: Solo un usuario con rol `USUARIO` puede iniciar compras o ventas desde el frontend; el `SUPERUSUARIO` no puede operar contra sí mismo.
+- **FR-005**: Solo un usuario con rol `USUARIO` puede iniciar compras o ventas desde el frontend; el `SUPERUSUARIO` no puede operar contra sí mismo. Una sesión sin `rol` (la respuesta de registro no lo incluye) se trata como `USUARIO`.
 - **FR-006**: La consulta del portfolio usa siempre el `usuario.id` de la sesión autenticada; el frontend no acepta ni permite editar otro `usuarioId`.
 - **FR-007**: Cuando `fechaCotizacion` es `null`, el frontend permite comprar y vender al precio inicial de 1 crédito y muestra la marca "precio inicial".
 - **FR-008**: Después de una respuesta `201`, un fallo al actualizar portfolio o mercado no invalida la confirmación ni puede provocar un reenvío automático de la orden; el reintento solo consulta nuevamente los datos.

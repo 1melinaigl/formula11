@@ -46,8 +46,11 @@ consultas de datos (portfolio y `/mercado`).
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-- **I. Fidelidad visual verificable**: PASS. El panel reutiliza `player-card`,
-  `filter-chip` y `btn`; el detalle mantiene una columna en pantallas angostas.
+- **I. Fidelidad visual verificable**: PASS con desviación justificada. El panel
+  reutiliza `player-card`, `filter-chip` y `btn`. El detalle del jugador (003) pasa a
+  una columna a los **820px** en lugar del corte general de 760px, porque la ficha, el
+  panel y el gráfico en dos columnas no entran entre 761 y 820px sin desbordar; el panel
+  hereda ese corte. Por debajo de 760px se mantienen las reglas del mockup.
 - **II. Contratos del backend como autoridad**: PASS. Fuente:
   `backend/specs/005-contratos-entrega2/contracts/openapi.yaml`, autorizada por la
   constitución v1.1.0 para las features 003 en adelante. Ocultar el panel al
