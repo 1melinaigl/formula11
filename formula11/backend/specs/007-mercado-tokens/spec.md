@@ -10,6 +10,19 @@
 
 **Related features**: Reutiliza la autenticación y los usuarios de `specs/001-registro-catalogo-jugadores/` y `specs/002-login-usuarios/`, y el catálogo de jugadores de `specs/003-paginacion-catalogo-jugadores/` y `specs/004-integracion-api-futbol-catalogo/`. La forma de las solicitudes y respuestas HTTP la fija el contrato `specs/005-contratos-entrega2/contracts/openapi.yaml` (operaciones con `x-feature: 007-mercado-tokens`). Respeta la constitución v2.1.0 (secciones 9, Clock inyectable, y 10, operaciones de tokens reutilizables).
 
+## Clarifications
+
+### Session 2026-10-24
+
+- Q: ¿Cuál debe ser el saldo inicial de créditos asignado a cada usuario al registrarse y a los usuarios existentes durante la migración? → A: 100 créditos por usuario.
+- Q: ¿Qué conjunto de rutas debe considerarse el contrato definitivo de esta feature? → A: Solo las rutas y esquemas del contrato 005 versionado en el repositorio.
+- Q: ¿Qué debe ocurrir si las credenciales del superusuario no están configuradas al iniciar la aplicación? → A: En perfiles `local` y `test` se usan credenciales de desarrollo por defecto; fuera de esos perfiles, el arranque falla explícitamente si faltan `SUPERUSUARIO_EMAIL` o `SUPERUSUARIO_PASSWORD`.
+- Q: ¿Qué datos del superusuario se persisten? → A: Es una fila de `usuarios` con rol `SUPERUSUARIO` (puede loguearse y administrar estrategias). Sus tokens se guardan en `tenencias` (100 por jugador al inicio) y son el stock disponible. No tiene cuenta: sus créditos no existen ni se registran.
+- Q: ¿Qué registra la auditoría de cada operación? → A: Saldo del usuario antes y después, y tokens del jugador del usuario y del superusuario antes y después. Los créditos del superusuario no aparecen porque no existen.
+- Q: ¿Qué pasa si el superusuario llama a los endpoints de órdenes? → A: Recibe `403`, porque operaría contra sí mismo. Lo mismo para su portfolio (feature 009). B agrega esos `403` al contrato 005 en la rama `005-contrato-403-superusuario` (PR aprobado por las tres).
+- Q: ¿Qué pasa con los jugadores `LEGACY` que la sincronización borra, si ya tienen tenencias? → A: Se borran solo los que no tienen transacciones, junto con la tenencia del superusuario. Los que tienen transacciones se conservan.
+- Q: ¿Cómo se reparten las cuentas entre migraciones? → A: V21 solo crea la tabla `cuentas`; V25 crea las cuentas de los usuarios existentes; `UsuarioService` crea la de cada registro nuevo.
+
 ## Alcance según el contrato 005
 
 Esta feature implementa (o modifica) estas operaciones del contrato:
@@ -79,11 +92,13 @@ Como sistema, necesito que cada usuario tenga una cuenta con saldo y un rol, y q
 
 **Acceptance Scenarios**:
 
-1. **Given** una instalación limpia, **When** se aplican las migraciones y arranca la aplicación, **Then** existe un único usuario con rol `SUPERUSUARIO`, con credenciales tomadas de variables de entorno, que posee 100 tokens de cada jugador.
-2. **Given** un nuevo registro, **When** se crea el usuario, **Then** tiene rol `USUARIO` y una cuenta con el saldo inicial configurado.
-3. **Given** usuarios registrados antes de esta feature, **When** se aplican las migraciones, **Then** cada uno tiene rol `USUARIO` y una cuenta con el saldo inicial configurado.
-4. **Given** un login válido, **When** se emite el JWT, **Then** la respuesta `LoginResponse` incluye `rol` y el JWT incluye el claim del rol.
-5. **Given** un jugador nuevo creado por la sincronización del catálogo, **When** se persiste, **Then** el superusuario recibe 100 tokens de ese jugador.
+1. **Given** una instalación limpia, **When** se aplican las migraciones y arranca la aplicación, **Then** existe un único usuario con rol `SUPERUSUARIO`, con credenciales tomadas de variables de entorno, que posee 100 tokens de cada jugador en `tenencias` y no tiene cuenta de créditos.
+2. **Given** el superusuario creado, **When** hace login, **Then** recibe un JWT con rol `SUPERUSUARIO`.
+3. **Given** un nuevo registro, **When** se crea el usuario, **Then** tiene rol `USUARIO` y una cuenta con el saldo inicial configurado.
+4. **Given** usuarios registrados antes de esta feature, **When** se aplican las migraciones, **Then** cada uno tiene rol `USUARIO` y una cuenta con el saldo inicial configurado.
+5. **Given** un login válido, **When** se emite el JWT, **Then** la respuesta `LoginResponse` incluye `rol` y el JWT incluye el claim del rol.
+6. **Given** el superusuario autenticado, **When** llama a `POST /api/ordenes/compra` o `POST /api/ordenes/venta`, **Then** recibe `403` sin cambios persistidos.
+7. **Given** un jugador nuevo creado por la sincronización del catálogo, **When** se persiste, **Then** el superusuario recibe 100 tokens de ese jugador.
 
 ### User Story 5 - Usar el mercado desde servicios reutilizables (Priority: P2)
 
@@ -103,7 +118,7 @@ Como feature consumidor, quiero invocar compra y venta como métodos de service 
 
 - Jugador inexistente: `404` sin cambios. El jugador no tiene estado activo/inactivo; solo se valida su existencia.
 - Usuario no autenticado o con JWT inválido: `401`.
-- El superusuario no puede comprar ni vender por estos endpoints: se responde `422` ("El superusuario no puede operar en el mercado") sin cambios.
+- El superusuario no puede comprar ni vender por estos endpoints: se responde `403` ("El superusuario no puede operar en el mercado") sin cambios, porque operaría contra sí mismo.
 - La cantidad debe ser un entero entre 1 y 100 (`OrdenRequest`); cero, negativos, fracciones, nulos o valores mayores a 100 se rechazan con `400`. `jugadorId` ausente o inválido también es `400`.
 - El comprador o vendedor es siempre el usuario del JWT; el cuerpo de la orden no lleva usuario ni precio.
 - El saldo de un usuario y las cantidades de tokens nunca quedan negativos.
@@ -121,31 +136,35 @@ Como feature consumidor, quiero invocar compra y venta como métodos de service 
 **Cuentas, roles y superusuario**
 
 - **FR-001**: El sistema MUST mantener una cuenta con saldo de créditos para cada usuario con rol `USUARIO`.
-- **FR-002**: El saldo inicial MUST ser configurable (`mercado.saldo-inicial`, valor por defecto `100` créditos, a confirmar con el docente) y se asigna al crear la cuenta en el registro.
+- **FR-002**: El saldo inicial MUST asignarse al crear la cuenta en el registro y ser configurable (`mercado.saldo-inicial`), con valor por defecto de 100 créditos.
 - **FR-003**: Una migración MUST crear la cuenta con el saldo inicial para los usuarios existentes antes de esta feature.
 - **FR-004**: Cada usuario MUST tener un rol `USUARIO` o `SUPERUSUARIO`; los usuarios registrados son siempre `USUARIO`.
 - **FR-005**: El login MUST devolver el rol en `LoginResponse` y el JWT MUST incluir el rol como claim, según el contrato 005.
-- **FR-006**: MUST existir un único superusuario, creado al iniciar el mercado con credenciales tomadas de variables de entorno, que es la contraparte de todas las órdenes.
-- **FR-007**: El superusuario tiene saldo ilimitado: recibe los créditos de las compras y paga las ventas sin validar su saldo.
+- **FR-006**: MUST existir un único superusuario: una fila de `usuarios` con rol `SUPERUSUARIO`, creada de forma idempotente al arrancar la aplicación. Puede loguearse y es la contraparte de todas las órdenes. En los perfiles `local` y `test` puede usar credenciales de desarrollo definidas en `application-local.yml` y `application-test.yml`; fuera de esos perfiles, `SUPERUSUARIO_EMAIL` y `SUPERUSUARIO_PASSWORD` son obligatorias y la aplicación MUST fallar al arrancar con un error explícito si falta cualquiera.
+- **FR-007**: El superusuario NO tiene cuenta ni saldo de créditos: sus créditos no existen ni se registran. Las compras y ventas solo modifican el saldo del usuario que opera.
+- **FR-007a**: El superusuario MUST recibir `403` si llama a `POST /api/ordenes/compra` o `POST /api/ordenes/venta`, porque operaría contra sí mismo. El service rechaza la operación con una excepción de dominio, así también se cubre la invocación interna.
 
 **Tokens y tenencias**
 
-- **FR-008**: Cada jugador MUST tener 100 tokens emitidos. Una migración asigna al superusuario 100 tokens de cada jugador existente, a precio de referencia de 1 crédito.
+- **FR-008**: Cada jugador MUST tener 100 tokens emitidos, guardados en `tenencias` a nombre del superusuario. Al arrancar, después de crear el superusuario, el sistema asigna de forma idempotente 100 tokens (precio promedio de referencia 1 crédito) a cada jugador que todavía no tenga tenencia del superusuario. No se hace por migración, porque las migraciones corren antes de que exista el superusuario.
 - **FR-009**: Cada jugador creado después (por ejemplo, por la sincronización del catálogo) MUST recibir 100 tokens en la tenencia del superusuario en la misma transacción en que se crea.
+- **FR-009a**: La sincronización del catálogo, que hoy borra los jugadores `LEGACY`, MUST respetar las FK del mercado: un jugador legacy sin transacciones se borra junto con su tenencia del superusuario (que es la única que puede tener), en la misma transacción; un jugador legacy con transacciones se conserva, porque sus operaciones y tenencias de usuarios forman parte del historial.
+- **FR-009b**: La base MUST garantizar como máximo un usuario con rol `SUPERUSUARIO` mediante un índice único parcial.
+- **FR-009c**: `UsuarioService` MUST tomar la fecha de registro del `Clock` inyectado (constitución, sección 9). La emisión y expiración del JWT y el timestamp de los errores quedan fuera de esta feature: no son services y dependen del reloj real.
 - **FR-010**: El sistema MUST mantener una tenencia por usuario y jugador, con cantidad entera y precio promedio de adquisición. El stock disponible de un jugador es la tenencia del superusuario (no hay tabla de stock aparte).
 - **FR-011**: Una tenencia vendida por completo MUST quedar con cantidad `0`, sin eliminarse.
 
 **Órdenes**
 
-- **FR-012**: El sistema MUST exponer `POST /api/ordenes/compra` y `POST /api/ordenes/venta`, protegidos por JWT, con cuerpo `OrdenRequest` (`jugadorId`, `cantidad` entera entre 1 y 100) y respuesta `201` con `OperacionResponse`, según el contrato 005.
+- **FR-012**: El sistema MUST exponer únicamente `POST /api/ordenes/compra` y `POST /api/ordenes/venta`, protegidos por JWT, con cuerpo `OrdenRequest` (`jugadorId`, `cantidad` entera entre 1 y 100) y respuesta `201` con `OperacionResponse`, según el contrato 005; no debe agregar aliases `/orders/buy` ni `/orders/sell`.
 - **FR-013**: El comprador o vendedor MUST ser el usuario del JWT; el cuerpo no acepta usuario ni precio.
 - **FR-014**: El precio de cada operación MUST obtenerse mediante `CotizacionVigentePort`, que devuelve para un jugador y una fecha el precio vigente, la estrategia y la versión usadas y la fecha de cotización.
 - **FR-015**: Mientras no esté la implementación de A, `CotizacionVigentePort` MUST devolver precio `1`, estrategia `null`, versión `null` y fecha de cotización `null`.
 - **FR-016**: El total de la operación MUST calcularse como precio vigente por cantidad, sin usar montos enviados por el cliente.
 - **FR-017**: Una compra MUST rechazarse con `422` si el saldo del usuario es menor al total, y con `409` si el superusuario no tiene tokens suficientes del jugador.
 - **FR-018**: Una venta MUST rechazarse con `422` si el usuario no tiene la cantidad de tokens a vender.
-- **FR-019**: Una orden con jugador inexistente MUST responder `404`; una orden con datos inválidos MUST responder `400`; sin JWT válido, `401`. Todos los errores usan el esquema `Error` del contrato.
-- **FR-020**: Una compra confirmada MUST transferir créditos del usuario al superusuario y tokens del superusuario al usuario; una venta confirmada, lo inverso.
+- **FR-019**: Una orden con jugador inexistente MUST responder `404`; una orden con datos inválidos MUST responder `400`; sin JWT válido, `401`; del superusuario, `403`. Todos los errores usan el esquema `Error` del contrato.
+- **FR-020**: Una compra confirmada MUST descontar el total del saldo del usuario y transferir los tokens de la tenencia del superusuario a la del usuario; una venta confirmada MUST acreditar el total al usuario y devolver los tokens a la tenencia del superusuario.
 - **FR-021**: `OperacionResponse` MUST incluir `id`, `tipo` (`COMPRA`/`VENTA`), `jugador`, `cantidad`, `precioUnitario`, `total`, `saldoPosterior` del usuario, `contraparte`, `fecha`, `estrategia` y `version` (estos dos nulos si se operó al precio inicial).
 
 **Datos de mercado**
@@ -163,7 +182,7 @@ Como feature consumidor, quiero invocar compra y venta como métodos de service 
 **Transacciones y auditoría**
 
 - **FR-028**: Cada compra o venta exitosa MUST registrar una transacción con tipo, usuario, jugador, cantidad, precio unitario, total, contraparte, fecha, estrategia y versión de la cotización.
-- **FR-029**: El sistema MUST registrar una auditoría append-only por cada operación de mercado, con autor, estado anterior, estado posterior (saldo y tenencias afectadas) y timestamp.
+- **FR-029**: El sistema MUST registrar una auditoría append-only por cada operación de mercado, con autor, operación y timestamp, y como estado anterior y posterior: el saldo del usuario, la cantidad de tokens del jugador del usuario y la cantidad de tokens del jugador del superusuario. Los créditos del superusuario no se auditan porque no existen.
 - **FR-030**: La auditoría MUST ser de solo inserción: no se exponen ni se implementan operaciones de actualización o borrado sobre ella.
 
 **Persistencia, mensajes y documentación**
@@ -171,16 +190,17 @@ Como feature consumidor, quiero invocar compra y venta como métodos de service 
 - **FR-031**: Las migraciones de esta feature MUST ubicarse en el rango Flyway `V20` a `V29`.
 - **FR-032**: Los mensajes de error MUST estar en español y no revelar datos de otros usuarios.
 - **FR-033**: La documentación OpenAPI (Swagger) y la colección de Postman MUST incluir las operaciones de esta feature tal como están en el contrato 005.
+- **FR-034**: B agrega en un PR al contrato 005 (rama `005-contrato-403-superusuario`) una respuesta específica `ErrorSuperusuarioNoOpera` (`403`, "El superusuario no puede operar en el mercado") a `POST /api/ordenes/compra`, `POST /api/ordenes/venta` y `GET /api/usuarios/{usuarioId}/portfolio`, aprobado por las tres integrantes. Se usa una respuesta propia en lugar de `ErrorProhibido`, que describe el acceso a recursos de otro usuario. En el portfolio, que ya tenía un `403` por recurso de otro usuario, el mismo `403` cubre ambos casos. El PR MUST estar mergeado antes de cerrar la feature.
 
 ### Key Entities
 
 - **Usuario**: Cuenta autenticada con rol `USUARIO` o `SUPERUSUARIO`.
-- **Superusuario**: Único usuario con rol `SUPERUSUARIO`; dueño inicial de todos los tokens, contraparte de todas las órdenes, con saldo ilimitado.
-- **Cuenta**: Saldo de créditos de un usuario.
+- **Superusuario**: Único usuario con rol `SUPERUSUARIO` (fila en `usuarios`); dueño inicial de todos los tokens (en `tenencias`), contraparte de todas las órdenes. No tiene cuenta ni créditos y no puede comprar ni vender.
+- **Cuenta**: Saldo de créditos de un usuario con rol `USUARIO`.
 - **Jugador**: Entidad del catálogo con 100 tokens emitidos.
 - **Tenencia**: Usuario, jugador, cantidad entera y precio promedio. La tenencia del superusuario es el stock disponible.
 - **Transacción**: Compra o venta confirmada con tipo, cantidad, precio unitario, total, contraparte, fecha, estrategia y versión.
-- **Auditoría de mercado**: Registro append-only con autor, estado anterior, estado posterior y timestamp.
+- **Auditoría de mercado**: Registro append-only con autor, operación, timestamp y estado anterior y posterior (saldo del usuario, tokens del usuario y tokens del superusuario).
 - **Cotización vigente**: Precio, estrategia, versión y fecha de cotización de un jugador a una fecha, obtenidos solo mediante `CotizacionVigentePort`.
 
 ## Success Criteria *(mandatory)*
@@ -194,15 +214,18 @@ Como feature consumidor, quiero invocar compra y venta como métodos de service 
 - **SC-005**: El 100% de las operaciones usa el precio devuelto por `CotizacionVigentePort`; hasta la implementación de A, ese precio es 1 crédito.
 - **SC-006**: Para cada jugador, la suma de tokens de todas las tenencias (incluido el superusuario) es siempre 100.
 - **SC-007**: Ningún registro de auditoría puede modificarse o eliminarse, y cada operación exitosa deja autor, antes, después y timestamp.
-- **SC-008**: Las respuestas de los cinco endpoints de esta feature coinciden con los esquemas y códigos del contrato 005.
-- **SC-009**: Una instalación limpia deja el superusuario con 100 tokens de cada jugador y todos los usuarios con cuenta y rol.
-- **SC-010**: Las órdenes concurrentes nunca producen saldos o tenencias negativos ni transfieren más tokens que los disponibles.
+- **SC-008**: Las respuestas de los cinco endpoints de esta feature coinciden con los esquemas y códigos del contrato 005 (incluido el `403` del superusuario, una vez mergeado el PR de FR-034).
+- **SC-009**: Una instalación limpia deja el superusuario con 100 tokens de cada jugador y sin cuenta, y todos los usuarios con rol `USUARIO` con cuenta.
+- **SC-010**: Las órdenes concurrentes nunca producen saldos o tenencias negativos ni transfieren más tokens que los disponibles, verificado con un test de integración de transacciones simultáneas sobre PostgreSQL.
 - **SC-011**: Con un `Clock` fijo, las operaciones son reproducibles: misma fecha y mismo precio para la misma entrada.
+- **SC-012**: El 100% de las órdenes del superusuario se rechaza con `403` sin cambios persistidos.
+- **SC-013**: La sincronización del catálogo sigue funcionando después de esta feature: borra los jugadores legacy sin transacciones y conserva los que tienen.
 
 ## Assumptions
 
-- El saldo inicial de 100 créditos es provisorio hasta confirmarlo con el docente; por eso es configurable.
+- El saldo inicial de cada usuario es de 100 créditos; cualquier parametrización operativa debe conservar ese valor como comportamiento por defecto y no cambia el contrato funcional.
 - El usuario opera con el JWT existente; no se agrega otro mecanismo de autenticación.
+- Las credenciales de desarrollo del superusuario solo existen en los perfiles `local` y `test`; ningún perfil fuera de ellos tiene valores por defecto para `SUPERUSUARIO_EMAIL` o `SUPERUSUARIO_PASSWORD`.
 - La verificación de rol para las operaciones de administración (`403` de `ErrorSoloSuperusuario`) la usan las features de A; esta feature solo agrega el rol al usuario, al login y al JWT.
 - El precio promedio de una tenencia es el promedio ponderado de las compras; una venta reduce la cantidad pero no altera el precio promedio.
 - El cálculo dinámico de cotizaciones pertenece a la feature 006 (A); esta feature define el puerto y su implementación fija temporal.
