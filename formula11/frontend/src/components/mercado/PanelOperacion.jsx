@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import AvisoError from '../comun/AvisoError'
 import EstadoCarga from '../comun/EstadoCarga'
 import { formatearFecha, formatearPrecio } from '../cotizaciones/cotizaciones'
@@ -87,7 +88,7 @@ export default function PanelOperacion({ mercado, operacionInicial = 'COMPRA' })
             </button>
           </form>
         )}
-      {mercado.resultado && <p className="market-success" role="status">{mercado.resultado}</p>}
+      {mercado.resultado && <p className="market-success" role="status">{mercado.resultado} <Link to="/operaciones">Ver historial</Link></p>}
       <AvisoError error={mercado.errorOperacion} />
     </section>
   )
