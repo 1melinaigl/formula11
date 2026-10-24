@@ -8,12 +8,15 @@ import com.formula11.model.*;
 import com.formula11.persistence.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 
 @Service
 public class MercadoService {
+    private static final Logger log = LoggerFactory.getLogger(MercadoService.class);
     private final UsuarioRepository usuarioRepository;
     private final JugadorRepository jugadorRepository;
     private final CuentaRepository cuentaRepository;
@@ -70,6 +73,8 @@ public class MercadoService {
                 superusuario, fecha, cotizacion.estrategia(), cotizacion.version()));
         tenenciaRepository.save(tenencia);
         auditoriaRepository.save(new AuditoriaMercado(usuario, transaccion, antes, snapshot(cuenta, tenencia, stock), fecha));
+        log.info("mercado_operacion_confirmada tipo=COMPRA usuarioId={} jugadorId={} cantidad={} correlationId={}",
+                usuarioId, jugadorId, cantidad, org.slf4j.MDC.get("correlationId"));
         return new ResultadoOperacion(transaccion, cuenta.getSaldo());
     }
 
@@ -108,6 +113,8 @@ public class MercadoService {
         tenenciaRepository.save(tenencia);
         tenenciaRepository.save(stock);
         auditoriaRepository.save(new AuditoriaMercado(usuario, transaccion, antes, snapshot(cuenta, tenencia, stock), fecha));
+        log.info("mercado_operacion_confirmada tipo=VENTA usuarioId={} jugadorId={} cantidad={} correlationId={}",
+                usuarioId, jugadorId, cantidad, org.slf4j.MDC.get("correlationId"));
         return new ResultadoOperacion(transaccion, cuenta.getSaldo());
     }
 

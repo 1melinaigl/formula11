@@ -19,7 +19,8 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("Formula11 API")
-                        .description("API de valoración de mercado de jugadores de fútbol")
+                        .description("API de valoración de mercado de jugadores de fútbol. "
+                                + "El login expone el rol y las operaciones de mercado requieren JWT.")
                         .version("v1.40")
                         .contact(new Contact()
                                 .name("Formula11 Team")

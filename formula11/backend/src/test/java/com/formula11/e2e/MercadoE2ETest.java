@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.formula11.model.*;
 import com.formula11.persistence.*;
 import com.formula11.security.JwtService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -41,6 +42,7 @@ class MercadoE2ETest {
     @Autowired TransaccionRepository transacciones;
     @Autowired AuditoriaMercadoRepository auditorias;
     @Autowired JwtService jwtService;
+    @Autowired PasswordEncoder passwordEncoder;
     @Autowired JdbcTemplate jdbc;
 
     @BeforeEach
@@ -67,8 +69,6 @@ class MercadoE2ETest {
                 .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
         JsonNode json = objectMapper.readTree(registro);
         Usuario comprador = usuarios.findByEmail("ana-market@example.com").orElseThrow();
-        cuentas.saveAndFlush(new Cuenta(comprador, new BigDecimal("100")));
-
         mockMvc.perform(post("/api/ordenes/compra")
                         .header("Authorization", "Bearer " + json.get("token").asText())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -254,6 +254,44 @@ class MercadoE2ETest {
                 .andExpect(jsonPath("$.tokensDisponibles").value(98));
     }
 
+    @Test
+    void registroCreaCuentaYLoginExponeRolEnRespuestaYJwt() throws Exception {
+        String registro = mockMvc.perform(post("/api/usuarios/registro")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"nombre\":\"Rol\",\"email\":\"rol-user@example.com\",\"password\":\"Secreto123!\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.rol").doesNotExist())
+                .andReturn().getResponse().getContentAsString();
+        Usuario usuario = usuarios.findByEmail("rol-user@example.com").orElseThrow();
+        Assertions.assertEquals(Rol.USUARIO, usuario.getRol());
+        Assertions.assertEquals(new BigDecimal("100.0000"), cuentas.findByUsuarioId(usuario.getId()).orElseThrow().getSaldo());
+
+        String login = mockMvc.perform(post("/api/usuarios/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"rol-user@example.com\",\"password\":\"Secreto123!\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.rol").value("USUARIO"))
+                .andReturn().getResponse().getContentAsString();
+        Assertions.assertEquals(Rol.USUARIO, jwtService.extraerRol(objectMapper.readTree(login).get("token").asText()));
+    }
+
+    @Test
+    void superusuarioNoTieneCuentaYLoginExponeRolEnRespuestaYJwt() throws Exception {
+        Usuario superusuario = new Usuario("Super", "rol-super@example.com",
+                passwordEncoder.encode("Secreto123!"));
+        superusuario.asignarRol(Rol.SUPERUSUARIO);
+        usuarios.saveAndFlush(superusuario);
+
+        String login = mockMvc.perform(post("/api/usuarios/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"rol-super@example.com\",\"password\":\"Secreto123!\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.rol").value("SUPERUSUARIO"))
+                .andReturn().getResponse().getContentAsString();
+        Assertions.assertTrue(cuentas.findByUsuarioId(superusuario.getId()).isEmpty());
+        Assertions.assertEquals(Rol.SUPERUSUARIO, jwtService.extraerRol(objectMapper.readTree(login).get("token").asText()));
+    }
+
     private Usuario crearSuperusuario(String email) {
         Usuario usuario = new Usuario("Super", email, "hash");
         usuario.asignarRol(Rol.SUPERUSUARIO);
@@ -266,7 +304,11 @@ class MercadoE2ETest {
                         .content("{\"nombre\":\"Ana\",\"email\":\"" + email + "\",\"password\":\"Secreto123!\"}"))
                 .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
         Usuario usuario = usuarios.findByEmail(email).orElseThrow();
-        cuentas.saveAndFlush(new Cuenta(usuario, saldo));
+        Cuenta cuenta = cuentas.findByUsuarioId(usuario.getId()).orElseThrow();
+        if (saldo.compareTo(cuenta.getSaldo()) < 0) {
+            cuenta.debitar(cuenta.getSaldo().subtract(saldo));
+            cuentas.saveAndFlush(cuenta);
+        }
         return objectMapper.readTree(registro).get("token").asText();
     }
 }

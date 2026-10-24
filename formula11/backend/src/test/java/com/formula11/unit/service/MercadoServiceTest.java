@@ -66,6 +66,7 @@ class MercadoServiceTest {
         assertEquals(98, stock.getCantidad());
         verify(transacciones).save(any(Transaccion.class));
         verify(auditorias).save(any());
+        verify(cotizaciones).vigente(jugador, ahora);
     }
 
     @Test
@@ -111,6 +112,7 @@ class MercadoServiceTest {
         assertEquals(102, stock.getCantidad());
         verify(transacciones).save(any(Transaccion.class));
         verify(auditorias).save(any());
+        verify(cotizaciones).vigente(jugador, ahora);
     }
 
     @Test

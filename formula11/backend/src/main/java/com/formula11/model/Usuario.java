@@ -2,6 +2,7 @@ package com.formula11.model;
 
 import jakarta.persistence.*;
 import java.time.Instant;
+import java.time.Clock;
 
 @Entity
 @Table(name = "usuarios")
@@ -24,10 +25,14 @@ public class Usuario {
     protected Usuario() { }
 
     public Usuario(String nombre, String email, String passwordHash) {
+        this(nombre, email, passwordHash, Clock.systemUTC().instant());
+    }
+
+    public Usuario(String nombre, String email, String passwordHash, Instant fechaRegistro) {
         this.nombre = requireText(nombre, "El nombre es obligatorio");
         this.email = normalizarEmail(email);
         this.passwordHash = requireText(passwordHash, "La contraseña es obligatoria");
-        this.fechaRegistro = Instant.now();
+        this.fechaRegistro = java.util.Objects.requireNonNull(fechaRegistro, "La fecha de registro es obligatoria");
     }
 
     private static String requireText(String value, String message) {

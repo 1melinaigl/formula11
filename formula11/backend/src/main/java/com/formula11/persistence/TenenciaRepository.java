@@ -11,4 +11,6 @@ public interface TenenciaRepository extends JpaRepository<Tenencia, Long> {
     @Query("select t from Tenencia t where t.usuario.id = :usuarioId and t.jugador.id = :jugadorId")
     Optional<Tenencia> findByUsuarioIdAndJugadorIdForUpdate(@Param("usuarioId") Long usuarioId, @Param("jugadorId") Long jugadorId);
     Optional<Tenencia> findByUsuarioIdAndJugadorId(Long usuarioId, Long jugadorId);
+    void deleteByUsuarioIdAndJugadorId(Long usuarioId, Long jugadorId);
+    long countByUsuarioId(Long usuarioId);
 }
