@@ -54,11 +54,11 @@ Como superusuario quiero recalcular las dos estrategias para todos los jugadores
 
 **Acceptance Scenarios**:
 
-1. **Given** jugadores y métricas persistidas, **When** un superusuario llama `POST /api/cotizaciones/recalcular` sin cuerpo, **Then** se calcula la semana actual para las dos estrategias y se devuelve `200` con `RecalculoResponse`.
+1. **Given** jugadores y métricas persistidas, **When** un superusuario llama `POST /api/cotizaciones/recalcular` sin cuerpo, **Then** se calcula la última semana cerrada, es decir, la que termina el domingo anterior a la fecha del `Clock`, para las dos estrategias y se devuelve `200` con `RecalculoResponse`.
 2. **Given** una semana ya calculada, **When** se recalcula esa semana, **Then** sus cotizaciones se reemplazan transaccionalmente y no se duplican.
 3. **Given** el scheduler semanal se dispara, **When** solicita la actualización de métricas mediante la interfaz disponible, **Then** después llama al mismo método de service que usa el endpoint manual; el scheduler no contiene lógica de negocio.
 4. **Given** el jugador tiene una cotización previa, **When** el score semanal se calcula, **Then** el precio es `precio_t = precio_{t-1} * (1 + k * (score_t - 0.5))`, con `k = 0,4`, variación limitada a `±20 %` y piso de `0,10` créditos.
-5. **Given** el jugador no tiene cotización previa, **When** se calcula su primera semana, **Then** el precio inicial es `1` crédito y la variación es nula en la respuesta.
+5. **Given** el jugador no tiene cotización previa, **When** se calcula su primera semana, **Then** se toma `1` crédito como precio de partida del momento cero, se aplica la fórmula a esa primera semana y la variación se informa como `null` en la respuesta.
 6. **Given** dos estrategias calculan la misma semana, **When** se persisten los resultados, **Then** cada una conserva su propia serie de precios y cada registro incluye código, versión y copia de los pesos utilizados.
 7. **Given** finaliza correctamente un recálculo, **When** se confirma la transacción, **Then** se invalida la caché de cotización vigente y el log estructurado contiene `correlationId`, inicio, fin, semanas y resultado.
 
@@ -72,11 +72,11 @@ Como sistema quiero convertir las métricas de partido en un score normalizado p
 
 **Acceptance Scenarios**:
 
-1. **Given** métricas de jugadores de una misma posición en todas las ligas, **When** se calcula `RENDIMIENTO_POSICION`, **Then** se suman las métricas configuradas para POR, DEF, MED o DEL, se aplican pesos positivos y negativos y el resultado se normaliza en `[0,1]` dentro de esa posición.
+1. **Given** métricas de jugadores que jugaron en una misma semana, posición y todas las ligas, **When** se calcula `RENDIMIENTO_POSICION`, **Then** se toma el promedio por partido de cada métrica en la semana, cada métrica se estandariza con z-score dentro de la posición y se aplican los pesos, con resultado normalizado y acotado a `[0,1]`.
 2. **Given** un arquero con atajadas, valla invicta, goles recibidos y tarjetas, **When** se calcula `RENDIMIENTO_POSICION`, **Then** se incluyen atajadas y valla invicta y se restan goles recibidos, amarillas y rojas según los pesos de POR.
 3. **Given** un jugador con menos de 90 minutos, **When** se calcula `RENDIMIENTO_POSICION`, **Then** se aplica el peso de `menosDe90Minutos`.
-4. **Given** los últimos seis partidos del jugador, **When** se calcula `CONSISTENCIA`, **Then** el score es `disponibilidad * (rating promedio - lambda * desvío estándar del rating)`, sumando titularidad y restando suplencias según los pesos configurados.
-5. **Given** el jugador tiene menos de cuatro partidos en la ventana de `CONSISTENCIA`, **When** se calcula su score, **Then** se utiliza el score de `RENDIMIENTO_POSICION`.
+4. **Given** los últimos seis partidos del jugador, **When** se calcula `CONSISTENCIA`, **Then** el score bruto es `disponibilidad * (rating promedio - lambda * desvío estándar del rating)`, sumando titularidad y restando suplencias según los pesos configurados, y luego se normaliza junto con los scores brutos de la misma posición.
+5. **Given** el jugador tiene menos de cuatro partidos en la ventana de `CONSISTENCIA`, **When** se calcula su score, **Then** no entra al grupo de normalización de `CONSISTENCIA` y utiliza directamente su score ya normalizado de `RENDIMIENTO_POSICION`.
 6. **Given** un grupo de normalización tiene un solo jugador o todos sus valores son iguales, **When** se normaliza, **Then** no se divide por cero y se produce un score válido en `[0,1]`.
 
 ### User Story 4 - Recalcular evolución histórica (Priority: P2)
@@ -89,7 +89,7 @@ Como superusuario quiero recalcular un rango de semanas usando las métricas per
 
 **Acceptance Scenarios**:
 
-1. **Given** un rango válido con `desde` y `hasta`, **When** se solicita el recálculo, **Then** se recalculan todas las semanas del rango inclusive con las métricas persistidas y el `Clock` inyectado.
+1. **Given** un rango válido con `desde` y `hasta`, **When** se solicita el recálculo, **Then** se recalculan todas las semanas del rango inclusive con las métricas persistidas y el `Clock` inyectado; si ya existen semanas posteriores, se continúa hasta la última semana calculada para no cortar la cadena de precios.
 2. **Given** solo se envía `desde` o solo `hasta`, **When** se valida la solicitud, **Then** se responde `400`.
 3. **Given** `desde` es posterior a `hasta`, **When** se valida la solicitud, **Then** se responde `400` con `ErrorValidacion`.
 4. **Given** no hay métricas para un jugador en una semana, **When** se procesa esa semana, **Then** se guarda una cotización con el mismo precio anterior para que la serie no tenga huecos.
@@ -97,16 +97,20 @@ Como superusuario quiero recalcular un rango de semanas usando las métricas per
 
 ## Edge Cases
 
-- Métricas faltantes en un partido se tratan como valores ausentes definidos por el dominio y no provocan una cotización inválida; el caso queda cubierto por pruebas unitarias.
+- Las métricas de conteo ausentes valen cero porque la fuente omite los valores en cero.
+- Un rating ausente se ignora en ese partido y su peso se redistribuye proporcionalmente entre las demás métricas positivas.
+- Una fila sin minutos no participa del cálculo de ese jugador y partido, y se registra en el log; no se descarta el partido entero por otra métrica ausente.
 - Un jugador sin partidos en una semana conserva el precio anterior.
 - Un jugador sin métricas conserva el precio inicial de `1` crédito.
-- Un grupo de normalización con un solo jugador o valores iguales genera un score válido y no lanza división por cero.
+- Solo los jugadores que jugaron en la semana entran al grupo de normalización; los que no jugaron conservan el precio.
+- La normalización usa `z = (valor - promedio) / desvío estándar`, acota `z` a `[-2,2]` y calcula `score = (z + 2) / 4`; con desvío cero el score es `0,5`.
+- En `CONSISTENCIA`, los jugadores con menos de cuatro partidos no entran al grupo de normalización y usan directamente el score normalizado de `RENDIMIENTO_POSICION`.
 - Los precios se redondean a cuatro decimales y nunca quedan por debajo de `0,10` créditos.
 - Los pesos pueden ser positivos o negativos; una métrica desconocida, una posición faltante o un parámetro fuera de rango produce `400`.
 - Una semana ya calculada se reemplaza, no se duplica.
 - Si otro recálculo está en curso, el nuevo pedido responde `409` con `Error`.
 - Si falla una semana de un rango, no se confirma parcialmente esa semana; cada semana es una unidad transaccional.
-- Si falla la actualización de métricas previa del scheduler, el job no inventa datos ni ejecuta un recálculo incompleto.
+- Si la actualización de métricas falla o todavía no tiene implementación, el job lo registra en el log y recalcula igual con las métricas ya persistidas; el superusuario puede volver a recalcular esa semana después y se reemplaza.
 - La concurrencia entre activación y recálculo debe dejar una estrategia activa coherente y debe invalidar la caché al terminar ambas operaciones.
 - Un código de estrategia inexistente responde `404`; un usuario no autenticado responde `401`.
 
@@ -121,7 +125,9 @@ Como superusuario quiero recalcular un rango de semanas usando las métricas per
 - **FR-005**: Cada peso MUST identificar una métrica y una posición (`POR`, `DEF`, `MED`, `DEL`) para `RENDIMIENTO_POSICION`, o `TODAS` para `CONSISTENCIA`; un peso negativo MUST restar del score.
 - **FR-006**: `RENDIMIENTO_POSICION` MUST contemplar goles, asistencias, tiros, pases clave, regates, entradas, intercepciones y rating; para POR también atajadas y valla invicta; y debe poder penalizar amarillas, rojas, goles recibidos y menos de 90 minutos.
 - **FR-007**: `CONSISTENCIA` MUST usar los últimos seis partidos, disponibilidad, promedio y desvío estándar del rating, `lambda`, titularidad y suplencias; con menos de cuatro partidos MUST usar `RENDIMIENTO_POSICION`.
-- **FR-008**: Los scores MUST normalizarse en `[0,1]` dentro de la misma posición y comparando todas las ligas.
+- **FR-008**: Los scores MUST normalizarse en `[0,1]` dentro de la misma posición, usando únicamente jugadores que jugaron en la semana y comparando todas las ligas. La normalización MUST calcular `z = (valor - promedio) / desvío estándar`, acotar `z` a `[-2,2]` y usar `(z + 2) / 4`; con desvío cero MUST devolver `0,5`.
+- **FR-008a**: En `CONSISTENCIA`, solo los jugadores con al menos cuatro partidos en la ventana MUST integrar el grupo de normalización; los demás MUST usar directamente su score normalizado de `RENDIMIENTO_POSICION`.
+- **FR-008b**: Las métricas de conteo ausentes MUST interpretarse como cero. Un rating ausente MUST ignorarse en ese partido y su peso MUST redistribuirse proporcionalmente entre las demás métricas positivas. Una fila sin minutos MUST excluirse del cálculo de ese jugador y partido y MUST generar un log estructurado.
 - **FR-009**: Modificar pesos o parámetros MUST crear una nueva versión inmutable y MUST comenzar a usarse desde el próximo recálculo.
 - **FR-010**: El endpoint `GET /api/estrategias` MUST devolver las estrategias con su versión vigente y la activa, conforme a `EstrategiaResponse`.
 - **FR-011**: El endpoint `GET /api/estrategias/{codigo}/versiones` MUST devolver el historial de versiones de la más nueva a la más vieja y responder `404` si el código no existe.
@@ -130,17 +136,18 @@ Como superusuario quiero recalcular un rango de semanas usando las métricas per
 - **FR-014**: El endpoint `POST /api/estrategias/{codigo}/activar` MUST responder `200` con `EstrategiaResponse`, o `401`, `403` o `404` según el contrato.
 - **FR-015**: El sistema MUST persistir `cotizacion` con jugador, fecha, precio, score, estrategia, versión y copia de los pesos usados; MUST mantener un índice por `(jugador_id, fecha DESC)`.
 - **FR-016**: Cada semana MUST calcular y guardar una cotización para las dos estrategias, con series de precios independientes; el mercado MUST operar con la activa.
-- **FR-017**: La primera cotización MUST ser de `1` crédito. Las siguientes MUST usar `k = 0,4`, limitar la variación semanal a `±20 %`, aplicar piso de `0,10` y persistir `BigDecimal` con cuatro decimales.
-- **FR-018**: El endpoint `POST /api/cotizaciones/recalcular` MUST aceptar opcionalmente `RecalculoRequest`, recalcular la semana actual sin cuerpo, o todas las semanas inclusivas de un rango, y responder `RecalculoResponse`.
+- **FR-017**: El precio de partida del momento cero del mercado MUST ser `1` crédito. La primera semana MUST aplicar la fórmula usando ese precio de partida; su variación MUST informarse como `null`. Las semanas siguientes MUST usar `k = 0,4`, limitar la variación semanal a `±20 %`, aplicar piso de `0,10` y persistir `BigDecimal` con cuatro decimales.
+- **FR-017a**: La semana MUST comenzar el lunes y terminar el domingo en `America/Argentina/Buenos_Aires`; cada partido MUST asignarse según su fecha local y la cotización MUST llevar como fecha el domingo de esa semana. El scheduler MUST ejecutarse los lunes a las 06:00 por un cron configurable.
+- **FR-018**: El endpoint `POST /api/cotizaciones/recalcular` MUST aceptar opcionalmente `RecalculoRequest`, recalcular sin cuerpo la última semana cerrada (la que termina el domingo anterior a la fecha del `Clock`), o todas las semanas inclusivas de un rango, y responder `RecalculoResponse`. Si existen semanas calculadas posteriores al rango solicitado, el recálculo MUST continuar hasta la última para preservar la cadena de precios.
 - **FR-019**: El recálculo MUST reemplazar una semana existente y ser transaccional por semana; un recálculo concurrente MUST responder `409`.
 - **FR-020**: El scheduler MUST tener cron configurable, solicitar primero la actualización de métricas mediante una interfaz y luego invocar el mismo método de service del endpoint manual. No MUST contener lógica de negocio.
 - **FR-021**: Todo Service que use fecha u hora actual MUST recibir un `java.time.Clock` inyectado; no MUST llamar directamente a `LocalDate.now()` ni `Instant.now()`.
 - **FR-022**: La compra o venta de tokens no forma parte de esta feature, pero cualquier integración futura MUST delegar en métodos reutilizables de Service; un Controller solo traduce HTTP.
 - **FR-023**: La implementación de `CotizacionVigentePort` MUST exponer `obtener(Long jugadorId, LocalDate fecha)` y devolver el último registro de la estrategia activa con fecha menor o igual a la solicitada.
-- **FR-024**: Si no existe cotización vigente, `CotizacionVigentePort` MUST devolver `CotizacionVigente(jugadorId, 1 crédito, fecha solicitada, null, null)`. El puerto debe estar en `com.formula11.service` y el record en `com.formula11.model` si todavía no existen; debe eliminarse `CotizacionFijaAdapter` si es provisoria.
+- **FR-024**: Si no existe cotización vigente, `CotizacionVigentePort` MUST devolver `CotizacionVigente(jugadorId, 1 crédito, null, null, null)`, donde la fecha `null` distingue el precio inicial del mercado. El puerto debe estar en `com.formula11.service` y el record en `com.formula11.model` si todavía no existen; debe eliminarse `CotizacionFijaAdapter` si es provisoria.
 - **FR-025**: La caché de cotización vigente MUST invalidarse al finalizar cada recálculo y al activar otra estrategia.
 - **FR-026**: Los logs estructurados del scheduler y del recálculo MUST incluir `correlationId` sin registrar secretos.
-- **FR-027**: Las migraciones Flyway MUST cubrir V10 a V14 para las tablas, índices, seeds y evolución de esquema requeridos.
+- **FR-027**: Las migraciones Flyway MUST usar el rango reservado V10 a V14 para esta feature; esta implementación usa V10, V11 y V12 para las tablas, índices y seeds requeridos, y V13 y V14 quedan libres.
 - **FR-028**: Los endpoints MUST respetar autenticación JWT, roles, esquemas, códigos de respuesta y nombres definidos en el contrato de la Entrega 2; los errores MUST usar `Error` o el response específico del contrato.
 
 ### Contract Surface
@@ -183,15 +190,16 @@ No se agregan endpoints para la carga de métricas ni para consultar historial p
 - **SC-005**: Un usuario sin rol de superusuario nunca puede crear versiones, activar estrategias ni recalcular mediante los endpoints protegidos.
 - **SC-006**: Un recálculo exitoso invalida la cotización vigente cacheada y la siguiente lectura refleja la serie de la estrategia activa.
 - **SC-007**: El scheduler y el endpoint manual producen el mismo resultado para la misma fecha, datos y configuración.
-- **SC-008**: El backfill de un rango válido produce una cotización por jugador, estrategia y semana del rango inclusive.
+- **SC-008**: El backfill de un rango válido produce una cotización por jugador, estrategia y semana del rango inclusive, y se extiende hasta la última semana ya calculada cuando existen semanas posteriores.
 
 ## Assumptions
 
 - Las entidades `Jugador`, sus posiciones y ligas existen por features anteriores y sus identificadores son la referencia de `MetricaPartido` y `Cotizacion`.
-- Las fechas de cotización representan el cierre semanal y se calculan en la zona horaria configurada por la aplicación.
+- Las semanas son de lunes a domingo en `America/Argentina/Buenos_Aires`; cada partido se asigna según su fecha local y la fecha de cotización es el domingo. El scheduler corre el lunes a las 06:00 mediante cron configurable.
 - `Clock` se inyecta en todo Service que dependa de fecha/hora; los tests usan un `Clock` fijo para reproducibilidad.
 - El rol `SUPERUSUARIO` ya es emitido por JWT en la feature 007; esta feature solo aplica la autorización definida en el contrato.
-- La interfaz de actualización de métricas será implementada por la feature 011; mientras no exista una implementación operativa, el scheduler no inventa métricas ni modifica cotizaciones.
+- Si la actualización de métricas falla o todavía no tiene implementación, el scheduler lo registra en el log y recalcula con las métricas locales ya persistidas. El superusuario puede volver a recalcular esa semana después y reemplazar sus cotizaciones.
 - La compra y venta del mercado consumirán `CotizacionVigentePort` desde la feature 007 y no se duplicará lógica de cotización en esos services.
-- Flyway V10 a V14 se ejecuta en orden sobre el esquema de las features previas.
+- Las migraciones Flyway de esta implementación son V10, V11 y V12, ejecutadas en orden sobre el esquema de las features previas; V13 y V14 quedan libres dentro del rango reservado.
 - Las cinco ligas del dominio participan en la normalización; las métricas de prueba pueden representar cualquiera de ellas.
+- En un backfill, cada semana busca como precio anterior la última cotización de la misma estrategia con fecha anterior, aunque quede fuera del rango. Si no existe, usa `1` crédito y aplica la fórmula desde esa primera semana. Si hay semanas posteriores ya calculadas, el backfill se extiende hasta la última para conservar la continuidad.
