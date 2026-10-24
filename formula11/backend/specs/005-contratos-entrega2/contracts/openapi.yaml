@@ -543,6 +543,8 @@ paths:
           $ref: '#/components/responses/ErrorValidacion'
         '401':
           $ref: '#/components/responses/ErrorNoAutorizado'
+        '403':
+          $ref: '#/components/responses/ErrorSuperusuarioNoOpera'
         '404':
           $ref: '#/components/responses/ErrorNoEncontrado'
         '409':
@@ -582,6 +584,8 @@ paths:
           $ref: '#/components/responses/ErrorValidacion'
         '401':
           $ref: '#/components/responses/ErrorNoAutorizado'
+        '403':
+          $ref: '#/components/responses/ErrorSuperusuarioNoOpera'
         '404':
           $ref: '#/components/responses/ErrorNoEncontrado'
         '422':
@@ -596,7 +600,9 @@ paths:
     get:
       tags: [Portfolio]
       summary: Posición actual del usuario
-      description: Solo el propio usuario puede ver su portfolio (403 si el id no coincide con el del JWT).
+      description: |
+        Solo el propio usuario puede ver su portfolio (403 si el id no coincide con el del JWT).
+        El superusuario no tiene portfolio: si lo pide, también recibe 403.
       x-feature: 009-portfolio-historial
       x-responsable: B
       parameters:
@@ -611,7 +617,13 @@ paths:
         '401':
           $ref: '#/components/responses/ErrorNoAutorizado'
         '403':
-          $ref: '#/components/responses/ErrorProhibido'
+          description: |
+            El portfolio pertenece a otro usuario (mismo caso que ErrorProhibido),
+            o quien lo pide es el superusuario, que no tiene portfolio (mismo caso que ErrorSuperusuarioNoOpera).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '404':
           $ref: '#/components/responses/ErrorNoEncontrado'
 
@@ -826,6 +838,16 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+    ErrorSuperusuarioNoOpera:
+      description: El superusuario no puede operar en el mercado (compraría o vendería contra sí mismo).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            mensaje: El superusuario no puede operar en el mercado.
+            timestamp: '2026-10-24T15:00:00Z'
+            correlationId: 3f2c1a9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b
     ErrorNoEncontrado:
       description: El recurso no existe.
       content:
