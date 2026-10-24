@@ -24,6 +24,8 @@ No implementa:
 
 La tabla `metrica_partido` se llena con datos de prueba en esta feature. La integración futura debe hacerlo mediante la interfaz de actualización de métricas, sin acoplar el cálculo al scraper.
 
+La descripción del contrato que dice "semana actual" se interpreta en esta feature como la última semana cerrada, la que termina el domingo anterior a la fecha del `Clock`; esta aclaración se incorporará en una próxima versión del contrato. La configuración de estrategias es transparente: `GET /api/estrategias` y `GET /api/estrategias/{codigo}/versiones` están disponibles para cualquier usuario autenticado. La restricción de ver únicamente la estrategia activa aplica a las cotizaciones, el historial, la cotización vigente y el ranking de la feature `008`, no a la configuración.
+
 ## User Scenarios & Testing
 
 ### User Story 1 - Consultar y administrar estrategias (Priority: P1)
@@ -58,7 +60,7 @@ Como superusuario quiero recalcular las dos estrategias para todos los jugadores
 2. **Given** una semana ya calculada, **When** se recalcula esa semana, **Then** sus cotizaciones se reemplazan transaccionalmente y no se duplican.
 3. **Given** el scheduler semanal se dispara, **When** solicita la actualización de métricas mediante la interfaz disponible, **Then** después llama al mismo método de service que usa el endpoint manual; el scheduler no contiene lógica de negocio.
 4. **Given** el jugador tiene una cotización previa, **When** el score semanal se calcula, **Then** el precio es `precio_t = precio_{t-1} * (1 + k * (score_t - 0.5))`, con `k = 0,4`, variación limitada a `±20 %` y piso de `0,10` créditos.
-5. **Given** el jugador no tiene cotización previa, **When** se calcula su primera semana, **Then** se toma `1` crédito como precio de partida del momento cero, se aplica la fórmula a esa primera semana y la variación se informa como `null` en la respuesta.
+5. **Given** el jugador no tiene cotización previa, **When** se calcula una semana, **Then** si jugó se aplica la fórmula sobre `1` crédito de precio de partida y la variación se informa como `null`; si no jugó, conserva `1` crédito. Un jugador sin métricas en ninguna semana permanece en `1` crédito.
 6. **Given** dos estrategias calculan la misma semana, **When** se persisten los resultados, **Then** cada una conserva su propia serie de precios y cada registro incluye código, versión y copia de los pesos utilizados.
 7. **Given** finaliza correctamente un recálculo, **When** se confirma la transacción, **Then** se invalida la caché de cotización vigente y el log estructurado contiene `correlationId`, inicio, fin, semanas y resultado.
 
@@ -93,17 +95,16 @@ Como superusuario quiero recalcular un rango de semanas usando las métricas per
 2. **Given** solo se envía `desde` o solo `hasta`, **When** se valida la solicitud, **Then** se responde `400`.
 3. **Given** `desde` es posterior a `hasta`, **When** se valida la solicitud, **Then** se responde `400` con `ErrorValidacion`.
 4. **Given** no hay métricas para un jugador en una semana, **When** se procesa esa semana, **Then** se guarda una cotización con el mismo precio anterior para que la serie no tenga huecos.
-5. **Given** un jugador no tiene métricas cargadas, **When** se procesa cualquier semana, **Then** cotiza a `1` crédito y no varía.
+5. **Given** un jugador no jugó en una semana, **When** se procesa esa semana, **Then** su precio es el anterior de la misma estrategia, o `1` crédito si no tiene ninguno; si jugó, se aplica la fórmula sobre ese precio anterior, o sobre `1` crédito si no tiene ninguno. Un jugador sin métricas en ninguna semana permanece en `1` crédito.
 
 ## Edge Cases
 
 - Las métricas de conteo ausentes valen cero porque la fuente omite los valores en cero.
 - Un rating ausente se ignora en ese partido y su peso se redistribuye proporcionalmente entre las demás métricas positivas.
 - Una fila sin minutos no participa del cálculo de ese jugador y partido, y se registra en el log; no se descarta el partido entero por otra métrica ausente.
-- Un jugador sin partidos en una semana conserva el precio anterior.
-- Un jugador sin métricas conserva el precio inicial de `1` crédito.
+- En cada semana, un jugador que no jugó conserva el precio anterior de la misma estrategia, o cotiza a `1` crédito si no tiene ninguno; un jugador que jugó aplica la fórmula sobre el precio anterior, o sobre `1` crédito si no tiene ninguno. Un jugador sin métricas en ninguna semana queda en `1` crédito.
 - Solo los jugadores que jugaron en la semana entran al grupo de normalización; los que no jugaron conservan el precio.
-- La normalización usa `z = (valor - promedio) / desvío estándar`, acota `z` a `[-2,2]` y calcula `score = (z + 2) / 4`; con desvío cero el score es `0,5`.
+- La normalización tiene dos niveles: cada métrica se estandariza dentro de la posición en la semana, sin acotar y con valor `0` si el desvío es `0`; luego la suma ponderada se normaliza con z-score acotado a `[-2,2]` y `score = (z + 2) / 4`, con score `0,5` si el desvío final es `0`.
 - En `CONSISTENCIA`, los jugadores con menos de cuatro partidos no entran al grupo de normalización y usan directamente el score normalizado de `RENDIMIENTO_POSICION`.
 - Los precios se redondean a cuatro decimales y nunca quedan por debajo de `0,10` créditos.
 - Los pesos pueden ser positivos o negativos; una métrica desconocida, una posición faltante o un parámetro fuera de rango produce `400`.
@@ -125,18 +126,18 @@ Como superusuario quiero recalcular un rango de semanas usando las métricas per
 - **FR-005**: Cada peso MUST identificar una métrica y una posición (`POR`, `DEF`, `MED`, `DEL`) para `RENDIMIENTO_POSICION`, o `TODAS` para `CONSISTENCIA`; un peso negativo MUST restar del score.
 - **FR-006**: `RENDIMIENTO_POSICION` MUST contemplar goles, asistencias, tiros, pases clave, regates, entradas, intercepciones y rating; para POR también atajadas y valla invicta; y debe poder penalizar amarillas, rojas, goles recibidos y menos de 90 minutos.
 - **FR-007**: `CONSISTENCIA` MUST usar los últimos seis partidos, disponibilidad, promedio y desvío estándar del rating, `lambda`, titularidad y suplencias; con menos de cuatro partidos MUST usar `RENDIMIENTO_POSICION`.
-- **FR-008**: Los scores MUST normalizarse en `[0,1]` dentro de la misma posición, usando únicamente jugadores que jugaron en la semana y comparando todas las ligas. La normalización MUST calcular `z = (valor - promedio) / desvío estándar`, acotar `z` a `[-2,2]` y usar `(z + 2) / 4`; con desvío cero MUST devolver `0,5`.
-- **FR-008a**: En `CONSISTENCIA`, solo los jugadores con al menos cuatro partidos en la ventana MUST integrar el grupo de normalización; los demás MUST usar directamente su score normalizado de `RENDIMIENTO_POSICION`.
-- **FR-008b**: Las métricas de conteo ausentes MUST interpretarse como cero. Un rating ausente MUST ignorarse en ese partido y su peso MUST redistribuirse proporcionalmente entre las demás métricas positivas. Una fila sin minutos MUST excluirse del cálculo de ese jugador y partido y MUST generar un log estructurado.
+- **FR-008**: La normalización MUST tener dos niveles: (a) cada métrica MUST estandarizarse con z-score dentro de la posición en la semana, sin acotar y con valor `0` si su desvío estándar es `0`; (b) la suma ponderada de las métricas estandarizadas MUST normalizarse siempre con z-score dentro de la misma posición, usando únicamente jugadores que jugaron en la semana y comparando todas las ligas, acotando el z-score final a `[-2,2]` y aplicando `(z + 2) / 4`; si el desvío final es `0`, MUST devolver `0,5`.
+- **FR-008a**: En `CONSISTENCIA`, solo los jugadores con al menos cuatro partidos en la ventana MUST integrar el grupo del nivel (b); los demás MUST usar directamente su score ya normalizado de `RENDIMIENTO_POSICION`. `CONSISTENCIA` aplica únicamente el nivel (b) a su score bruto.
+- **FR-008b**: Las métricas de conteo ausentes MUST interpretarse como cero. Un rating ausente MUST ignorarse en ese partido y su peso MUST redistribuirse proporcionalmente entre las demás métricas positivas. Una fila sin minutos MUST devolverse en el resultado del cálculo para que el Service la registre en el log.
 - **FR-009**: Modificar pesos o parámetros MUST crear una nueva versión inmutable y MUST comenzar a usarse desde el próximo recálculo.
 - **FR-010**: El endpoint `GET /api/estrategias` MUST devolver las estrategias con su versión vigente y la activa, conforme a `EstrategiaResponse`.
 - **FR-011**: El endpoint `GET /api/estrategias/{codigo}/versiones` MUST devolver el historial de versiones de la más nueva a la más vieja y responder `404` si el código no existe.
-- **FR-012**: Solo `SUPERUSUARIO` MUST poder crear versiones, activar estrategias y solicitar recálculos; los demás usuarios autenticados MUST recibir `403`.
+- **FR-012**: Solo `SUPERUSUARIO` MUST poder crear versiones, activar estrategias y solicitar recálculos; los demás usuarios autenticados MUST recibir `403`. Cualquier usuario autenticado MUST poder consultar el listado y el historial de versiones de estrategias.
 - **FR-013**: El endpoint `POST /api/estrategias/{codigo}/versiones` MUST aceptar `NuevaVersionRequest` y responder `201` con `EstrategiaResponse`, o `400`, `401`, `403` o `404` según el contrato.
 - **FR-014**: El endpoint `POST /api/estrategias/{codigo}/activar` MUST responder `200` con `EstrategiaResponse`, o `401`, `403` o `404` según el contrato.
 - **FR-015**: El sistema MUST persistir `cotizacion` con jugador, fecha, precio, score, estrategia, versión y copia de los pesos usados; MUST mantener un índice por `(jugador_id, fecha DESC)`.
 - **FR-016**: Cada semana MUST calcular y guardar una cotización para las dos estrategias, con series de precios independientes; el mercado MUST operar con la activa.
-- **FR-017**: El precio de partida del momento cero del mercado MUST ser `1` crédito. La primera semana MUST aplicar la fórmula usando ese precio de partida; su variación MUST informarse como `null`. Las semanas siguientes MUST usar `k = 0,4`, limitar la variación semanal a `±20 %`, aplicar piso de `0,10` y persistir `BigDecimal` con cuatro decimales.
+- **FR-017**: En cada semana, si el jugador no jugó, su precio MUST ser el anterior de la misma estrategia, o `1` crédito si no tiene ninguno. Si jugó, MUST aplicarse la fórmula sobre ese precio anterior, o sobre `1` crédito si no tiene ninguno; la primera cotización MUST informar variación `null`. Un jugador sin métricas en ninguna semana MUST permanecer en `1` crédito. Las variaciones MUST limitarse a `±20 %`, aplicar piso de `0,10` y persistir `BigDecimal` con cuatro decimales.
 - **FR-017a**: La semana MUST comenzar el lunes y terminar el domingo en `America/Argentina/Buenos_Aires`; cada partido MUST asignarse según su fecha local y la cotización MUST llevar como fecha el domingo de esa semana. El scheduler MUST ejecutarse los lunes a las 06:00 por un cron configurable.
 - **FR-018**: El endpoint `POST /api/cotizaciones/recalcular` MUST aceptar opcionalmente `RecalculoRequest`, recalcular sin cuerpo la última semana cerrada (la que termina el domingo anterior a la fecha del `Clock`), o todas las semanas inclusivas de un rango, y responder `RecalculoResponse`. Si existen semanas calculadas posteriores al rango solicitado, el recálculo MUST continuar hasta la última para preservar la cadena de precios.
 - **FR-019**: El recálculo MUST reemplazar una semana existente y ser transaccional por semana; un recálculo concurrente MUST responder `409`.
