@@ -10,62 +10,62 @@
 
 ## Requirement Completeness
 
-- [ ] CHK001 - ¿Están especificados todos los datos del resumen (valor total, saldo, invertido, valor de los tokens, ganancia y su porcentaje) con el campo contractual del que sale cada uno? [Completeness, Spec §User Story 1, Spec §Contrato]
-- [ ] CHK002 - ¿Se especifican todas las columnas de la tabla y su fuente en `PosicionPortfolio`? [Completeness, Spec §User Story 1]
-- [ ] CHK003 - ¿Está documentado dónde y con qué formato se muestra `fechaValuacion`? [Completeness, Spec §FR-002]
-- [ ] CHK004 - ¿Se define el estado de carga de la página y qué se ve mientras se consultan portfolio y evolución? [Gap]
-- [ ] CHK005 - ¿Está definido cómo se llega al historial de operaciones o si queda fuera de esta feature? [Gap, Dependency]
+- [x] CHK001 - ¿Están especificados todos los datos del resumen (valor total, saldo, invertido, valor de los tokens, ganancia y su porcentaje) con el campo contractual del que sale cada uno? [Completeness, Spec §User Story 1, Spec §Contrato]
+- [x] CHK002 - ¿Se especifican todas las columnas de la tabla y su fuente en `PosicionPortfolio`? [Completeness, Spec §User Story 1]
+- [x] CHK003 - ¿Está documentado dónde y con qué formato se muestra `fechaValuacion`? [Completeness, Spec §FR-002]
+- [x] CHK004 - ¿Se define el estado de carga de la página y qué se ve mientras se consultan portfolio y evolución? [Gap]
+- [x] CHK005 - ¿Está definido cómo se llega al historial de operaciones o si queda fuera de esta feature? [Gap, Dependency]
 
 ## Requirement Clarity
 
-- [ ] CHK006 - ¿Queda claro cómo se presenta la ganancia cuando es negativa (rótulo "Pérdida", signo y color)? [Clarity, Spec §User Story 1]
-- [ ] CHK007 - ¿Se define qué se muestra como porcentaje de ganancia cuando lo invertido es 0? [Clarity, Edge Case, Gap]
-- [ ] CHK008 - ¿Está definido el formato de montos y porcentajes (decimales, signo y unidad)? [Clarity, Gap]
-- [ ] CHK009 - ¿Es preciso el criterio de agrupación "Otros (n)" (umbral, orden y cálculo del porcentaje)? [Clarity, Spec §User Story 2]
+- [x] CHK006 - ¿Queda claro cómo se presenta la ganancia cuando es negativa (rótulo "Pérdida", signo y color)? [Clarity, Spec §User Story 1]
+- [x] CHK007 - ¿Se define qué se muestra como porcentaje de ganancia cuando lo invertido es 0? [Clarity, Edge Case, Gap]
+- [x] CHK008 - ¿Está definido el formato de montos y porcentajes (decimales, signo y unidad)? [Clarity, Gap]
+- [x] CHK009 - ¿Es preciso el criterio de agrupación "Otros (n)" (umbral, orden y cálculo del porcentaje)? [Clarity, Spec §User Story 2]
 
 ## Requirement Consistency
 
-- [ ] CHK010 - ¿Coincide el orden de la tabla con el del gráfico de composición, incluido el desempate? [Consistency, Spec §Clarifications, Spec §User Story 2]
-- [ ] CHK011 - ¿Es consistente la regla de rol entre la aclaración, el escenario 6 y FR-006 (menú, URL directa y ausencia de consultas)? [Consistency, Spec §FR-006]
-- [ ] CHK012 - ¿Es consistente la regla de "tenencias en 0 no aparecen" con el contrato, que ya garantiza posiciones con cantidad mayor a cero? [Consistency, Spec §User Story 1, Spec §Contrato]
+- [x] CHK010 - ¿Coincide el orden de la tabla con el del gráfico de composición, incluido el desempate? [Consistency, Spec §Clarifications, Spec §User Story 2]
+- [x] CHK011 - ¿Es consistente la regla de rol entre la aclaración, el escenario 6 y FR-006 (menú, URL directa y ausencia de consultas)? [Consistency, Spec §FR-006]
+- [x] CHK012 - ¿Es consistente la regla de "tenencias en 0 no aparecen" con el contrato, que ya garantiza posiciones con cantidad mayor a cero? [Consistency, Spec §User Story 1, Spec §Contrato]
 
 ## Totales del backend (obligatorio)
 
-- [ ] CHK013 - ¿Está especificado que invertido, valor de las tenencias, ganancia y porcentaje del resumen se toman del `PortfolioResponse` sin recalcularse en el front? [Completeness, Spec §FR-002]
-- [ ] CHK014 - ¿Se define que los valores de cada fila (invertido, valor, ganancia y porcentaje) vienen de `PosicionPortfolio` y no de multiplicar cantidad por precio? [Clarity, Spec §FR-002]
-- [ ] CHK015 - ¿Está definida la única cuenta que hace el front (valor total = saldo + valor de las tenencias) y su redondeo? [Clarity, Spec §FR-002]
-- [ ] CHK016 - ¿Se especifica la conversión de porcentajes del contrato (12.5 = 12,5 %) para todas las vistas que los muestran? [Consistency, Spec §Contrato]
+- [x] CHK013 - ¿Está especificado que invertido, valor de las tenencias, ganancia y porcentaje del resumen se toman del `PortfolioResponse` sin recalcularse en el front? [Completeness, Spec §FR-002]
+- [x] CHK014 - ¿Se define que los valores de cada fila (invertido, valor, ganancia y porcentaje) vienen de `PosicionPortfolio` y no de multiplicar cantidad por precio? [Clarity, Spec §FR-002]
+- [x] CHK015 - ¿Está definida la única cuenta que hace el front (valor total = saldo + valor de las tenencias) y su redondeo? [Clarity, Spec §FR-002]
+- [x] CHK016 - ¿Se especifica la conversión de porcentajes del contrato (12.5 = 12,5 %) para todas las vistas que los muestran? [Consistency, Spec §Contrato]
 
 ## Fallo parcial (obligatorio)
 
-- [ ] CHK017 - ¿Está definido que, si falla la evolución, se muestran su error y `correlationId` y el resto de la página sigue visible? [Completeness, Spec §User Story 2]
-- [ ] CHK018 - ¿Se especifica qué ocurre si falla el portfolio pero la evolución responde (¿se muestra algo de la evolución o solo el error?)? [Coverage, Exception Flow, Gap]
-- [ ] CHK019 - ¿Se define si hay forma de reintentar la consulta fallida sin recargar la página o si queda fuera de alcance? [Gap, Recovery]
-- [ ] CHK020 - ¿Está claro que un error de la evolución no oculta la tabla ni los gráficos de composición y ganancia? [Clarity, Spec §User Story 2]
+- [x] CHK017 - ¿Está definido que, si falla la evolución, se muestran su error y `correlationId` y el resto de la página sigue visible? [Completeness, Spec §User Story 2]
+- [x] CHK018 - ¿Se especifica qué ocurre si falla el portfolio pero la evolución responde (¿se muestra algo de la evolución o solo el error?)? [Coverage, Exception Flow, Gap]
+- [x] CHK019 - ¿Se define si hay forma de reintentar la consulta fallida sin recargar la página o si queda fuera de alcance? [Gap, Recovery]
+- [x] CHK020 - ¿Está claro que un error de la evolución no oculta la tabla ni los gráficos de composición y ganancia? [Clarity, Spec §User Story 2]
 
 ## Acceptance Criteria Quality
 
-- [ ] CHK021 - ¿Se puede verificar objetivamente el aviso de "poca historia" (texto exacto y condición de 0 o 1 punto)? [Measurability, Spec §User Story 2]
-- [ ] CHK022 - ¿Es verificable el aviso del superusuario (texto exacto) y la ausencia de consultas? [Measurability, Spec §User Story 1]
-- [ ] CHK023 - ¿Tiene cada estado (carga, vacío, error y sin sesión) un resultado observable definido? [Measurability, Spec §User Story 3]
+- [x] CHK021 - ¿Se puede verificar objetivamente el aviso de "poca historia" (texto exacto y condición de 0 o 1 punto)? [Measurability, Spec §User Story 2]
+- [x] CHK022 - ¿Es verificable el aviso del superusuario (texto exacto) y la ausencia de consultas? [Measurability, Spec §User Story 1]
+- [x] CHK023 - ¿Tiene cada estado (carga, vacío, error y sin sesión) un resultado observable definido? [Measurability, Spec §User Story 3]
 
 ## Scenario Coverage
 
-- [ ] CHK024 - ¿Se cubre el caso de un usuario sin tenencias pero con historia de evolución (vendió todo)? [Coverage, Edge Case, Gap]
-- [ ] CHK025 - ¿Están definidos los requisitos para un `401` en cualquiera de las dos consultas? [Coverage, Exception Flow]
-- [ ] CHK026 - ¿Se define qué pasa con muchas tenencias (más de 7) en la tabla, no solo en el gráfico? [Coverage, Gap]
+- [x] CHK024 - ¿Se cubre el caso de un usuario sin tenencias pero con historia de evolución (vendió todo)? [Coverage, Edge Case, Gap]
+- [x] CHK025 - ¿Están definidos los requisitos para un `401` en cualquiera de las dos consultas? [Coverage, Exception Flow]
+- [x] CHK026 - ¿Se define qué pasa con muchas tenencias (más de 7) en la tabla, no solo en el gráfico? [Coverage, Gap]
 
 ## Non-Functional Requirements
 
-- [ ] CHK027 - ¿Existe una alternativa textual para cada gráfico (la tabla u otro texto) y se especifica que la polaridad no depende solo del color? [Accessibility, Spec §User Story 2]
-- [ ] CHK028 - ¿Están especificados los criterios de color (validados para fondo oscuro y daltonismo) de forma verificable? [Accessibility, Spec §FR-003]
-- [ ] CHK029 - ¿Se define el comportamiento responsive a 375px de la tabla y de los gráficos de forma medible? [Measurability, Spec §FR-004]
-- [ ] CHK030 - ¿Se documenta que el portfolio se pide con el `usuario.id` de la sesión y que el JWT no se expone? [Security, Gap]
+- [x] CHK027 - ¿Existe una alternativa textual para cada gráfico (la tabla u otro texto) y se especifica que la polaridad no depende solo del color? [Accessibility, Spec §User Story 2]
+- [x] CHK028 - ¿Están especificados los criterios de color (validados para fondo oscuro y daltonismo) de forma verificable? [Accessibility, Spec §FR-003]
+- [x] CHK029 - ¿Se define el comportamiento responsive a 375px de la tabla y de los gráficos de forma medible? [Measurability, Spec §FR-004]
+- [x] CHK030 - ¿Se documenta que el portfolio se pide con el `usuario.id` de la sesión y que el JWT no se expone? [Security, Gap]
 
 ## Dependencies & Assumptions
 
-- [ ] CHK031 - ¿Está documentado que la serie de evolución la arma el backend (`009-portfolio-historial`) y qué se asume si todavía no existe? [Dependency, Spec §Contrato]
-- [ ] CHK032 - ¿Se documenta la dependencia con el 005 (botón "Vender" con `?operacion=venta`)? [Dependency, Spec §User Story 1]
+- [x] CHK031 - ¿Está documentado que la serie de evolución la arma el backend (`009-portfolio-historial`) y qué se asume si todavía no existe? [Dependency, Spec §Contrato]
+- [x] CHK032 - ¿Se documenta la dependencia con el 005 (botón "Vender" con `?operacion=venta`)? [Dependency, Spec §User Story 1]
 
 ## Notes
 
