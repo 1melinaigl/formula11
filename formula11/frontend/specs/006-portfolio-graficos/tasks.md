@@ -28,9 +28,9 @@ Frontend único en `formula11/frontend`: código en `src/`, pruebas en `tests/`.
 
 **Purpose**: Rutas, mocks y estilos compartidos.
 
-- [ ] T001 [P] Verificar que `src/api/endpoints.js` exponga `portfolio(usuarioId)` y `evolucionPortfolio(usuarioId)` y que la evolución se pida sin `desde` ni `hasta`.
+- [ ] T001 [P] Verificar que `src/api/endpoints.js` exponga `portfolio(usuarioId)` y `evolucionPortfolio(usuarioId)` y que la evolución se pida sin `desde` ni `hasta` (FR-001).
 - [ ] T002 [P] Verificar en `src/test/handlers.js` respuestas por defecto con las formas de `PortfolioResponse` y `EvolucionPortfolioResponse`, sin ids ni parámetros especiales.
-- [ ] T003 [P] Verificar que `src/components/comun/estiloGraficos.js` concentre ejes, grilla y tooltip, y que `src/pages/PortfolioPage.jsx` se cargue con `lazy` en `src/router/AppRouter.jsx`.
+- [ ] T003 [P] Verificar que `src/components/comun/estiloGraficos.js` concentre ejes, grilla y tooltip, y que `src/pages/PortfolioPage.jsx` se cargue con `lazy` en `src/router/AppRouter.jsx` (FR-005).
 
 ---
 
@@ -40,9 +40,9 @@ Frontend único en `formula11/frontend`: código en `src/`, pruebas en `tests/`.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Agregar en `src/components/portfolio/portfolio.js` un orden común de tenencias (mayor `valorActual` primero; a igual valor, por nombre) y usarlo en `composicion`.
+- [ ] T004 Agregar en `src/components/portfolio/portfolio.js` un orden común de tenencias (mayor `valorActual` primero; a igual valor, por nombre) y usarlo en `composicion` (FR-008).
 - [ ] T005 [P] Agregar en `tests/components/portfolio.test.js` los casos del orden común y del desempate por nombre.
-- [ ] T006 Verificar en `src/components/portfolio/portfolio.js` y `src/hooks/usePortfolio.js` que los totales y los valores por fila salgan del backend sin recalcular y que el valor total sea `saldo` + `valorTenencias`.
+- [ ] T006 Verificar en `src/components/portfolio/portfolio.js` y `src/hooks/usePortfolio.js` que los totales y los valores por fila salgan del backend sin recalcular y que el valor total sea `saldo` + `valorTenencias` (FR-002).
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -56,16 +56,16 @@ Frontend único en `formula11/frontend`: código en `src/`, pruebas en `tests/`.
 
 ### Tests for User Story 1
 
-- [ ] T007 [P] [US1] Verificar en `tests/pages/portfolio.test.jsx` el resumen, la tabla, el estado sin tenencias y la navegación desde el menú.
-- [ ] T008 [P] [US1] Agregar en `tests/pages/portfolio.test.jsx` un test de orden de la tabla por valor actual cuando el backend manda las posiciones desordenadas.
-- [ ] T009 [P] [US1] Agregar en `tests/pages/portfolio.test.jsx` un test con ganancia negativa (tarjeta "Pérdida") y otro con `invertido` en 0 ("Sin inversión").
-- [ ] T010 [P] [US1] Agregar en `tests/pages/portfolio.test.jsx` un test con `rol: 'SUPERUSUARIO'`: el menú no muestra "Mi portfolio", `/portfolio` muestra el aviso y no se consulta la API.
+- [ ] T007 [P] [US1] Verificar en `tests/pages/portfolio.test.jsx` el resumen, la tabla, el estado sin tenencias, la navegación desde el menú y que el portfolio se pida con el `usuario.id` de la sesión (FR-007).
+- [ ] T008 [P] [US1] Agregar en `tests/pages/portfolio.test.jsx` un test de orden de la tabla por valor actual cuando el backend manda las posiciones desordenadas (FR-008).
+- [ ] T009 [P] [US1] Agregar en `tests/pages/portfolio.test.jsx` un test con ganancia negativa (tarjeta "Pérdida") y otro con `invertido` en 0 ("Sin inversión") (FR-002).
+- [ ] T010 [P] [US1] Agregar en `tests/pages/portfolio.test.jsx` un test con `rol: 'SUPERUSUARIO'`: el menú no muestra "Mi portfolio", `/portfolio` muestra el aviso y no se consulta la API (FR-006).
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Ordenar las filas en `src/components/portfolio/TablaTenencias.jsx` (o en `usePortfolio`) con el orden común de T004.
-- [ ] T012 [US1] Ocultar "Mi portfolio" para el `SUPERUSUARIO` en `src/components/navegacion/MenuPrincipal.jsx`.
-- [ ] T013 [US1] Mostrar en `src/pages/PortfolioPage.jsx` el aviso del superusuario y no consultar la API en `src/hooks/usePortfolio.js` para ese rol.
+- [ ] T011 [US1] Ordenar las tenencias en `src/hooks/usePortfolio.js` con el orden común de T004, para que la tabla las reciba ya ordenadas (FR-008).
+- [ ] T012 [US1] Ocultar "Mi portfolio" para el `SUPERUSUARIO` en `src/components/navegacion/MenuPrincipal.jsx` (FR-006).
+- [ ] T013 [US1] Mostrar en `src/pages/PortfolioPage.jsx` el aviso del superusuario y no consultar la API en `src/hooks/usePortfolio.js` para ese rol (FR-006).
 
 **Checkpoint**: El resumen y la tabla funcionan de forma independiente.
 
