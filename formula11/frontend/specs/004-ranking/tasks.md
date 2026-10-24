@@ -17,9 +17,9 @@ description: "Task list for Formula11 player ranking"
 
 **Purpose**: Confirmar la estructura existente y preparar los puntos de integración del ranking.
 
-- [ ] T001 [P] Revisar `src/api/endpoints.js`, `src/api/clienteApi.js` y `src/context/SesionContext.jsx` para reutilizar la ruta centralizada, `solicitarProtegida`, `Authorization`, `X-Correlation-Id` y limpieza de sesión ante `401`.
-- [ ] T002 [P] Revisar `src/router/AppRouter.jsx`, `src/components/navegacion/MenuPrincipal.jsx` y `src/components/navegacion/Encabezado.jsx` para identificar la ruta `/ranking`, el acceso del menú y los breadcrumbs sin duplicar navegación.
-- [ ] T003 [P] Revisar `src/styles/screens.css`, `src/styles/components.css` y `design/formula11-mockup-retro-v3.html` para documentar el patrón visual y el breakpoint responsive de 760px aplicable a la tabla.
+- [X] T001 [P] Revisar `src/api/endpoints.js`, `src/api/clienteApi.js` y `src/context/SesionContext.jsx` para reutilizar la ruta centralizada, `solicitarProtegida`, `Authorization`, `X-Correlation-Id` y limpieza de sesión ante `401`.
+- [X] T002 [P] Revisar `src/router/AppRouter.jsx`, `src/components/navegacion/MenuPrincipal.jsx` y `src/components/navegacion/Encabezado.jsx` para identificar la ruta `/ranking`, el acceso del menú y los breadcrumbs sin duplicar navegación.
+- [X] T003 [P] Revisar `src/styles/screens.css`, `src/styles/components.css` y `design/formula11-mockup-retro-v3.html` para documentar el patrón visual y el breakpoint responsive de 760px aplicable a la tabla.
 
 ## Phase 2: Foundational
 
@@ -27,12 +27,12 @@ description: "Task list for Formula11 player ranking"
 
 **⚠️ CRITICAL**: No iniciar las historias hasta completar esta fase.
 
-- [ ] T004 Agregar `ranking: '/api/jugadores/ranking'` a `src/api/endpoints.js` sin introducir rutas alternativas ni URLs directas en componentes.
-- [ ] T005 [P] Crear `normalizarRanking` en `src/components/ranking/ranking.js` para consumir `RankingPageResponse` con `content`, `page`, `size`, `totalElements`, `totalPages`, `estrategia`, `version` y `fecha`, conservando el orden y `puesto` del backend.
-- [ ] T006 [P] Crear `construirConsultaRanking` en `src/components/ranking/ranking.js` para enviar siempre `page` base cero y `size=20`, omitir filtros vacíos, enviar posiciones `POR|DEF|MED|DEL` y no enviar `estrategia`.
-- [ ] T007 [P] Implementar en `src/components/ranking/ranking.js` la conversión de `variacion` contractual (`12.5` significa `12,5 %`) a la representación interna de los formateadores, sin recalcular `puesto` ni `score` y descartando filas sin `jugador.id` o con `precio` no numérico finito.
-- [ ] T008 [P] Agregar en `src/test/handlers.js` un handler MSW contractual para `GET /api/jugadores/ranking` antes del handler `/api/jugadores/:id`, con `content`, paginación y metadatos de estrategia activa.
-- [ ] T009 [P] Crear fixtures de `RankingPageResponse`, `RankingItem`, filtros y errores con `mensaje`, `timestamp` y `correlationId` en `tests/pages/ranking.test.jsx` sin exponer tokens en aserciones ni logs.
+- [X] T004 Agregar `ranking: '/api/jugadores/ranking'` a `src/api/endpoints.js` sin introducir rutas alternativas ni URLs directas en componentes.
+- [X] T005 [P] Crear `normalizarRanking` en `src/components/ranking/ranking.js` para consumir `RankingPageResponse` con `content`, `page`, `size`, `totalElements`, `totalPages`, `estrategia`, `version` y `fecha`, conservando el orden y `puesto` del backend.
+- [X] T006 [P] Crear `construirConsultaRanking` en `src/components/ranking/ranking.js` para enviar siempre `page` base cero y `size=20`, omitir filtros vacíos, enviar posiciones `POR|DEF|MED|DEL` y no enviar `estrategia`.
+- [X] T007 [P] Implementar en `src/components/ranking/ranking.js` la conversión de `variacion` contractual (`12.5` significa `12,5 %`) a la representación interna de los formateadores, sin recalcular `puesto` ni `score` y descartando filas sin `jugador.id` o con `precio` no numérico finito.
+- [X] T008 [P] Agregar en `src/test/handlers.js` un handler MSW contractual para `GET /api/jugadores/ranking` antes del handler `/api/jugadores/:id`, con `content`, paginación y metadatos de estrategia activa.
+- [X] T009 [P] Crear fixtures de `RankingPageResponse`, `RankingItem`, filtros y errores con `mensaje`, `timestamp` y `correlationId` en `tests/pages/ranking.test.jsx` sin exponer tokens en aserciones ni logs.
 
 **Checkpoint**: contrato, consulta, normalización y fixtures están listos para las historias.
 
@@ -44,18 +44,18 @@ description: "Task list for Formula11 player ranking"
 
 ### Tests for User Story 1
 
-- [ ] T010 [P] [US1] Agregar en `tests/pages/ranking.test.jsx` un test de la respuesta contractual que compruebe headers protegidos, `page=0`, `size=20`, ausencia de `estrategia`, filas anidadas, orden y puesto recibido.
-- [ ] T011 [P] [US1] Agregar en `tests/pages/ranking.test.jsx` tests de formato para posición legible, precio en créditos, variación positiva/negativa/nula como `—` y score nulo como `—`, incluyendo `fecha` formateada como `dd/mm/aaaa`.
-- [ ] T012 [P] [US1] Agregar en `tests/pages/ranking.test.jsx` un test de metadatos sin recálculo que exija `Estrategia activa: <nombre> · sin recálculo todavía` cuando `version` y `fecha` son `null`.
-- [ ] T013 [P] [US1] Agregar en `tests/pages/ranking.test.jsx` un test de navegación desde el nombre del jugador a `/jugadores/:id` y otro de acceso al ranking desde `MenuPrincipal.jsx`.
+- [X] T010 [P] [US1] Agregar en `tests/pages/ranking.test.jsx` un test de la respuesta contractual que compruebe headers protegidos, `page=0`, `size=20`, ausencia de `estrategia`, filas anidadas, orden y puesto recibido.
+- [X] T011 [P] [US1] Agregar en `tests/pages/ranking.test.jsx` tests de formato para posición legible, precio en créditos, variación positiva/negativa/nula como `—` y score nulo como `—`, incluyendo `fecha` formateada como `dd/mm/aaaa`.
+- [X] T012 [P] [US1] Agregar en `tests/pages/ranking.test.jsx` un test de metadatos sin recálculo que exija `Estrategia activa: <nombre> · sin recálculo todavía` cuando `version` y `fecha` son `null`.
+- [X] T013 [P] [US1] Agregar en `tests/pages/ranking.test.jsx` un test de navegación desde el nombre del jugador a `/jugadores/:id` y otro de acceso al ranking desde `MenuPrincipal.jsx`.
 
 ### Implementation for User Story 1
 
-- [ ] T014 [US1] Crear `src/hooks/useRanking.js` para consultar `endpoints.ranking` con `solicitarProtegida`, mantener `cargando`, `respuesta` y `error`, cancelar actualizaciones después de desmontar y no consultar cuando `usuario` es nulo.
-- [ ] T015 [US1] Crear `src/components/ranking/TablaRanking.jsx` con tabla semántica, encabezados `scope="col"`, puesto contractual, posición, enlace al detalle, jugador, equipo, precio en créditos, variación semántica y score.
-- [ ] T016 [US1] Crear `src/pages/RankingPage.jsx` con encabezado `Ranking de jugadores`, metadatos de estrategia activa, estado de carga `Cargando ranking...`, integración de `useRanking` y retorno al menú mediante botón y `Escape`.
-- [ ] T017 [US1] Actualizar `src/router/AppRouter.jsx` para registrar `/ranking` con la protección de sesión existente y sin introducir fetch en la página.
-- [ ] T018 [US1] Habilitar el acceso `Ranking` en `src/components/navegacion/MenuPrincipal.jsx` y actualizar breadcrumbs en `src/components/navegacion/Encabezado.jsx` para `/ranking` y `/jugadores/:id`.
+- [X] T014 [US1] Crear `src/hooks/useRanking.js` para consultar `endpoints.ranking` con `solicitarProtegida`, mantener `cargando`, `respuesta` y `error`, cancelar actualizaciones después de desmontar y no consultar cuando `usuario` es nulo.
+- [X] T015 [US1] Crear `src/components/ranking/TablaRanking.jsx` con tabla semántica, encabezados `scope="col"`, puesto contractual, posición, enlace al detalle, jugador, equipo, precio en créditos, variación semántica y score.
+- [X] T016 [US1] Crear `src/pages/RankingPage.jsx` con encabezado `Ranking de jugadores`, metadatos de estrategia activa, estado de carga `Cargando ranking...`, integración de `useRanking` y retorno al menú mediante botón y `Escape`.
+- [X] T017 [US1] Actualizar `src/router/AppRouter.jsx` para registrar `/ranking` con la protección de sesión existente y sin introducir fetch en la página.
+- [X] T018 [US1] Habilitar el acceso `Ranking` en `src/components/navegacion/MenuPrincipal.jsx` y actualizar breadcrumbs en `src/components/navegacion/Encabezado.jsx` para `/ranking` y `/jugadores/:id`.
 
 **Checkpoint**: US1 muestra el ranking activo completo y es navegable de forma independiente.
 
@@ -67,16 +67,16 @@ description: "Task list for Formula11 player ranking"
 
 ### Tests for User Story 2
 
-- [ ] T019 [P] [US2] Agregar en `tests/pages/ranking.test.jsx` un test de filtros que compruebe `POR`, `DEF`, `MED`, `DEL` y el nombre exacto de liga en la query, sin filtrado local.
-- [ ] T020 [P] [US2] Agregar en `tests/pages/ranking.test.jsx` tests de reinicio a `page=0`, `aria-pressed`, botón `Todos`, filtro repetido sin consulta adicional, preservación del puesto recibido por backend y descarte de una respuesta obsoleta cuando cambia el filtro o la página mientras hay una consulta pendiente.
-- [ ] T021 [P] [US2] Agregar en `tests/pages/ranking.test.jsx` tests de `content: []` con filtro (`Sin jugadores`) y de más de una página, verificando `page=1` en la API y `Página 2` en la UI.
+- [X] T019 [P] [US2] Agregar en `tests/pages/ranking.test.jsx` un test de filtros que compruebe `POR`, `DEF`, `MED`, `DEL` y el nombre exacto de liga en la query, sin filtrado local.
+- [X] T020 [P] [US2] Agregar en `tests/pages/ranking.test.jsx` tests de reinicio a `page=0`, `aria-pressed`, botón `Todos`, filtro repetido sin consulta adicional, preservación del puesto recibido por backend y descarte de una respuesta obsoleta cuando cambia el filtro o la página mientras hay una consulta pendiente.
+- [X] T021 [P] [US2] Agregar en `tests/pages/ranking.test.jsx` tests de `content: []` con filtro (`Sin jugadores`) y de más de una página, verificando `page=1` en la API y `Página 2` en la UI.
 
 ### Implementation for User Story 2
 
-- [ ] T022 [US2] Extender `src/hooks/useRanking.js` con estado de consulta `{ page: 0, posicion: '', liga: '' }`, cambios de filtro que reinicien a `page=0`, cambios de página y prevención de consultas cuando el filtro ya está activo.
-- [ ] T023 [US2] Completar `src/pages/RankingPage.jsx` con botones de posición que usen `aria-pressed`, opción `Todos`, selector de liga con label asociado y estado `Sin jugadores` cuando hay filtros activos sin resultados.
-- [ ] T024 [US2] Integrar `src/components/catalogo/PaginacionCatalogo.jsx` en `src/pages/RankingPage.jsx` con etiqueta accesible, deshabilitado en extremos y numeración visible desde 1 a partir de páginas base cero.
-- [ ] T025 [US2] Ajustar `src/components/ranking/TablaRanking.jsx` y `src/components/ranking/ranking.js` para preservar literalmente el orden y `puesto` del backend, sin ordenar ni filtrar filas en el frontend.
+- [X] T022 [US2] Extender `src/hooks/useRanking.js` con estado de consulta `{ page: 0, posicion: '', liga: '' }`, cambios de filtro que reinicien a `page=0`, cambios de página y prevención de consultas cuando el filtro ya está activo.
+- [X] T023 [US2] Completar `src/pages/RankingPage.jsx` con botones de posición que usen `aria-pressed`, opción `Todos`, selector de liga con label asociado y estado `Sin jugadores` cuando hay filtros activos sin resultados.
+- [X] T024 [US2] Integrar `src/components/catalogo/PaginacionCatalogo.jsx` en `src/pages/RankingPage.jsx` con etiqueta accesible, deshabilitado en extremos y numeración visible desde 1 a partir de páginas base cero.
+- [X] T025 [US2] Ajustar `src/components/ranking/TablaRanking.jsx` y `src/components/ranking/ranking.js` para preservar literalmente el orden y `puesto` del backend, sin ordenar ni filtrar filas en el frontend.
 
 **Checkpoint**: US1 y US2 permiten consultar el ranking activo completo o filtrado con paginación backend.
 
@@ -88,25 +88,25 @@ description: "Task list for Formula11 player ranking"
 
 ### Tests for User Story 3
 
-- [ ] T026 [P] [US3] Agregar en `tests/pages/ranking.test.jsx` un test de carga que exija `Cargando ranking...` mientras la respuesta está pendiente.
-- [ ] T027 [P] [US3] Agregar en `tests/pages/ranking.test.jsx` un test de respuesta vacía sin filtros que muestre `Ranking vacío` y el detalle de que no hubo recálculo.
-- [ ] T028 [P] [US3] Agregar en `tests/pages/ranking.test.jsx` tests de errores `400`, `403` y `5xx` que exijan `mensaje` y `correlationId` y mantengan la pantalla de ranking; incluir también un error contractual incompleto que use el `X-Correlation-Id` generado por `clienteApi` cuando falte `correlationId` y muestre `No se pudo completar la solicitud.` cuando falte `mensaje`.
-- [ ] T029 [P] [US3] Agregar en `tests/pages/ranking.test.jsx` un test de `401` que compruebe limpieza de sesión y otro sin sesión que compruebe ausencia de llamada protegida y pantalla de acceso denegado.
+- [X] T026 [P] [US3] Agregar en `tests/pages/ranking.test.jsx` un test de carga que exija `Cargando ranking...` mientras la respuesta está pendiente.
+- [X] T027 [P] [US3] Agregar en `tests/pages/ranking.test.jsx` un test de respuesta vacía sin filtros que muestre `Ranking vacío` y el detalle de que no hubo recálculo.
+- [X] T028 [P] [US3] Agregar en `tests/pages/ranking.test.jsx` tests de errores `400`, `403` y `5xx` que exijan `mensaje` y `correlationId` y mantengan la pantalla de ranking; incluir también un error contractual incompleto que use el `X-Correlation-Id` generado por `clienteApi` cuando falte `correlationId` y muestre `No se pudo completar la solicitud.` cuando falte `mensaje`.
+- [X] T029 [P] [US3] Agregar en `tests/pages/ranking.test.jsx` un test de `401` que compruebe limpieza de sesión y otro sin sesión que compruebe ausencia de llamada protegida y pantalla de acceso denegado.
 
 ### Implementation for User Story 3
 
-- [ ] T030 [US3] Completar `src/pages/RankingPage.jsx` con los estados `Cargando ranking...`, `Ranking vacío`, `Sin jugadores`, acceso denegado y `AvisoError` sin ocultar `mensaje` ni `correlationId`.
-- [ ] T031 [US3] Ajustar `src/hooks/useRanking.js` para limpiar el error al cambiar filtros o página, conservar solo la respuesta de la consulta vigente, descartar actualizaciones obsoletas después de cambios de parámetros y evitar actualizar estado tras desmontaje.
-- [ ] T032 [US3] Mantener en `src/test/handlers.js` solo respuestas por defecto contractuales y configurar `401`, `400`, `403` y `5xx` con `server.use(...)` dentro de cada test.
+- [X] T030 [US3] Completar `src/pages/RankingPage.jsx` con los estados `Cargando ranking...`, `Ranking vacío`, `Sin jugadores`, acceso denegado y `AvisoError` sin ocultar `mensaje` ni `correlationId`.
+- [X] T031 [US3] Ajustar `src/hooks/useRanking.js` para limpiar el error al cambiar filtros o página, conservar solo la respuesta de la consulta vigente, descartar actualizaciones obsoletas después de cambios de parámetros y evitar actualizar estado tras desmontaje.
+- [X] T032 [US3] Mantener en `src/test/handlers.js` solo respuestas por defecto contractuales y configurar `401`, `400`, `403` y `5xx` con `server.use(...)` dentro de cada test.
 
 **Checkpoint**: las tres historias cubren éxito, carga, vacío, filtros, errores y ausencia de sesión.
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T033 [P] Revisar `src/styles/screens.css` y `src/styles/components.css` para mantener la paleta y jerarquía visual del mockup, ocultar Equipo y Score hasta 760px y evitar desborde a 375px.
-- [ ] T034 [P] Revisar `src/pages/RankingPage.jsx`, `src/components/ranking/TablaRanking.jsx` y `src/components/catalogo/PaginacionCatalogo.jsx` para labels asociados, navegación por teclado, foco visible, `aria-pressed` y nombres accesibles.
-- [ ] T035 [P] Actualizar `specs/004-ranking/quickstart.md`, `specs/004-ranking/contracts/frontend-api.md` y `specs/004-ranking/data-model.md` si la implementación requiere precisar escenarios, campos o estados, sin contradecir `spec.md`.
-- [ ] T036 Ejecutar `npm test`, `npm run lint` y `npm run build` desde `frontend/`, resolver regresiones y confirmar que no se agrega `estrategia` a las consultas.
+- [X] T033 [P] Revisar `src/styles/screens.css` y `src/styles/components.css` para mantener la paleta y jerarquía visual del mockup, ocultar Equipo y Score hasta 760px y evitar desborde a 375px.
+- [X] T034 [P] Revisar `src/pages/RankingPage.jsx`, `src/components/ranking/TablaRanking.jsx` y `src/components/catalogo/PaginacionCatalogo.jsx` para labels asociados, navegación por teclado, foco visible, `aria-pressed` y nombres accesibles.
+- [X] T035 [P] Actualizar `specs/004-ranking/quickstart.md`, `specs/004-ranking/contracts/frontend-api.md` y `specs/004-ranking/data-model.md` si la implementación requiere precisar escenarios, campos o estados, sin contradecir `spec.md`.
+- [X] T036 Ejecutar `npm test`, `npm run lint` y `npm run build` desde `frontend/`, resolver regresiones y confirmar que no se agrega `estrategia` a las consultas.
 - [ ] T037 Ejecutar manualmente los escenarios de `specs/004-ranking/quickstart.md` y registrar en `specs/004-ranking/plan.md` cualquier desviación visual, contractual o de accesibilidad antes de cerrar la feature.
 
 ## Dependencies & Execution Order

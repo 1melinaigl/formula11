@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -92,6 +92,25 @@ describe('ranking de jugadores', () => {
     expect(consultas).toEqual(['|', 'MED|', 'DEF|', '|', '|Serie A'])
   })
 
+  it('envía todos los códigos contractuales de posición', async () => {
+    const posicionesConsultadas = []
+    server.use(http.get('/api/jugadores/ranking', ({ request }) => {
+      const posicion = new URL(request.url).searchParams.get('posicion')
+      if (posicion) posicionesConsultadas.push(posicion)
+      return HttpResponse.json(pagina(items))
+    }))
+    const user = userEvent.setup()
+    renderRanking()
+    await screen.findByRole('table')
+
+    for (const nombre of ['Portero', 'Defensor', 'Mediocampista', 'Delantero']) {
+      await user.click(screen.getByRole('button', { name: nombre }))
+      await screen.findByRole('table')
+    }
+
+    expect(posicionesConsultadas).toEqual(['POR', 'DEF', 'MED', 'DEL'])
+  })
+
   it('pagina el ranking', async () => {
     const paginas = []
     server.use(http.get('/api/jugadores/ranking', ({ request }) => {
@@ -124,16 +143,101 @@ describe('ranking de jugadores', () => {
     renderRanking()
     expect(await screen.findByText('Ranking vacío')).toBeInTheDocument()
     expect(screen.getByText('Todavía no hubo un recálculo de cotizaciones.')).toBeInTheDocument()
+    expect(screen.getByText('Estrategia activa: Rendimiento por posición')).toBeInTheDocument()
   })
 
-  it('muestra el error del backend con mensaje y correlationId', async () => {
+  it('muestra el estado de carga mientras la respuesta está pendiente', async () => {
+    let resolver
+    server.use(http.get('/api/jugadores/ranking', () => new Promise((resolve) => {
+      resolver = resolve
+    })))
+    renderRanking()
+    expect(await screen.findByText('Cargando ranking...')).toBeInTheDocument()
+    resolver(HttpResponse.json(pagina(items)))
+    expect(await screen.findByRole('table')).toBeInTheDocument()
+  })
+
+  it.each([
+    ['400', 400, 'La consulta del ranking no es válida.'],
+    ['403', 403, 'No tiene permisos para consultar el ranking.'],
+    ['500', 500, 'No se pudo calcular el ranking.'],
+  ])('muestra el error %s del backend sin ocultar la pantalla', async (_nombre, status, mensaje) => {
     server.use(http.get('/api/jugadores/ranking', () => HttpResponse.json(
-      { mensaje: 'No se pudo calcular el ranking.', timestamp: '2026-10-24T12:00:00Z', correlationId: 'ranking-500' },
-      { status: 500 },
+      { mensaje, timestamp: '2026-10-24T12:00:00Z', correlationId: `ranking-${status}` },
+      { status },
     )))
     renderRanking()
-    expect(await screen.findByRole('alert')).toHaveTextContent('No se pudo calcular el ranking.')
-    expect(screen.getByText(/ranking-500/)).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Ranking de jugadores' })).toBeInTheDocument()
+    expect(screen.getByRole('alert')).toHaveTextContent(mensaje)
+    expect(screen.getByText(new RegExp(`ranking-${status}`))).toBeInTheDocument()
+  })
+
+  it('usa los fallbacks de clienteApi cuando falta mensaje o correlationId', async () => {
+    let consultas = 0
+    server.use(http.get('/api/jugadores/ranking', () => {
+      consultas += 1
+      if (consultas === 1) {
+        return HttpResponse.json(
+          { timestamp: '2026-10-24T12:00:00Z' },
+          { status: 500 },
+        )
+      }
+      return HttpResponse.json(
+        { mensaje: 'La segunda consulta falló.', timestamp: '2026-10-24T12:00:00Z' },
+        { status: 500 },
+      )
+    }))
+    const user = userEvent.setup()
+    renderRanking()
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('No se pudo completar la solicitud.')
+    expect(screen.getByText(/correlationId:/)).not.toHaveTextContent('No disponible')
+
+    await user.click(screen.getByRole('button', { name: 'Mediocampista' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('La segunda consulta falló.')
+    expect(screen.getByText(/correlationId:/)).not.toHaveTextContent('No disponible')
+  })
+
+  it('limpia la sesión ante un 401 y renderiza el acceso denegado', async () => {
+    server.use(http.get('/api/jugadores/ranking', () => HttpResponse.json(
+      { mensaje: 'Sesión vencida.', timestamp: '2026-10-24T12:00:00Z', correlationId: 'ranking-401' },
+      { status: 401 },
+    )))
+    renderRanking()
+    expect(await screen.findByText(/acceso denegado/i)).toBeInTheDocument()
+    expect(window.sessionStorage.getItem('formula11.session')).toBeNull()
+  })
+
+  it('descarta la respuesta obsoleta al cambiar el filtro durante una consulta', async () => {
+    const resolvers = []
+    server.use(http.get('/api/jugadores/ranking', () => new Promise((resolve) => {
+      resolvers.push(resolve)
+    })))
+    const user = userEvent.setup()
+    renderRanking()
+    await waitFor(() => expect(resolvers).toHaveLength(1))
+
+    await user.click(screen.getByRole('button', { name: 'Mediocampista' }))
+    await waitFor(() => expect(resolvers).toHaveLength(2))
+
+    resolvers[1](HttpResponse.json(pagina([items[1], items[3]])))
+    expect(await screen.findByRole('link', { name: 'Jude Bellingham' })).toBeInTheDocument()
+    resolvers[0](HttpResponse.json(pagina(items)))
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(screen.queryByRole('link', { name: 'Harry Kane' })).not.toBeInTheDocument()
+    expect(nombresEnTabla()).toEqual(['Nicolò Barella', 'Jude Bellingham'])
+  })
+
+  it('vuelve al menú con Escape', async () => {
+    server.use(http.get('/api/jugadores/ranking', () => HttpResponse.json(pagina(items))))
+    const user = userEvent.setup()
+    renderRanking()
+    await screen.findByRole('table')
+
+    await user.keyboard('{Escape}')
+    expect(window.location.pathname).toBe('/')
+    expect(await screen.findByRole('navigation', { name: 'Menú principal' })).toBeInTheDocument()
   })
 
   it('no consulta la API sin sesión', () => {
