@@ -16,7 +16,7 @@ Como usuario autenticado, quiero abrir el detalle de un jugador desde el catálo
 **Acceptance Scenarios**:
 
 1. **Given** la ficha de un jugador en el catálogo, **When** el usuario pulsa "Ver cotizaciones", **Then** navega a `/jugadores/:id`.
-2. **Given** cotizaciones de una o más estrategias, **When** se muestra el detalle, **Then** hay una tarjeta por estrategia con la última cotización, la variación porcentual contra la anterior de la misma estrategia (verde si sube, roja si baja) y la fecha.
+2. **Given** cotizaciones de una o más estrategias, **When** se muestra el detalle, **Then** hay una tarjeta por estrategia con la última cotización, la variación semanal que informa el backend (verde si sube, roja si baja) y la fecha.
 3. **Given** una estrategia con una sola cotización, **When** se muestra su tarjeta, **Then** indica "Sin cotización anterior" en lugar de una variación.
 4. **Given** el detalle abierto, **When** el usuario pulsa "Volver al catálogo" o `Escape`, **Then** vuelve a `/catalogo`.
 
@@ -28,7 +28,7 @@ Como usuario, quiero ver un gráfico con la evolución del precio del jugador pa
 
 **Acceptance Scenarios**:
 
-1. **Given** cotizaciones de varias estrategias, **When** se dibuja el gráfico, **Then** hay una línea por estrategia sobre el mismo eje de fechas, con leyenda y tooltip en créditos.
+1. **Given** cotizaciones de varias estrategias (solo el superusuario), **When** se dibuja el gráfico, **Then** hay una línea por estrategia sobre el mismo eje de fechas, con leyenda y tooltip en créditos.
 2. **Given** el historial, **When** el usuario despliega "Ver historial completo", **Then** ve una tabla ordenada de la más reciente a la más antigua con fecha, estrategia y versión, precio y score.
 3. **Given** fechas `YYYY-MM-DD`, **When** se muestran, **Then** se formatean `dd/mm/aaaa` sin correrse de día por zona horaria.
 
@@ -49,9 +49,10 @@ Como usuario, quiero ver un gráfico con la evolución del precio del jugador pa
 - **FR-003**: La respuesta de cotizaciones se acepta como lista o como objeto paginado (`content`) y se descartan entradas sin fecha o con precio no numérico.
 - **FR-004**: La librería de gráficos se carga de forma diferida para no agrandar el bundle inicial.
 
-## Assumptions (a confirmar con el contrato `backend/specs/005-contratos-entrega2`)
+## Contrato (`backend/specs/005-contratos-entrega2/contracts/openapi.yaml`)
 
-- Rutas: `GET /api/jugadores/{id}` y `GET /api/jugadores/{id}/cotizaciones`, siguiendo el prefijo actual del catálogo.
-- Cotización: `{ fecha: 'YYYY-MM-DD', precio: number, score: number, estrategia: 'RENDIMIENTO' | 'CONSISTENCIA', estrategiaVersion: number }`.
-- Se muestran todas las estrategias calculadas; la "activa" del mercado se marcará cuando el contrato la exponga.
-- Fuera de alcance: cotización a una fecha (`?fecha=`) y ranking, que van en `004-ranking`.
+- `GET /api/jugadores/{jugadorId}` → `JugadorDetalleResponse`: datos del jugador más `cotizacionActual` (null si no hubo recálculo).
+- `GET /api/jugadores/{jugadorId}/cotizaciones[?estrategia=]` → `{ jugadorId, estrategia, cotizaciones: Cotizacion[] }`, ordenadas por fecha ascendente, sin paginar.
+- `Cotizacion`: `{ jugadorId, fecha, precio, score, variacion, estrategia, version }`; `variacion` es un porcentaje (12.5 = 12,5 %) y es null en la primera semana.
+- Estrategias: `RENDIMIENTO_POSICION` (A) y `CONSISTENCIA` (B). El público ve solo la activa; pedir otra es exclusivo del `SUPERUSUARIO` (403 para el resto). Por eso la comparación de las dos curvas se muestra solo al superusuario (el `rol` llega en la respuesta del login).
+- Fuera de alcance: cotización a una fecha (`/cotizaciones/vigente?fecha=`).

@@ -1,22 +1,31 @@
-// Acepta filas planas ({ id, nombre, ..., precio }) o anidadas ({ jugador: {...}, precio }), en lista o paginadas.
-// Conserva el orden del backend, que ya viene rankeado según la estrategia activa.
+import { porcentajeAFraccion } from '../cotizaciones/cotizaciones'
+
+export const TAMANO_PAGINA_RANKING = 20
+
+// RankingPageResponse: página con estrategia, versión y fecha de la última cotización,
+// y filas { puesto, jugador, precio, variacion (%), score } ya ordenadas por el backend.
 export function normalizarRanking(data) {
-  const lista = Array.isArray(data) ? data : data?.content || data?.ranking || []
-  return lista
-    .map((fila) => {
-      const { jugador, ...cotizacion } = fila || {}
-      const plana = { ...jugador, ...cotizacion, id: jugador?.id ?? cotizacion.id }
-      const precio = Number(plana.precio)
-      const precioAnterior = plana.precioAnterior == null ? null : Number(plana.precioAnterior)
-      const variacion = plana.variacion != null
-        ? Number(plana.variacion)
-        : precioAnterior ? (precio - precioAnterior) / precioAnterior : null
-      return { ...plana, precio, variacion }
-    })
-    .filter((fila) => fila.id != null && Number.isFinite(fila.precio))
+  return {
+    filas: (data?.content || [])
+      .filter((fila) => fila?.jugador?.id != null && Number.isFinite(Number(fila.precio)))
+      .map(({ jugador, ...fila }) => ({
+        ...jugador,
+        puesto: fila.puesto,
+        precio: Number(fila.precio),
+        variacion: porcentajeAFraccion(fila.variacion),
+        score: fila.score,
+      })),
+    estrategia: data?.estrategia ?? null,
+    version: data?.version ?? null,
+    fecha: data?.fecha ?? null,
+    page: Number(data?.page ?? 0),
+    totalPages: Number(data?.totalPages ?? 0),
+  }
 }
 
-export function filtrarPorPosicion(ranking, posicion) {
-  if (!posicion) return ranking
-  return ranking.filter((fila) => (fila.posicionCodigo || fila.posicion) === posicion)
+export function construirConsultaRanking({ page, posicion, liga }) {
+  const params = new URLSearchParams({ page: String(page), size: String(TAMANO_PAGINA_RANKING) })
+  if (posicion) params.set('posicion', posicion)
+  if (liga) params.set('liga', liga)
+  return params.toString()
 }

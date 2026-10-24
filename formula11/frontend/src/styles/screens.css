@@ -137,6 +137,9 @@
 }
 
 .ranking-filters { display: flex; flex-wrap: wrap; gap: 6px; margin: 18px 0 12px; }
+.ranking-toolbar { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 6px 16px; margin-bottom: 12px; }
+.ranking-toolbar .ranking-filters { margin: 0; }
+.ranking-league { min-width: 180px; }
 .ranking-filters .filter-chip { padding: 6px 12px; font-size: 13px; }
 .ranking-filters .filter-chip[aria-pressed="true"] { background: var(--gold); color: var(--navy); }
 .ranking-table { width: 100%; border: 1px solid rgba(220, 240, 200, .35); border-collapse: collapse; background: rgba(3, 22, 10, .82); box-shadow: 5px 5px 0 rgba(0, 0, 0, .5); }

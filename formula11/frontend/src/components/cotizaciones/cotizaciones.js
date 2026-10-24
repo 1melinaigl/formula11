@@ -1,5 +1,6 @@
+// Códigos del contrato (CodigoEstrategia): A = RENDIMIENTO_POSICION, B = CONSISTENCIA.
 export const ESTRATEGIAS = {
-  RENDIMIENTO: { nombre: 'Rendimiento por posición', color: '#ff8a1f' },
+  RENDIMIENTO_POSICION: { nombre: 'Rendimiento por posición', color: '#ff8a1f' },
   CONSISTENCIA: { nombre: 'Consistencia', color: '#f4e9b8' },
 }
 const COLORES_EXTRA = ['#3ddc84', '#ff3b4e', '#b9d4b0']
@@ -15,12 +16,21 @@ export function colorEstrategia(estrategia, indice = 0) {
   return ESTRATEGIAS[estrategia]?.color || COLORES_EXTRA[indice % COLORES_EXTRA.length]
 }
 
-// Acepta una lista o una respuesta paginada y devuelve las cotizaciones ordenadas por fecha ascendente.
+// El contrato manda porcentajes (12.5 = 12,5 %); en el front se manejan como fracción (0.125).
+export function porcentajeAFraccion(porcentaje) {
+  return porcentaje == null ? null : Number(porcentaje) / 100
+}
+
+// HistorialCotizacionesResponse: { jugadorId, estrategia, cotizaciones: Cotizacion[] }, ordenadas por fecha ascendente.
 export function normalizarCotizaciones(data) {
-  const lista = Array.isArray(data) ? data : data?.content || data?.cotizaciones || []
-  return lista
+  return (data?.cotizaciones || [])
     .filter((cotizacion) => cotizacion?.fecha && Number.isFinite(Number(cotizacion.precio)))
-    .map((cotizacion) => ({ ...cotizacion, precio: Number(cotizacion.precio), estrategia: cotizacion.estrategia || 'SIN_ESTRATEGIA' }))
+    .map((cotizacion) => ({
+      ...cotizacion,
+      estrategia: cotizacion.estrategia || data.estrategia,
+      precio: Number(cotizacion.precio),
+      variacion: porcentajeAFraccion(cotizacion.variacion),
+    }))
     .sort((a, b) => a.fecha.localeCompare(b.fecha))
 }
 
@@ -49,9 +59,7 @@ export function resumenPorEstrategia(cotizaciones) {
   return estrategiasPresentes(cotizaciones).map((estrategia) => {
     const propias = cotizaciones.filter((cotizacion) => cotizacion.estrategia === estrategia)
     const actual = propias.at(-1)
-    const anterior = propias.at(-2)
-    const variacion = anterior && anterior.precio !== 0 ? (actual.precio - anterior.precio) / anterior.precio : null
-    return { estrategia, actual, anterior, variacion }
+    return { estrategia, actual, variacion: actual.variacion ?? null }
   })
 }
 

@@ -3,40 +3,51 @@ import {
   estrategiasPresentes,
   formatearFecha,
   normalizarCotizaciones,
+  porcentajeAFraccion,
   resumenPorEstrategia,
   seriesPorFecha,
 } from '../../src/components/cotizaciones/cotizaciones'
 
-const crudas = [
-  { fecha: '2026-10-19', precio: '1.20', estrategia: 'CONSISTENCIA' },
-  { fecha: '2026-10-12', precio: 1, estrategia: 'RENDIMIENTO' },
-  { fecha: '2026-10-19', precio: 1.2, estrategia: 'RENDIMIENTO' },
-  { fecha: null, precio: 3, estrategia: 'RENDIMIENTO' },
-]
+const rendimiento = normalizarCotizaciones({
+  jugadorId: 7,
+  estrategia: 'RENDIMIENTO_POSICION',
+  cotizaciones: [
+    { fecha: '2026-10-19', precio: '1.2000', variacion: 20, version: 1 },
+    { fecha: '2026-10-12', precio: 1, variacion: null, version: 1 },
+    { fecha: null, precio: 3 },
+  ],
+})
+const consistencia = normalizarCotizaciones({
+  estrategia: 'CONSISTENCIA',
+  cotizaciones: [{ fecha: '2026-10-19', precio: 1.2, variacion: null, estrategia: 'CONSISTENCIA' }],
+})
 
 describe('helpers de cotizaciones', () => {
-  it('normaliza listas y respuestas paginadas, descarta inválidas y ordena por fecha', () => {
-    const lista = normalizarCotizaciones(crudas)
-    expect(lista.map((c) => c.fecha)).toEqual(['2026-10-12', '2026-10-19', '2026-10-19'])
-    expect(lista[1].precio).toBe(1.2)
-    expect(normalizarCotizaciones({ content: crudas })).toHaveLength(3)
+  it('normaliza el historial del contrato, descarta inválidas y ordena por fecha', () => {
+    expect(rendimiento.map((c) => c.fecha)).toEqual(['2026-10-12', '2026-10-19'])
+    expect(rendimiento[1]).toMatchObject({ precio: 1.2, variacion: 0.2, estrategia: 'RENDIMIENTO_POSICION', version: 1 })
     expect(normalizarCotizaciones(null)).toEqual([])
   })
 
+  it('convierte porcentajes del contrato a fracción', () => {
+    expect(porcentajeAFraccion(12.5)).toBe(0.125)
+    expect(porcentajeAFraccion(null)).toBeNull()
+  })
+
   it('ordena primero las estrategias conocidas y arma una fila por fecha', () => {
-    const lista = normalizarCotizaciones(crudas)
-    expect(estrategiasPresentes(lista)).toEqual(['RENDIMIENTO', 'CONSISTENCIA'])
-    expect(seriesPorFecha(lista)).toEqual([
-      { fecha: '2026-10-12', RENDIMIENTO: 1 },
-      { fecha: '2026-10-19', CONSISTENCIA: 1.2, RENDIMIENTO: 1.2 },
+    const todas = [...consistencia, ...rendimiento]
+    expect(estrategiasPresentes(todas)).toEqual(['RENDIMIENTO_POSICION', 'CONSISTENCIA'])
+    expect(seriesPorFecha(todas)).toEqual([
+      { fecha: '2026-10-12', RENDIMIENTO_POSICION: 1 },
+      { fecha: '2026-10-19', CONSISTENCIA: 1.2, RENDIMIENTO_POSICION: 1.2 },
     ])
   })
 
-  it('calcula la variación contra la cotización anterior de la misma estrategia', () => {
-    const [rendimiento, consistencia] = resumenPorEstrategia(normalizarCotizaciones(crudas))
-    expect(rendimiento.actual.precio).toBe(1.2)
-    expect(rendimiento.variacion).toBeCloseTo(0.2)
-    expect(consistencia.variacion).toBeNull()
+  it('toma la variación que manda el backend para la última cotización de cada estrategia', () => {
+    const [primera, segunda] = resumenPorEstrategia([...rendimiento, ...consistencia])
+    expect(primera).toMatchObject({ estrategia: 'RENDIMIENTO_POSICION', variacion: 0.2 })
+    expect(primera.actual.precio).toBe(1.2)
+    expect(segunda.variacion).toBeNull()
   })
 
   it('formatea fechas ISO sin correrlas por zona horaria', () => {

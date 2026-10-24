@@ -13,7 +13,7 @@ export default function TablaCotizaciones({ cotizaciones }) {
           {filas.map((cotizacion) => (
             <tr key={`${cotizacion.fecha}-${cotizacion.estrategia}`}>
               <td>{formatearFecha(cotizacion.fecha)}</td>
-              <td>{nombreEstrategia(cotizacion.estrategia)}{cotizacion.estrategiaVersion != null && ` v${cotizacion.estrategiaVersion}`}</td>
+              <td>{nombreEstrategia(cotizacion.estrategia)}{cotizacion.version != null && ` v${cotizacion.version}`}</td>
               <td>{formatearPrecio(cotizacion.precio)}</td>
               <td>{cotizacion.score == null ? '—' : Number(cotizacion.score).toFixed(2)}</td>
             </tr>

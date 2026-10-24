@@ -39,13 +39,28 @@ export const handlers = [
     totalElements: 0,
     totalPages: 0,
   })),
-  http.get('/api/jugadores/ranking', () => HttpResponse.json([])),
+  // Entrega 2: formas de backend/specs/005-contratos-entrega2/contracts/openapi.yaml.
+  http.get('/api/jugadores/ranking', () => HttpResponse.json({
+    content: [],
+    page: 0,
+    size: 20,
+    totalElements: 0,
+    totalPages: 0,
+    estrategia: 'RENDIMIENTO_POSICION',
+    version: null,
+    fecha: null,
+  })),
   http.get('/api/jugadores/:id', ({ params }) => HttpResponse.json({
     id: Number(params.id),
     nombre: 'Nicolò Barella',
     equipo: 'FC Internazionale Milano',
     liga: 'Serie A',
     posicion: 'MED',
+    cotizacionActual: null,
   })),
-  http.get('/api/jugadores/:id/cotizaciones', () => HttpResponse.json([])),
+  http.get('/api/jugadores/:id/cotizaciones', ({ params }) => HttpResponse.json({
+    jugadorId: Number(params.id),
+    estrategia: 'RENDIMIENTO_POSICION',
+    cotizaciones: [],
+  })),
 ]

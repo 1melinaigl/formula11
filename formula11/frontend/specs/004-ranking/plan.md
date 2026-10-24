@@ -10,7 +10,7 @@ Se apila sobre 003: reutiliza la ruta `/jugadores/:id`, `formatearPrecio`, `form
 
 ```text
 src/api/endpoints.js                       # ranking
-src/components/ranking/ranking.js          # normalizarRanking, filtrarPorPosicion
+src/components/ranking/ranking.js          # normalizarRanking, construirConsultaRanking
 src/components/ranking/TablaRanking.jsx
 src/hooks/useRanking.js
 src/pages/RankingPage.jsx                  # ruta /ranking
@@ -23,6 +23,6 @@ tests/pages/ranking.test.jsx
 ## Decisiones
 
 - **Orden del backend**: el frontend no reordena; el puesto es el índice en la lista visible.
-- **Filtro local**: una sola consulta; cambiar de posición no vuelve a pedir datos.
+- **Filtros y paginación en el backend** (contrato): cambiar posición o liga vuelve a la página 1; repetir el filtro activo no vuelve a consultar.
 - **Tabla semántica** (`<table>` con `th scope="col"`) con link en el nombre, en lugar de filas-botón, para que lectores de pantalla anuncien columnas.
 - **MSW**: el handler de `/api/jugadores/ranking` va antes que `/api/jugadores/:id`, porque MSW toma el primero que coincide.

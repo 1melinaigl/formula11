@@ -41,5 +41,5 @@ description: "Task list for Formula11 player detail with quote history"
 ## Phase 5: Cierre
 
 - [x] T016 Estilos responsive en `src/styles/screens.css`.
-- [ ] T017 Alinear rutas y forma de la respuesta con `backend/specs/005-contratos-entrega2/contracts/openapi.yaml` cuando esté en `main`.
-- [ ] T018 Marcar la estrategia activa del mercado cuando el contrato la exponga.
+- [X] T017 Alinear rutas y forma de la respuesta con `backend/specs/005-contratos-entrega2/contracts/openapi.yaml` (códigos de estrategia, `version`, `variacion` en %, historial `{ estrategia, cotizaciones }`, comparación solo para el superusuario).
+- [ ] T018 Para el superusuario, marcar cuál de las dos estrategias es la activa (`GET /api/estrategias`).

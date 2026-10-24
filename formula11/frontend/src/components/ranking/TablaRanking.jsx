@@ -22,9 +22,9 @@ export default function TablaRanking({ ranking }) {
         </tr>
       </thead>
       <tbody>
-        {ranking.map((fila, indice) => (
+        {ranking.map((fila) => (
           <tr key={fila.id}>
-            <td className="ranking-position">{indice + 1}</td>
+            <td className="ranking-position">{fila.puesto}</td>
             <td>
               <span className="ranking-player">
                 <PosicionJugador jugador={fila} />

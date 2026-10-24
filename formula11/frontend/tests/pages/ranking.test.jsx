@@ -6,17 +6,24 @@ import App from '../../src/App'
 import { SesionProvider } from '../../src/context/SesionContext'
 import { server } from '../../src/test/server'
 
-const ranking = [
-  { id: 5, nombre: 'Harry Kane', equipo: 'FC Bayern München', liga: 'Bundesliga', posicion: 'DEL', precio: 1.44, precioAnterior: 1.2, score: 0.91, estrategia: 'RENDIMIENTO', fecha: '2026-10-19' },
-  { id: 7, nombre: 'Nicolò Barella', equipo: 'FC Internazionale Milano', liga: 'Serie A', posicion: 'MED', precio: 1.21, precioAnterior: 1.1, score: 0.75, estrategia: 'RENDIMIENTO', fecha: '2026-10-19' },
-  { id: 2, nombre: 'Emiliano Martinez', equipo: 'Aston Villa', liga: 'Premier League', posicion: 'POR', precio: 0.9, precioAnterior: 1, score: 0.4, estrategia: 'RENDIMIENTO', fecha: '2026-10-19' },
-  { id: 3, nombre: 'Jude Bellingham', equipo: 'Real Madrid', liga: 'La Liga', posicion: 'MED', precio: 1.05, score: null, estrategia: 'RENDIMIENTO', fecha: '2026-10-19' },
+const jugador = (id, nombre, equipo, liga, posicion) => ({ id, nombre, equipo, liga, posicion })
+
+// RankingItem del contrato: variacion en porcentaje (20 = 20 %), null en la primera semana.
+const items = [
+  { puesto: 1, jugador: jugador(5, 'Harry Kane', 'FC Bayern München', 'Bundesliga', 'DEL'), precio: 1.44, variacion: 20, score: 0.91 },
+  { puesto: 2, jugador: jugador(7, 'Nicolò Barella', 'FC Internazionale Milano', 'Serie A', 'MED'), precio: 1.21, variacion: 10, score: 0.75 },
+  { puesto: 3, jugador: jugador(2, 'Emiliano Martinez', 'Aston Villa', 'Premier League', 'POR'), precio: 0.9, variacion: -10, score: 0.4 },
+  { puesto: 4, jugador: jugador(3, 'Jude Bellingham', 'Real Madrid', 'La Liga', 'MED'), precio: 1.05, variacion: null, score: 0.38 },
 ]
+
+function pagina(content, { page = 0, totalPages = 1 } = {}) {
+  return { content, page, size: 20, totalElements: content.length, totalPages, estrategia: 'RENDIMIENTO_POSICION', version: 2, fecha: '2026-10-19' }
+}
 
 function renderRanking({ sesion = true, ruta = '/ranking' } = {}) {
   window.history.pushState({}, '', ruta)
   if (sesion) {
-    window.sessionStorage.setItem('formula11.session', JSON.stringify({ token: 'ranking-token', usuario: { id: 11, nombre: 'Ana Formula' } }))
+    window.sessionStorage.setItem('formula11.session', JSON.stringify({ token: 'ranking-token', usuario: { id: 11, nombre: 'Ana Formula', rol: 'USUARIO' } }))
   }
   return render(<SesionProvider><App /></SesionProvider>)
 }
@@ -28,59 +35,82 @@ function nombresEnTabla() {
 describe('ranking de jugadores', () => {
   beforeEach(() => window.sessionStorage.clear())
 
-  it('muestra el ranking en el orden del backend con precio, variación y estrategia activa', async () => {
+  it('muestra la página del backend con puesto, precio, variación y la estrategia activa', async () => {
     server.use(http.get('/api/jugadores/ranking', ({ request }) => {
+      const params = new URL(request.url).searchParams
       expect(request.headers.get('Authorization')).toBe('Bearer ranking-token')
       expect(request.headers.get('X-Correlation-Id')).toBeTruthy()
-      return HttpResponse.json(ranking)
+      expect(params.get('page')).toBe('0')
+      expect(params.get('size')).toBe('20')
+      expect(params.has('posicion')).toBe(false)
+      expect(params.has('estrategia')).toBe(false)
+      return HttpResponse.json(pagina(items))
     }))
     renderRanking()
 
     expect(await screen.findByRole('table')).toBeInTheDocument()
     expect(nombresEnTabla()).toEqual(['Harry Kane', 'Nicolò Barella', 'Emiliano Martinez', 'Jude Bellingham'])
-    expect(screen.getByText('Estrategia activa: Rendimiento por posición · al 19/10/2026')).toBeInTheDocument()
+    expect(screen.getByText('Estrategia activa: Rendimiento por posición v2 · al 19/10/2026')).toBeInTheDocument()
 
     const filas = within(screen.getByRole('table')).getAllByRole('row')
     expect(within(filas[1]).getByText('1')).toBeInTheDocument()
     expect(within(filas[1]).getByText('1,44')).toBeInTheDocument()
     expect(within(filas[1]).getByText('+20,0%')).toHaveClass('up')
     expect(within(filas[3]).getByText('-10,0%')).toHaveClass('down')
-    expect(within(filas[4]).getAllByText('—')).toHaveLength(2)
+    expect(within(filas[4]).getByText('—')).toBeInTheDocument()
+    expect(screen.queryByRole('navigation', { name: 'Paginación del ranking' })).not.toBeInTheDocument()
   })
 
-  it('acepta filas anidadas con el jugador y respuestas paginadas', async () => {
-    server.use(http.get('/api/jugadores/ranking', () => HttpResponse.json({
-      content: [{ jugador: { id: 9, nombre: 'Lautaro Martinez', equipo: 'FC Internazionale Milano', posicion: 'DEL' }, precio: 1.3, variacion: 0.05, estrategia: 'CONSISTENCIA' }],
-    })))
-    renderRanking()
-
-    expect(await screen.findByRole('link', { name: 'Lautaro Martinez' })).toHaveAttribute('href', '/jugadores/9')
-    expect(screen.getByText('+5,0%')).toBeInTheDocument()
-    expect(screen.getByText('Estrategia activa: Consistencia')).toBeInTheDocument()
-  })
-
-  it('filtra por posición sin volver a consultar y renumera las posiciones', async () => {
-    let consultas = 0
-    server.use(http.get('/api/jugadores/ranking', () => { consultas += 1; return HttpResponse.json(ranking) }))
+  it('filtra por posición y liga en el backend y respeta el puesto que manda', async () => {
+    const consultas = []
+    server.use(http.get('/api/jugadores/ranking', ({ request }) => {
+      const params = new URL(request.url).searchParams
+      consultas.push(`${params.get('posicion') ?? ''}|${params.get('liga') ?? ''}`)
+      if (params.get('posicion') === 'DEF') return HttpResponse.json(pagina([]))
+      if (params.get('posicion') === 'MED') return HttpResponse.json(pagina([items[1], items[3]]))
+      return HttpResponse.json(pagina(items))
+    }))
     const user = userEvent.setup()
     renderRanking()
     await screen.findByRole('table')
 
     await user.click(screen.getByRole('button', { name: 'Mediocampista' }))
     expect(screen.getByRole('button', { name: 'Mediocampista' })).toHaveAttribute('aria-pressed', 'true')
+    await screen.findByRole('link', { name: 'Jude Bellingham' })
     expect(nombresEnTabla()).toEqual(['Nicolò Barella', 'Jude Bellingham'])
-    expect(within(within(screen.getByRole('table')).getAllByRole('row')[1]).getByText('1')).toBeInTheDocument()
+    expect(within(within(screen.getByRole('table')).getAllByRole('row')[1]).getByText('2')).toBeInTheDocument()
 
+    await user.click(screen.getByRole('button', { name: 'Mediocampista' }))
     await user.click(screen.getByRole('button', { name: 'Defensor' }))
-    expect(screen.getByText('Sin jugadores')).toBeInTheDocument()
+    expect(await screen.findByText('Sin jugadores')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Todos' }))
-    expect(nombresEnTabla()).toHaveLength(4)
-    expect(consultas).toBe(1)
+    await screen.findByRole('table')
+    await user.selectOptions(screen.getByLabelText('Liga'), 'Serie A')
+    await screen.findByRole('table')
+
+    expect(consultas).toEqual(['|', 'MED|', 'DEF|', '|', '|Serie A'])
+  })
+
+  it('pagina el ranking', async () => {
+    const paginas = []
+    server.use(http.get('/api/jugadores/ranking', ({ request }) => {
+      const page = Number(new URL(request.url).searchParams.get('page'))
+      paginas.push(page)
+      return HttpResponse.json(pagina(page === 0 ? items.slice(0, 2) : items.slice(2), { page, totalPages: 2 }))
+    }))
+    const user = userEvent.setup()
+    renderRanking()
+    await screen.findByRole('table')
+
+    await user.click(screen.getByRole('button', { name: 'Siguiente' }))
+    expect(await screen.findByRole('link', { name: 'Jude Bellingham' })).toBeInTheDocument()
+    expect(screen.getByText('Página 2 de 2')).toBeInTheDocument()
+    expect(paginas).toEqual([0, 1])
   })
 
   it('navega al detalle del jugador desde el ranking', async () => {
-    server.use(http.get('/api/jugadores/ranking', () => HttpResponse.json(ranking)))
+    server.use(http.get('/api/jugadores/ranking', () => HttpResponse.json(pagina(items))))
     const user = userEvent.setup()
     renderRanking()
 
@@ -90,14 +120,15 @@ describe('ranking de jugadores', () => {
     window.history.pushState({}, '', '/')
   })
 
-  it('muestra el estado vacío cuando todavía no hay cotizaciones', async () => {
+  it('muestra el estado vacío cuando todavía no hubo recálculo', async () => {
     renderRanking()
     expect(await screen.findByText('Ranking vacío')).toBeInTheDocument()
+    expect(screen.getByText('Todavía no hubo un recálculo de cotizaciones.')).toBeInTheDocument()
   })
 
   it('muestra el error del backend con mensaje y correlationId', async () => {
     server.use(http.get('/api/jugadores/ranking', () => HttpResponse.json(
-      { mensaje: 'No se pudo calcular el ranking.', correlationId: 'ranking-500' },
+      { mensaje: 'No se pudo calcular el ranking.', timestamp: '2026-10-24T12:00:00Z', correlationId: 'ranking-500' },
       { status: 500 },
     )))
     renderRanking()
@@ -107,7 +138,7 @@ describe('ranking de jugadores', () => {
 
   it('no consulta la API sin sesión', () => {
     let consultas = 0
-    server.use(http.get('/api/jugadores/ranking', () => { consultas += 1; return HttpResponse.json(ranking) }))
+    server.use(http.get('/api/jugadores/ranking', () => { consultas += 1; return HttpResponse.json(pagina(items)) }))
     renderRanking({ sesion: false })
     expect(screen.queryByRole('heading', { name: 'Ranking de jugadores' })).not.toBeInTheDocument()
     expect(consultas).toBe(0)
