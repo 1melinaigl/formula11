@@ -19,16 +19,16 @@ description: "Task list for weekly player valuation strategies and quotations"
 
 ### Tests for domain
 
-- [ ] T001 [P] Crear `NormalizadorTest` en `backend/src/test/java/com/formula11/unit/model/valuacion/` para z-score, acotación `[-2,2]`, reescalado `[0,1]`, desvío cero y grupo de un jugador.
+- [ ] T001 [P] Crear `NormalizadorTest` en `backend/src/test/java/com/formula11/unit/model/valuacion/` para z-score de métricas sin acotar con desvío cero igual a `0`, z-score final acotado a `[-2,2]`, reescalado `[0,1]`, desvío final cero igual a `0,5` y grupo de un jugador.
 - [ ] T002 [P] Crear `CalculadoraPrecioTest` para precio de partida `1`, aplicación de fórmula en la primera semana, variación `null`, tope `±20 %`, piso `0,10`, cuatro decimales y `HALF_UP`.
-- [ ] T003 [P] Crear `RendimientoPosicionTest` para promedios semanales por partido, pesos por posición, proporción `menosDe90Minutos`, métricas positivas y negativas y normalización por posición entre ligas.
+- [ ] T003 [P] Crear `RendimientoPosicionTest` para promedios semanales por partido, pesos por posición, proporción `menosDe90Minutos`, métricas positivas y negativas, estandarización de cada métrica sin acotar y normalización final del score por posición entre ligas.
 - [ ] T004 [P] Crear `ConsistenciaTest` para ventana de seis partidos, disponibilidad, promedio/desvío de rating, `lambda`, titularidad, suplencias y fallback con menos de cuatro partidos.
-- [ ] T005 [P] Crear pruebas de métricas faltantes para conteos como cero, rating ignorado con redistribución de pesos positivos y fila sin minutos excluida con evento/log verificable.
+- [ ] T005 [P] Crear pruebas de métricas faltantes para conteos como cero, rating ignorado con redistribución de pesos positivos y fila sin minutos devuelta en el resultado del cálculo para que el service la registre en el log.
 
 ### Implementation for domain
 
 - [ ] T006 [P] Crear records de entrada/salida necesarios para el cálculo (por ejemplo, las métricas de un jugador en un partido) en `backend/src/main/java/com/formula11/model/valuacion/`, sin anotaciones de JPA ni Spring; las métricas de conteo ausentes valen cero.
-- [ ] T007 [P] Crear `Normalizador` en `com.formula11.model.valuacion` con z-score por grupo, acotación, reescalado y fallback `0,5`.
+- [ ] T007 [P] Crear `Normalizador` en `com.formula11.model.valuacion` con z-score de métricas sin acotar y fallback `0`, más z-score final acotado a `[-2,2]`, reescalado y fallback `0,5`.
 - [ ] T008 [P] Crear `CalculadoraPrecio` en `com.formula11.model.valuacion` usando `BigDecimal`, `RoundingMode.HALF_UP`, sensibilidad, tope y piso de la versión.
 - [ ] T009 Crear `EstrategiaValuacion` en `com.formula11.model.valuacion` como interfaz Strategy para scores brutos por jugador.
 - [ ] T010 Implementar `RendimientoPosicion` promediando métricas por jugador/semana, estandarizando cada métrica antes de aplicar pesos y separando el grupo por posición.
@@ -53,8 +53,8 @@ description: "Task list for weekly player valuation strategies and quotations"
 - [ ] T017 Crear `ClockConfig` con bean `Clock` en `America/Argentina/Buenos_Aires` y propiedad opcional `app.clock.fecha-fija`.
 - [ ] T018 Crear `V10__crear_metricas_partido.sql` con tabla, foreign key a `jugadores`, campos de métricas, la secuencia para `MetricaPartido` usada por `GenerationType.SEQUENCE` con `allocationSize = 50` e índice `(jugador_id, fecha_partido)`.
 - [ ] T019 Crear entidad JPA `MetricaPartido` en `com.formula11.model` usando `GenerationType.SEQUENCE` con `allocationSize = 50`, crear su secuencia en V10 y agregar `MetricaPartidoRepository` con consulta batch por rango semanal y jugadores.
-- [ ] T020 Crear `V11__crear_estrategias.sql` con `jsonb`, restricciones, versionado, índice/constraint de estrategia activa y seeds de `RENDIMIENTO_POSICION` y `CONSISTENCIA` versión 1; mantener las secuencias de `MetricaPartido` y `Cotizacion` separadas de esta tabla para sus inserts batch.
-- [ ] T021 Crear entidad JPA `Estrategia` en `com.formula11.model`, mapeando `pesos` y `parametros` con `@JdbcTypeCode(SqlTypes.JSON)`.
+- [ ] T020 Crear `V11__crear_estrategias.sql` con `IDENTITY`, `jsonb`, restricciones, versionado, índice/constraint de estrategia activa y seeds de `RENDIMIENTO_POSICION` y `CONSISTENCIA` versión 1; no crear secuencias en esta migración.
+- [ ] T021 Crear entidad JPA `Estrategia` en `com.formula11.model` usando `GenerationType.IDENTITY`, mapeando `pesos` y `parametros` con `@JdbcTypeCode(SqlTypes.JSON)`.
 - [ ] T022 Crear `V12__crear_cotizaciones.sql` con la secuencia para `Cotizacion` usada por `GenerationType.SEQUENCE` con `allocationSize = 50`, snapshot de pesos, índice `(jugador_id, fecha DESC)` y unicidad `(jugador_id, estrategia, fecha)`.
 - [ ] T023 Crear entidad JPA `Cotizacion` en `com.formula11.model` usando `GenerationType.SEQUENCE` con `allocationSize = 50`, crear su secuencia en V12 y agregar `CotizacionRepository` para historial, cotización previa y cotización vigente.
 - [ ] T024 Configurar `hibernate.jdbc.batch_size` y `hibernate.order_inserts` para habilitar inserts batch, y validar que el recálculo no cargue métricas jugador por jugador.
@@ -89,7 +89,7 @@ description: "Task list for weekly player valuation strategies and quotations"
 
 - [ ] T033 [P] Probar `RecalculoService` sin cuerpo: procesa el domingo de la última semana cerrada anterior al `Clock`, no la semana en curso.
 - [ ] T034 [P] Probar recálculo de rango inclusivo, rango inválido, `desde`/`hasta` incompletos y continuidad con cotizaciones anteriores y posteriores al rango.
-- [ ] T035 [P] Probar semana sin partidos, jugador sin métricas y primera semana: precio anterior/partida correcto, fórmula aplicada y variación nullable.
+- [ ] T035 [P] Probar semana sin partidos, jugador sin métricas y primera semana: jugador sin juego conserva el precio anterior o `1` si no existe, jugador que juega aplica la fórmula sobre el precio anterior o `1`, y un jugador sin métricas en ninguna semana permanece en `1`; verificar variación nullable en la primera cotización.
 - [ ] T036 [P] Probar reemplazo idempotente de una semana, transacción independiente por semana y `409` cuando existe otro recálculo en curso.
 - [ ] T037 [P] Probar respuesta `RecalculoResponse` con estado, contadores, estrategias/versiones, inicio, fin y `correlationId`.
 

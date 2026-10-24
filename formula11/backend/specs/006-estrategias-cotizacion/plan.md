@@ -51,11 +51,13 @@ Las entidades JPA `MetricaPartido`, `Estrategia` y `Cotizacion` viven en `com.fo
 Crear la lógica de cálculo pura en `com.formula11.model.valuacion`, sin anotaciones de JPA ni de Spring:
 
 - `EstrategiaValuacion`: interfaz pura que recibe métricas, posición, ventana y parámetros y devuelve scores brutos por jugador.
-- `RendimientoPosicion`: promedia cada métrica por partido en la semana, calcula `menosDe90Minutos` como proporción, estandariza cada métrica dentro de posición y aplica los pesos de la posición.
-- `Consistencia`: usa los últimos seis partidos hasta el domingo, disponibilidad, promedio y desvío del rating, más titularidad/suplencias; con menos de cuatro partidos delega en el score normalizado de `RendimientoPosicion`.
-- `Normalizador`: z-score por grupo, acotado a `[-2, 2]` y reescalado a `(z + 2) / 4`; con desvío cero devuelve `0,5`.
+- `RendimientoPosicion`: promedia cada métrica por partido en la semana, calcula `menosDe90Minutos` como proporción, estandariza cada métrica dentro de posición sin acotar (cero si el desvío es cero), aplica los pesos y normaliza siempre la suma ponderada con z-score final acotado a `[-2,2]` y reescalado a `(z + 2) / 4`.
+- `Consistencia`: usa los últimos seis partidos hasta el domingo, disponibilidad, promedio y desvío del rating, más titularidad/suplencias; con menos de cuatro partidos delega en el score normalizado de `RendimientoPosicion` y, para los demás, aplica únicamente la normalización final del score bruto.
+- `Normalizador`: soporta el z-score de métricas sin acotar y el z-score final acotado a `[-2, 2]` y reescalado a `(z + 2) / 4`; el nivel de métrica devuelve `0` con desvío cero y el nivel final devuelve `0,5`.
 - `CalculadoraPrecio`: aplica la fórmula con `BigDecimal`, `RoundingMode.HALF_UP`, tope de variación y piso configurables.
 - Records de entrada y salida que necesiten las estrategias y el normalizador.
+
+Para cada semana y estrategia, un jugador que no jugó conserva el precio anterior o recibe `1` crédito si no tiene ninguno; un jugador que jugó aplica `precio_t = precio_{t-1} * (1 + 0,4 * (score_t - 0,5))` sobre el precio anterior o sobre `1` crédito si no tiene ninguno. Un jugador sin métricas en ninguna semana permanece en `1` crédito.
 
 Los adaptadores de persistencia convertirán las entidades a entradas del dominio y viceversa.
 
@@ -82,6 +84,8 @@ V13 y V14 quedan libres dentro del rango reservado para futuras evoluciones.
 - `CotizacionVigenteService`: implementa `CotizacionVigentePort`, consulta la estrategia activa y la última cotización con fecha menor o igual a la solicitada; sin registro devuelve `CotizacionVigente(jugadorId, 1, null, null, null)`.
 - `ActualizacionMetricasPort`: interfaz invocada antes del recálculo del job. Su implementación inicial registra que no hay actualización operativa, sin fallar; cualquier excepción del adapter se registra y no impide recalcular con datos persistidos.
 - `CotizacionCacheConfig`: caché Caffeine siguiendo el patrón de `FootballCacheConfig`; invalidación tras cada recálculo confirmado y al activar estrategia.
+
+Las filas excluidas por falta de minutos son una salida del dominio, no un efecto de logging: el resultado del cálculo debe devolverlas y el service es responsable de registrarlas.
 
 ### Web, configuration and security
 
