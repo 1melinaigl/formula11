@@ -7,6 +7,23 @@ const cuenta = {
   fechaRegistro: '2026-09-23T12:00:00Z',
 }
 
+// OperacionResponse del contrato, a precio inicial (1 crédito) contra el superusuario.
+function operacionSimulada(tipo, { jugadorId, cantidad }, id) {
+  return HttpResponse.json({
+    id,
+    tipo,
+    jugador: { id: jugadorId, nombre: 'Nicolò Barella', equipo: 'FC Internazionale Milano', liga: 'Serie A', posicion: 'MED' },
+    cantidad,
+    precioUnitario: 1,
+    total: cantidad,
+    saldoPosterior: tipo === 'COMPRA' ? 100 - cantidad : 100 + cantidad,
+    contraparte: 'superusuario',
+    fecha: '2026-10-24T12:00:00Z',
+    estrategia: null,
+    version: null,
+  }, { status: 201 })
+}
+
 export const handlers = [
   http.post('/api/usuarios/login', async ({ request }) => {
     const body = await request.json()
@@ -67,13 +84,23 @@ export const handlers = [
     estrategia: new URL(request.url).searchParams.get('estrategia') || 'RENDIMIENTO_POSICION',
     cotizaciones: [],
   })),
-  http.get('/api/usuarios/:id/portfolio', () => HttpResponse.json({ saldo: 100, tenencias: [] })),
-  http.post('/api/ordenes/compra', async ({ request }) => {
-    const { cantidad } = await request.json()
-    return HttpResponse.json({ id: 1, tipo: 'COMPRA', cantidad, precio: 1, total: cantidad }, { status: 201 })
-  }),
-  http.post('/api/ordenes/venta', async ({ request }) => {
-    const { cantidad } = await request.json()
-    return HttpResponse.json({ id: 2, tipo: 'VENTA', cantidad, precio: 1, total: cantidad }, { status: 201 })
-  }),
+  http.get('/api/jugadores/:id/mercado', ({ params }) => HttpResponse.json({
+    jugadorId: Number(params.id),
+    tokensEmitidos: 100,
+    tokensDisponibles: 100,
+    precioVigente: 1,
+    fechaCotizacion: null,
+  })),
+  http.get('/api/usuarios/:id/portfolio', ({ params }) => HttpResponse.json({
+    usuarioId: Number(params.id),
+    fechaValuacion: '2026-10-19',
+    saldo: 100,
+    invertido: 0,
+    valorTenencias: 0,
+    ganancia: 0,
+    gananciaPorcentaje: 0,
+    posiciones: [],
+  })),
+  http.post('/api/ordenes/compra', async ({ request }) => operacionSimulada('COMPRA', await request.json(), 1)),
+  http.post('/api/ordenes/venta', async ({ request }) => operacionSimulada('VENTA', await request.json(), 2)),
 ]

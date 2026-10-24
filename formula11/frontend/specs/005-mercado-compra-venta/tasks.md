@@ -40,5 +40,5 @@ description: "Task list for Formula11 token market (buy/sell)"
 
 - [X] T014 Estilos en `src/styles/screens.css`; verificado sin desborde a 375px y con una compra de punta a punta en el navegador (API simulada).
 - [X] T015 `npm test`, `npm run lint` y `npm run build` en verde.
-- [ ] T016 Alinear rutas y formas de request/response con el contrato `005-contratos-entrega2` cuando esté en `main`.
-- [ ] T017 Confirmar con el backend cuál es el precio vigente (estrategia activa) y si el detalle expone `tokensDisponibles`.
+- [X] T016 Alinear con el contrato `005-contratos-entrega2`: `/jugadores/{id}/mercado`, `posiciones` del portfolio, `OperacionResponse` y máximo de 100 tokens por orden.
+- [X] T017 Precio vigente y `tokensDisponibles` desde `MercadoJugadorResponse`, según la estrategia activa.

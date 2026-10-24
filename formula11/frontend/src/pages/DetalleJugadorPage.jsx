@@ -10,7 +10,6 @@ import ResumenCotizacion from '../components/cotizaciones/ResumenCotizacion'
 import TablaCotizaciones from '../components/cotizaciones/TablaCotizaciones'
 import { ESTRATEGIAS, resumenPorEstrategia } from '../components/cotizaciones/cotizaciones'
 import PanelOperacion from '../components/mercado/PanelOperacion'
-import { precioVigente } from '../components/mercado/mercado'
 import { useDetalleJugador } from '../hooks/useDetalleJugador'
 import { useMercado } from '../hooks/useMercado'
 import { useSesion } from '../hooks/useSesion'
@@ -51,12 +50,7 @@ function DetalleJugador({ id, operacionInicial }) {
             <dt>Posición</dt><dd>{jugador.posicionNombre || posiciones[jugador.posicion] || jugador.posicion || 'No informada'}</dd>
           </dl>
         </article>
-        <PanelOperacion
-          disponibles={jugador.tokensDisponibles ?? null}
-          mercado={mercado}
-          operacionInicial={operacionInicial}
-          precio={precioVigente(jugador, cotizaciones)}
-        />
+        <PanelOperacion mercado={mercado} operacionInicial={operacionInicial} />
       </div>
       <section className="player-card quote-panel" aria-labelledby="titulo-cotizaciones">
         <div className="player-card-heading"><span id="titulo-cotizaciones">Evolución de la cotización</span></div>

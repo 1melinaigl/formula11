@@ -15,8 +15,8 @@ Como usuario autenticado, quiero comprar tokens de un jugador desde su detalle u
 
 **Acceptance Scenarios**:
 
-1. **Given** el detalle de un jugador con cotización, **Then** el panel "Operar" muestra saldo, tokens del usuario (con precio promedio si existe), precio vigente y total estimado.
-2. **Given** una cantidad válida, **When** el usuario confirma, **Then** se envía la orden con Bearer y `X-Correlation-Id`, se muestra "Compraste N tokens a P créditos. Total: T créditos." y se actualizan saldo y tenencia.
+1. **Given** el detalle de un jugador, **Then** el panel "Operar" muestra saldo, tokens del usuario (con precio promedio), tokens disponibles de los emitidos, precio vigente con su fecha y total estimado.
+2. **Given** una cantidad válida, **When** el usuario confirma, **Then** se envía la orden con Bearer y `X-Correlation-Id`, se muestra "Compraste N tokens a P créditos. Total: T créditos. Saldo: S créditos." y se vuelven a pedir portfolio y datos de mercado (saldo, tenencia y disponibilidad).
 3. **Given** una orden en curso, **Then** el botón queda deshabilitado ("Enviando...") para evitar doble envío.
 
 ### User Story 2 - Vender tokens (Priority: P1)
@@ -28,22 +28,22 @@ Como usuario autenticado, quiero comprar tokens de un jugador desde su detalle u
 
 1. Cantidad vacía, no entera o menor a 1: mensaje y no se envía.
 2. Compra con total mayor al saldo: "Saldo insuficiente: necesitás X créditos."
-3. Compra mayor a `tokensDisponibles` (si el backend lo informa): "Solo quedan N tokens disponibles."
+3. Compra mayor a `tokensDisponibles`: "Solo quedan N tokens disponibles." Más de 100 tokens por orden: "Podés operar hasta 100 tokens por orden."
 4. Venta mayor a la tenencia: "Solo tenés N tokens para vender." / "No tenés tokens de este jugador para vender."
 5. Error del backend (p. ej. 409): se muestra `mensaje` y `correlationId`; no se muestra confirmación.
-6. Sin cotización vigente: no se muestra el formulario.
+6. Si no se pudo obtener el precio de `/mercado`: se muestra el error y no el formulario. Sin recálculo, el precio se marca como "precio inicial".
 
 ## Requirements
 
-- **FR-001**: Las rutas viven solo en `src/api/endpoints.js` (`comprar`, `vender`, `portfolio`).
+- **FR-001**: Las rutas viven solo en `src/api/endpoints.js` (`mercadoJugador`, `comprar`, `vender`, `portfolio`).
 - **FR-002**: El precio mostrado es referencial; el backend fija el precio final y la respuesta es la fuente de la confirmación.
 - **FR-003**: Las validaciones del cliente no reemplazan las del backend; sus errores se muestran tal cual.
 - **FR-004**: El campo de cantidad tiene label, `aria-invalid`, `aria-describedby` al total y al error; la confirmación usa `role="status"`.
 
-## Assumptions (a confirmar con `backend/specs/005-contratos-entrega2`)
+## Contrato (`backend/specs/005-contratos-entrega2/contracts/openapi.yaml`)
 
-- `POST /api/ordenes/compra` y `/api/ordenes/venta` con `{ jugadorId, cantidad }`; respuesta `{ id, tipo, cantidad, precio, total? }`.
-- `GET /api/usuarios/{id}/portfolio` → `{ saldo, tenencias: [{ jugadorId | jugador: { id }, cantidad, precioPromedio }] }`.
-- Precio vigente: `jugador.precioActual` o `jugador.cotizacionActual.precio` si el backend lo manda; si no, la última cotización de `RENDIMIENTO` (estrategia activa por defecto) o la última disponible.
-- `jugador.tokensDisponibles` es opcional.
-- Saldo inicial: pendiente de definir con el docente (pregunta abierta del plan).
+- `GET /api/jugadores/{jugadorId}/mercado` → `MercadoJugadorResponse`: `{ jugadorId, tokensEmitidos, tokensDisponibles, precioVigente, fechaCotizacion }`; `fechaCotizacion` es null mientras no haya recálculo (precio inicial de 1 crédito). Es la fuente del precio y de la disponibilidad.
+- `GET /api/usuarios/{usuarioId}/portfolio` → `PortfolioResponse`: `saldo` y `posiciones: [{ jugador, cantidad, precioPromedio, ... }]`.
+- `POST /api/ordenes/compra` y `/api/ordenes/venta` con `OrdenRequest { jugadorId, cantidad }` (cantidad de 1 a 100); el usuario sale del JWT. Respuesta `201` con `OperacionResponse { id, tipo, jugador, cantidad, precioUnitario, total, saldoPosterior, contraparte, fecha, estrategia, version }`.
+- Errores: `409` si el superusuario no tiene tokens suficientes; `422` si el usuario no tiene saldo o tokens; `404` si el jugador no existe. Se muestra el `mensaje` del backend con su `correlationId`.
+- El saldo inicial sigue a confirmar con el docente (lo define el backend al registrar).
