@@ -28,9 +28,9 @@ Frontend único en `formula11/frontend`: código en `src/`, pruebas en `tests/`.
 
 **Purpose**: Rutas, mocks y estilos compartidos.
 
-- [ ] T001 [P] Verificar que `src/api/endpoints.js` exponga `portfolio(usuarioId)` y `evolucionPortfolio(usuarioId)` y que la evolución se pida sin `desde` ni `hasta` (FR-001).
-- [ ] T002 [P] Verificar en `src/test/handlers.js` respuestas por defecto con las formas de `PortfolioResponse` y `EvolucionPortfolioResponse`, sin ids ni parámetros especiales.
-- [ ] T003 [P] Verificar que `src/components/comun/estiloGraficos.js` concentre ejes, grilla y tooltip, y que `src/pages/PortfolioPage.jsx` se cargue con `lazy` en `src/router/AppRouter.jsx` (FR-005).
+- [X] T001 [P] Verificar que `src/api/endpoints.js` exponga `portfolio(usuarioId)` y `evolucionPortfolio(usuarioId)` y que la evolución se pida sin `desde` ni `hasta` (FR-001).
+- [X] T002 [P] Verificar en `src/test/handlers.js` respuestas por defecto con las formas de `PortfolioResponse` y `EvolucionPortfolioResponse`, sin ids ni parámetros especiales.
+- [X] T003 [P] Verificar que `src/components/comun/estiloGraficos.js` concentre ejes, grilla y tooltip, y que `src/pages/PortfolioPage.jsx` se cargue con `lazy` en `src/router/AppRouter.jsx` (FR-005).
 
 ---
 
@@ -40,9 +40,9 @@ Frontend único en `formula11/frontend`: código en `src/`, pruebas en `tests/`.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Agregar en `src/components/portfolio/portfolio.js` un orden común de tenencias (mayor `valorActual` primero; a igual valor, por nombre) y usarlo en `composicion` (FR-008).
-- [ ] T005 [P] Agregar en `tests/components/portfolio.test.js` los casos del orden común y del desempate por nombre.
-- [ ] T006 Verificar en `src/components/portfolio/portfolio.js` y `src/hooks/usePortfolio.js` que los totales y los valores por fila salgan del backend sin recalcular y que el valor total sea `saldo` + `valorTenencias` (FR-002).
+- [X] T004 Agregar en `src/components/portfolio/portfolio.js` un orden común de tenencias (mayor `valorActual` primero; a igual valor, por nombre) y usarlo en `composicion` (FR-008).
+- [X] T005 [P] Agregar en `tests/components/portfolio.test.js` los casos del orden común y del desempate por nombre.
+- [X] T006 Verificar en `src/components/portfolio/portfolio.js` y `src/hooks/usePortfolio.js` que los totales y los valores por fila salgan del backend sin recalcular y que el valor total sea `saldo` + `valorTenencias` (FR-002).
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -56,16 +56,16 @@ Frontend único en `formula11/frontend`: código en `src/`, pruebas en `tests/`.
 
 ### Tests for User Story 1
 
-- [ ] T007 [P] [US1] Verificar en `tests/pages/portfolio.test.jsx` el resumen, la tabla, el estado sin tenencias, la navegación desde el menú y que el portfolio se pida con el `usuario.id` de la sesión (FR-007).
-- [ ] T008 [P] [US1] Agregar en `tests/pages/portfolio.test.jsx` un test de orden de la tabla por valor actual cuando el backend manda las posiciones desordenadas (FR-008).
-- [ ] T009 [P] [US1] Agregar en `tests/pages/portfolio.test.jsx` un test con ganancia negativa (tarjeta "Pérdida") y otro con `invertido` en 0 ("Sin inversión") (FR-002).
-- [ ] T010 [P] [US1] Agregar en `tests/pages/portfolio.test.jsx` un test con `rol: 'SUPERUSUARIO'`: el menú no muestra "Mi portfolio", `/portfolio` muestra el aviso y no se consulta la API (FR-006).
+- [X] T007 [P] [US1] Verificar en `tests/pages/portfolio.test.jsx` el resumen, la tabla, el estado sin tenencias, la navegación desde el menú y que el portfolio se pida con el `usuario.id` de la sesión (FR-007).
+- [X] T008 [P] [US1] Agregar en `tests/pages/portfolio.test.jsx` un test de orden de la tabla por valor actual cuando el backend manda las posiciones desordenadas (FR-008).
+- [X] T009 [P] [US1] Agregar en `tests/pages/portfolio.test.jsx` un test con ganancia negativa (tarjeta "Pérdida") y otro con `invertido` en 0 ("Sin inversión") (FR-002).
+- [X] T010 [P] [US1] Agregar en `tests/pages/portfolio.test.jsx` un test con `rol: 'SUPERUSUARIO'`: el menú no muestra "Mi portfolio", `/portfolio` muestra el aviso y no se consulta la API (FR-006).
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Ordenar las tenencias en `src/hooks/usePortfolio.js` con el orden común de T004, para que la tabla las reciba ya ordenadas (FR-008).
-- [ ] T012 [US1] Ocultar "Mi portfolio" para el `SUPERUSUARIO` en `src/components/navegacion/MenuPrincipal.jsx` (FR-006).
-- [ ] T013 [US1] Mostrar en `src/pages/PortfolioPage.jsx` el aviso del superusuario y no consultar la API en `src/hooks/usePortfolio.js` para ese rol (FR-006).
+- [X] T011 [US1] Ordenar las tenencias en `src/hooks/usePortfolio.js` con el orden común de T004, para que la tabla las reciba ya ordenadas (FR-008).
+- [X] T012 [US1] Ocultar "Mi portfolio" para el `SUPERUSUARIO` en `src/components/navegacion/MenuPrincipal.jsx` (FR-006).
+- [X] T013 [US1] Mostrar en `src/pages/PortfolioPage.jsx` el aviso del superusuario y no consultar la API en `src/hooks/usePortfolio.js` para ese rol (FR-006).
 
 **Checkpoint**: El resumen y la tabla funcionan de forma independiente.
 
@@ -79,15 +79,15 @@ Frontend único en `formula11/frontend`: código en `src/`, pruebas en `tests/`.
 
 ### Tests for User Story 2
 
-- [ ] T014 [P] [US2] Verificar en `tests/pages/portfolio.test.jsx` los tres gráficos y que un error de la evolución no oculta el resto.
-- [ ] T015 [P] [US2] Agregar en `tests/pages/portfolio.test.jsx` un test con un solo punto de evolución que muestre el aviso de poca historia.
-- [ ] T016 [P] [US2] Agregar en `tests/pages/portfolio.test.jsx` un test de la tabla oculta "Evolución semanal" con fecha, valor e invertido.
-- [ ] T017 [P] [US2] Agregar en `tests/pages/portfolio.test.jsx` un test con más de 7 tenencias: la tabla las lista todas y la composición agrupa "Otros (n)".
+- [X] T014 [P] [US2] Verificar en `tests/pages/portfolio.test.jsx` los tres gráficos y que un error de la evolución no oculta el resto.
+- [X] T015 [P] [US2] Agregar en `tests/pages/portfolio.test.jsx` un test con un solo punto de evolución que muestre el aviso de poca historia.
+- [X] T016 [P] [US2] Agregar en `tests/pages/portfolio.test.jsx` un test de la tabla oculta "Evolución semanal" con fecha, valor e invertido.
+- [X] T017 [P] [US2] Agregar en `tests/pages/portfolio.test.jsx` un test con más de 7 tenencias: la tabla las lista todas y la composición agrupa "Otros (n)".
 
 ### Implementation for User Story 2
 
-- [ ] T018 [US2] Mostrar en `src/pages/PortfolioPage.jsx` la tarjeta con el aviso de poca historia cuando la evolución tenga menos de 2 puntos.
-- [ ] T019 [US2] Agregar en `src/components/portfolio/GraficosPortfolio.jsx` la tabla oculta visualmente "Evolución semanal" (fecha, valor, invertido) dentro de la tarjeta de evolución.
+- [X] T018 [US2] Mostrar en `src/pages/PortfolioPage.jsx` la tarjeta con el aviso de poca historia cuando la evolución tenga menos de 2 puntos.
+- [X] T019 [US2] Agregar en `src/components/portfolio/GraficosPortfolio.jsx` la tabla oculta visualmente "Evolución semanal" (fecha, valor, invertido) dentro de la tarjeta de evolución.
 
 **Checkpoint**: Gráficos completos y accesibles.
 
@@ -101,13 +101,13 @@ Frontend único en `formula11/frontend`: código en `src/`, pruebas en `tests/`.
 
 ### Tests for User Story 3
 
-- [ ] T020 [P] [US3] Verificar en `tests/pages/portfolio.test.jsx` el error del portfolio y la ausencia de consultas sin sesión.
-- [ ] T021 [P] [US3] Agregar en `tests/pages/portfolio.test.jsx` un test del estado de carga.
-- [ ] T022 [P] [US3] Agregar en `tests/pages/portfolio.test.jsx` un test de `401` en el portfolio que limpie la sesión, y otro donde falla el portfolio pero la evolución responde y solo se ve el error.
+- [X] T020 [P] [US3] Verificar en `tests/pages/portfolio.test.jsx` el error del portfolio y la ausencia de consultas sin sesión.
+- [X] T021 [P] [US3] Agregar en `tests/pages/portfolio.test.jsx` un test del estado de carga.
+- [X] T022 [P] [US3] Agregar en `tests/pages/portfolio.test.jsx` un test de `401` en el portfolio que limpie la sesión, y otro donde falla el portfolio pero la evolución responde y solo se ve el error.
 
 ### Implementation for User Story 3
 
-- [ ] T023 [US3] Verificar en `src/pages/PortfolioPage.jsx` los estados de carga, error y sin sesión según el spec.
+- [X] T023 [US3] Verificar en `src/pages/PortfolioPage.jsx` los estados de carga, error y sin sesión según el spec.
 
 **Checkpoint**: Todas las historias funcionan de forma independiente.
 
@@ -115,10 +115,10 @@ Frontend único en `formula11/frontend`: código en `src/`, pruebas en `tests/`.
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T024 [P] Agregar en `tests/pages/portfolio.test.jsx` una verificación de que el token de la sesión no aparece en la página (FR-007).
-- [ ] T025 [P] Verificar en `src/styles/screens.css` las columnas ocultas hasta 760px y `min-width: 0` en las tarjetas de gráficos (FR-004).
-- [ ] T026 [P] Verificar en `src/components/portfolio/portfolio.js` los colores de FR-003 y que las etiquetas de ganancia lleven signo.
-- [ ] T027 Correr `npm test`, `npm run lint` y `npm run build` desde `formula11/frontend`.
+- [X] T024 [P] Agregar en `tests/pages/portfolio.test.jsx` una verificación de que el token de la sesión no aparece en la página (FR-007).
+- [X] T025 [P] Verificar en `src/styles/screens.css` las columnas ocultas hasta 760px y `min-width: 0` en las tarjetas de gráficos (FR-004).
+- [X] T026 [P] Verificar en `src/components/portfolio/portfolio.js` los colores de FR-003 y que las etiquetas de ganancia lleven signo.
+- [X] T027 Correr `npm test`, `npm run lint` y `npm run build` desde `formula11/frontend`.
 - [ ] T028 Ejecutar manualmente los escenarios de `specs/006-portfolio-graficos/quickstart.md` con el backend y registrar desviaciones en `plan.md`.
 
 ---

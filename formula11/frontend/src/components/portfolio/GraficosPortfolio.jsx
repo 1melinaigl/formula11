@@ -32,9 +32,41 @@ function Tarjeta({ titulo, children }) {
   )
 }
 
+const TITULO_EVOLUCION = 'Valor del portfolio vs. invertido'
+
+export function AvisoPocaHistoria() {
+  return (
+    <Tarjeta titulo={TITULO_EVOLUCION}>
+      <p className="market-note portfolio-note">Todavía no hay suficiente historia para mostrar la evolución (hace falta al menos una semana más de cotizaciones).</p>
+    </Tarjeta>
+  )
+}
+
+// Alternativa textual del gráfico de evolución para lectores de pantalla.
+function TablaEvolucion({ evolucion }) {
+  return (
+    <table className="visually-hidden">
+      <caption>Evolución semanal</caption>
+      <thead>
+        <tr><th scope="col">Fecha</th><th scope="col">Valor</th><th scope="col">Invertido</th></tr>
+      </thead>
+      <tbody>
+        {evolucion.map((punto) => (
+          <tr key={punto.fecha}>
+            <td>{formatearFecha(punto.fecha)}</td>
+            <td>{formatearPrecio(punto.valor)}</td>
+            <td>{formatearPrecio(punto.invertido)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
 export function GraficoEvolucionPortfolio({ evolucion }) {
   return (
-    <Tarjeta titulo="Valor del portfolio vs. invertido">
+    <Tarjeta titulo={TITULO_EVOLUCION}>
+      <TablaEvolucion evolucion={evolucion} />
       <ResponsiveContainer width="100%" height={280}>
         <LineChart data={evolucion} margin={{ top: 16, right: 16, bottom: 4, left: 0 }}>
           <CartesianGrid stroke={COLOR_GRILLA} strokeDasharray="3 3" />

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { composicion, enriquecerTenencias, gananciasPorJugador, normalizarEvolucion, resumenPortfolio } from '../../src/components/portfolio/portfolio'
+import { composicion, enriquecerTenencias, gananciasPorJugador, normalizarEvolucion, ordenarTenencias, resumenPortfolio } from '../../src/components/portfolio/portfolio'
 
 const jugador = (id, nombre, posicion = 'DEL') => ({ id, nombre, equipo: 'Equipo', liga: 'Serie A', posicion })
 
@@ -46,5 +46,17 @@ describe('helpers del portfolio', () => {
       { fecha: '2026-10-19', valor: 12, invertido: 10 },
     ])
     expect(normalizarEvolucion(null)).toEqual([])
+  })
+})
+
+describe('orden común de tenencias (006)', () => {
+  it('ordena por valor actual y desempata por nombre, también en la composición', () => {
+    const desordenadas = enriquecerTenencias([
+      { jugador: jugador(1, 'Zeta'), cantidad: 1, precioPromedio: 1, precioActual: 2, invertido: 1, valorActual: 2, ganancia: 1, gananciaPorcentaje: 100 },
+      { jugador: jugador(2, 'Kane'), cantidad: 1, precioPromedio: 1, precioActual: 9, invertido: 1, valorActual: 9, ganancia: 8, gananciaPorcentaje: 800 },
+      { jugador: jugador(3, 'Alfa'), cantidad: 1, precioPromedio: 1, precioActual: 2, invertido: 1, valorActual: 2, ganancia: 1, gananciaPorcentaje: 100 },
+    ])
+    expect(ordenarTenencias(desordenadas).map((tenencia) => tenencia.nombre)).toEqual(['Kane', 'Alfa', 'Zeta'])
+    expect(composicion(desordenadas).map((fila) => fila.nombre)).toEqual(['Kane', 'Alfa', 'Zeta'])
   })
 })

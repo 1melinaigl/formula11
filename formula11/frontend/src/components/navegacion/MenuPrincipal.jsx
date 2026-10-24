@@ -14,7 +14,7 @@ export default function MenuPrincipal() {
     { label: 'Catálogo de jugadores', subtitle: 'Consultar el plantel', action: 'catalog' },
     { label: 'Ranking', subtitle: 'Comparar rendimiento', action: 'ranking' },
     { label: 'Mi portfolio', subtitle: 'Tus tokens, valor y ganancias', action: 'portfolio' },
-  ]
+  ].filter((item) => !(item.action === 'portfolio' && usuario?.rol === 'SUPERUSUARIO'))
 
   useEffect(() => {
     itemRefs.current[selected]?.focus()

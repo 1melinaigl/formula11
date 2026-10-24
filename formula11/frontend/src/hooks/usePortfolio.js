@@ -1,21 +1,22 @@
 import { useEffect, useState } from 'react'
 import { endpoints } from '../api/endpoints'
-import { enriquecerTenencias, normalizarEvolucion, resumenPortfolio } from '../components/portfolio/portfolio'
+import { enriquecerTenencias, normalizarEvolucion, ordenarTenencias, resumenPortfolio } from '../components/portfolio/portfolio'
 import { useSesion } from './useSesion'
 
-export function usePortfolio() {
+// Con habilitado=false (superusuario) no se consulta nada: no tiene portfolio de inversión.
+export function usePortfolio({ habilitado = true } = {}) {
   const { usuario, solicitarProtegida } = useSesion()
   const [estado, setEstado] = useState({
     resumen: resumenPortfolio(null),
     tenencias: [],
     evolucion: [],
-    cargando: Boolean(usuario),
+    cargando: Boolean(usuario && habilitado),
     error: null,
     errorEvolucion: null,
   })
 
   useEffect(() => {
-    if (!usuario) return undefined
+    if (!usuario || !habilitado) return undefined
 
     let activo = true
 
@@ -27,7 +28,7 @@ export function usePortfolio() {
       const datos = portfolio.status === 'fulfilled' ? portfolio.value : null
       setEstado({
         resumen: resumenPortfolio(datos),
-        tenencias: enriquecerTenencias(datos?.posiciones || []).filter((tenencia) => tenencia.cantidad > 0),
+        tenencias: ordenarTenencias(enriquecerTenencias(datos?.posiciones || []).filter((tenencia) => tenencia.cantidad > 0)),
         evolucion: evolucion.status === 'fulfilled' ? normalizarEvolucion(evolucion.value) : [],
         cargando: false,
         error: portfolio.status === 'rejected' ? portfolio.reason : null,
@@ -36,7 +37,7 @@ export function usePortfolio() {
     })
 
     return () => { activo = false }
-  }, [solicitarProtegida, usuario])
+  }, [habilitado, solicitarProtegida, usuario])
 
-  return { ...estado, cargando: Boolean(usuario && estado.cargando) }
+  return { ...estado, cargando: Boolean(usuario && habilitado && estado.cargando) }
 }

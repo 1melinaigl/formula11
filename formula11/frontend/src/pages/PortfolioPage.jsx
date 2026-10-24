@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import AvisoError from '../components/comun/AvisoError'
 import EstadoCarga from '../components/comun/EstadoCarga'
-import { GraficoComposicion, GraficoEvolucionPortfolio, GraficoGanancias } from '../components/portfolio/GraficosPortfolio'
+import { AvisoPocaHistoria, GraficoComposicion, GraficoEvolucionPortfolio, GraficoGanancias } from '../components/portfolio/GraficosPortfolio'
 import ResumenPortfolio from '../components/portfolio/ResumenPortfolio'
 import TablaTenencias from '../components/portfolio/TablaTenencias'
 import { formatearFecha } from '../components/cotizaciones/cotizaciones'
@@ -31,7 +31,7 @@ function ContenidoPortfolio({ resumen, tenencias, evolucion, errorEvolucion }) {
       <ResumenPortfolio resumen={resumen} />
       <div className="portfolio-charts">
         {errorEvolucion && <AvisoError error={errorEvolucion} />}
-        {!errorEvolucion && evolucion.length > 1 && <GraficoEvolucionPortfolio evolucion={evolucion} />}
+        {!errorEvolucion && (evolucion.length > 1 ? <GraficoEvolucionPortfolio evolucion={evolucion} /> : <AvisoPocaHistoria />)}
         <GraficoComposicion filas={composicion(tenencias)} />
         {ganancias.length > 0 && <GraficoGanancias filas={ganancias} />}
       </div>
@@ -44,7 +44,8 @@ function ContenidoPortfolio({ resumen, tenencias, evolucion, errorEvolucion }) {
 export default function PortfolioPage() {
   const { usuario } = useSesion()
   const navigate = useNavigate()
-  const portfolio = usePortfolio()
+  const esSuperusuario = usuario?.rol === 'SUPERUSUARIO'
+  const portfolio = usePortfolio({ habilitado: !esSuperusuario })
 
   useEffect(() => {
     const volver = (event) => { if (event.key === 'Escape') navigate('/') }
@@ -64,9 +65,15 @@ export default function PortfolioPage() {
           </div>
           <button className="btn ghost" type="button" onClick={() => navigate('/')}>Menú</button>
         </div>
-        {portfolio.cargando && <EstadoCarga mensaje="Cargando portfolio..." />}
-        {!portfolio.cargando && portfolio.error && <AvisoError error={portfolio.error} />}
-        {!portfolio.cargando && !portfolio.error && <ContenidoPortfolio {...portfolio} />}
+        {esSuperusuario && (
+          <div className="empty-state" role="status">
+            <h2>Sin portfolio</h2>
+            <p>El superusuario es la contraparte del mercado y no tiene un portfolio de inversión.</p>
+          </div>
+        )}
+        {!esSuperusuario && portfolio.cargando && <EstadoCarga mensaje="Cargando portfolio..." />}
+        {!esSuperusuario && !portfolio.cargando && portfolio.error && <AvisoError error={portfolio.error} />}
+        {!esSuperusuario && !portfolio.cargando && !portfolio.error && <ContenidoPortfolio {...portfolio} />}
       </div>
     </section>
   )

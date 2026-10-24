@@ -52,11 +52,16 @@ export function normalizarEvolucion(data) {
 }
 
 // Ordenada de mayor a menor valor; a partir del 8.º jugador se agrupa en "Otros".
+// Orden común de la tabla y la composición: mayor valor actual primero; a igual valor, por nombre.
+export function ordenarTenencias(tenencias) {
+  return [...tenencias].sort((a, b) => b.valorActual - a.valorActual || a.nombre.localeCompare(b.nombre, 'es'))
+}
+
 export function composicion(tenencias) {
   const conValor = tenencias.filter((tenencia) => tenencia.valorActual > 0)
   const total = conValor.reduce((suma, tenencia) => suma + tenencia.valorActual, 0)
   if (!total) return []
-  const ordenadas = [...conValor].sort((a, b) => b.valorActual - a.valorActual)
+  const ordenadas = ordenarTenencias(conValor)
   const principales = ordenadas.slice(0, MAXIMO_COMPOSICION).map((tenencia) => ({ nombre: tenencia.nombre, valor: tenencia.valorActual }))
   const resto = ordenadas.slice(MAXIMO_COMPOSICION)
   if (resto.length) principales.push({ nombre: `Otros (${resto.length})`, valor: resto.reduce((suma, tenencia) => suma + tenencia.valorActual, 0) })
