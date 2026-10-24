@@ -37,7 +37,7 @@ export default function BarraFiltros({ filtros, opciones, campoOrden, direccionO
         </select>
       </div>
       <button className="btn ghost catalog-clear" type="button" onClick={limpiarFiltros}>Limpiar</button>
-      {activos.length > 0 && <div className="filter-chips" aria-label="Filtros activos">{activos.map(([name, value]) => <button className="filter-chip" key={name} type="button" onClick={() => actualizarFiltro(name, '')}>{value} ×</button>)}</div>}
+      {activos.length > 0 && <div className="filter-chips" role="group" aria-label="Filtros activos">{activos.map(([name, value]) => <button aria-label={`Quitar filtro ${value}`} className="filter-chip" key={name} type="button" onClick={() => actualizarFiltro(name, '')}>{value} ×</button>)}</div>}
     </div>
   )
 }

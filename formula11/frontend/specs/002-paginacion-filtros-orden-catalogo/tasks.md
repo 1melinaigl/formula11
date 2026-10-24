@@ -59,7 +59,7 @@ description: "Task list for Formula11 paginated player catalog"
 - [X] T015 [P] [US2] Probar (con timers reales y `waitFor`) en `frontend/tests/hooks/useCatalogo.test.jsx` que el equipo aplica debounce y no dispara una request por cada tecla.
 - [X] T016 [P] [US2] Probar en `frontend/tests/pages/catalogo.test.jsx` que cambiar liga, posición, equipo u orden reinicia a `page=0`, conserva los demás valores y mantiene `size=9`.
 - [X] T017 [P] [US2] Probar en `frontend/tests/pages/catalogo.test.jsx` que el selector de orden solo ofrece `nombre`, `equipo`, `liga`, `posicion` y direcciones `asc`/`desc`, sin opción `ID`, enviando `sort=campo,direccion`.
-- [ ] T018 [P] [US2] Probar que la lista conserva el orden y el contenido devueltos por MSW, sin aplicar filtros, sort o paginación local; verificar chips y acción `Limpiar`.
+- [X] T018 [P] [US2] Probar que la lista conserva el orden y el contenido devueltos por MSW, sin aplicar filtros, sort o paginación local; verificar chips y acción `Limpiar`.
 
 ### Implementation for User Story 2
 
@@ -100,12 +100,12 @@ description: "Task list for Formula11 paginated player catalog"
 
 - [X] T033 [P] Actualizar los tests de `frontend/tests/pages/catalogo.test.jsx` existentes que esperan arrays o búsqueda por nombre para usar respuestas paginadas y el alcance de filtros soportado por backend; no eliminar cobertura útil sin reemplazo.
 - [ ] T034 [P] Auditar que ninguna modificación del catálogo expone el JWT en DOM, mensajes, atributos, logs o snapshots.
-- [ ] T035 [P] Auditar labels, foco visible, teclado, botones disabled, `aria-live` de página/estados, ausencia de contador total y navegación responsive hasta 760px.
+- [X] T035 [P] Auditar labels, foco visible, teclado, botones disabled, `aria-live` de página/estados, ausencia de contador total y navegación responsive hasta 760px.
 - [X] T036 [P] Revisar que `GET /api/jugadores` conserve `Authorization` y `X-Correlation-Id` mediante el cliente API y que los errores usen el normalizador existente.
 - [X] T037 Ejecutar `npm test` desde `frontend/` y corregir fallos de la feature sin modificar backend.
 - [X] T038 Ejecutar `npm run lint` desde `frontend/` y corregir errores introducidos por la feature.
 - [X] T039 Ejecutar `npm run build` desde `frontend/` y verificar que la aplicación compila con el contrato paginado.
-- [ ] T040 [P] Verificar en `frontend/src/styles/components.css` que `.catalog-toolbar` mantiene cinco columnas de campos más la columna de "Limpiar" en una sola fila de escritorio, con `align-items: end`, y conserva el reacomodo responsive hasta 760px.
+- [X] T040 [P] Verificar en `frontend/src/styles/components.css` que `.catalog-toolbar` mantiene cinco columnas de campos más la columna de "Limpiar" en una sola fila de escritorio, con `align-items: end`, y conserva el reacomodo responsive hasta 760px. Nota: entre 761 y 1024px la barra pasa a 3 columnas (dos filas) porque la fila única no entra; ≤760px usa 2 columnas y ≤420px una sola.
 
 ## Dependencies & Execution Order
 
