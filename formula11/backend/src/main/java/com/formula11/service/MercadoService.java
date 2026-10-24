@@ -111,6 +111,23 @@ public class MercadoService {
         return new ResultadoOperacion(transaccion, cuenta.getSaldo());
     }
 
+    @Transactional(readOnly = true)
+    public MercadoJugadorResultado consultarMercado(Long jugadorId) {
+        Jugador jugador = jugadorRepository.findById(jugadorId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("El jugador no existe"));
+        Usuario superusuario = usuarioRepository.findByRol(Rol.SUPERUSUARIO)
+                .orElseThrow(() -> new RecursoNoEncontradoException("El superusuario no existe"));
+        Tenencia stock = tenenciaRepository.findByUsuarioIdAndJugadorId(superusuario.getId(), jugadorId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("La tenencia del mercado no existe"));
+        CotizacionVigentePort.Cotizacion cotizacion = cotizacionPort.vigente(jugador, Instant.now(clock));
+        return new MercadoJugadorResultado(
+                jugador.getId(),
+                100,
+                stock.getCantidad(),
+                cotizacion.precio(),
+                cotizacion.fechaCotizacion());
+    }
+
     private static String snapshot(Cuenta cuenta, Tenencia usuario, Tenencia superusuario) {
         return "{\"saldoUsuario\":" + cuenta.getSaldo().toPlainString()
                 + ",\"tokensUsuario\":" + usuario.getCantidad()

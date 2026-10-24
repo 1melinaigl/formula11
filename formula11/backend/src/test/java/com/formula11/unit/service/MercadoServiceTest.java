@@ -147,4 +147,17 @@ class MercadoServiceTest {
         verify(transacciones).save(any(Transaccion.class));
         verify(auditorias).save(any());
     }
+
+    @Test
+    void consultaMercadoDevuelveStockCotizacionYFecha() {
+        when(tenencias.findByUsuarioIdAndJugadorId(2L, 3L)).thenReturn(Optional.of(stock));
+
+        MercadoJugadorResultado resultado = service.consultarMercado(3L);
+
+        assertEquals(3L, resultado.jugadorId());
+        assertEquals(100, resultado.tokensEmitidos());
+        assertEquals(100, resultado.tokensDisponibles());
+        assertEquals(new BigDecimal("1.0000"), resultado.precioVigente());
+        assertNull(resultado.fechaCotizacion());
+    }
 }

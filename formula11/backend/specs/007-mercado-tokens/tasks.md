@@ -68,10 +68,10 @@ description: "Task list for implementing the 007 token market feature"
 
 **Independent Test**: Query an existing player with JWT and verify `200 MercadoJugadorResponse` containing 100 issued tokens, current superuser holding, price 1, and null quote date.
 
-- [ ] T030 [P] [US3] Add `MercadoJugadorResponse` with exact contract fields and nullability in `backend/src/main/java/com/formula11/dto/MercadoJugadorResponse.java`
-- [ ] T031 [US3] Implement a read-only market query in `MercadoService` using player lookup, superuser holding, and `CotizacionVigentePort` in `backend/src/main/java/com/formula11/service/MercadoService.java`
-- [ ] T032 [US3] Add `GET /api/jugadores/{jugadorId}/mercado` to `backend/src/main/java/com/formula11/controller/MercadoController.java` with contract-compatible `200/401/404` behavior
-- [ ] T033 [US3] Extend `MercadoE2ETest.java` with existing-player, nonexistent-player, missing-JWT, and post-purchase stock assertions
+- [x] T030 [P] [US3] Add `MercadoJugadorResponse` with exact contract fields and nullability in `backend/src/main/java/com/formula11/dto/MercadoJugadorResponse.java`
+- [x] T031 [US3] Implement a read-only market query in `MercadoService` using player lookup, superuser holding, and `CotizacionVigentePort` in `backend/src/main/java/com/formula11/service/MercadoService.java`
+- [x] T032 [US3] Add `GET /api/jugadores/{jugadorId}/mercado` to `backend/src/main/java/com/formula11/controller/MercadoJugadorController.java` with contract-compatible `200/401/404` behavior
+- [x] T033 [US3] Extend `MercadoE2ETest.java` with existing-player, nonexistent-player, missing-JWT, and post-purchase stock assertions
 
 ## Phase 6: User Story 4 - Cuentas, roles y superusuario (Priority: P1)
 

@@ -17,6 +17,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.*;
 import java.math.BigDecimal;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -200,6 +201,57 @@ class MercadoE2ETest {
         mockMvc.perform(post("/api/ordenes/venta")
                         .contentType(MediaType.APPLICATION_JSON).content("{\"jugadorId\":1,\"cantidad\":1}"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void consultaMercadoDevuelveJugadorStockYPrecio() throws Exception {
+        Usuario superusuario = crearSuperusuario("super-mercado-query@example.com");
+        Jugador jugador = jugadores.saveAndFlush(new Jugador("Messi", "Inter Miami", Liga.LA_LIGA, "Delantero"));
+        tenencias.saveAndFlush(new Tenencia(superusuario, jugador, 100, BigDecimal.ONE));
+        String token = registrar("mercado-query@example.com", new BigDecimal("100"));
+
+        mockMvc.perform(get("/api/jugadores/" + jugador.getId() + "/mercado")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.jugadorId").value(jugador.getId()))
+                .andExpect(jsonPath("$.tokensEmitidos").value(100))
+                .andExpect(jsonPath("$.tokensDisponibles").value(100))
+                .andExpect(jsonPath("$.precioVigente").value(1.0000))
+                .andExpect(jsonPath("$.fechaCotizacion").doesNotExist());
+    }
+
+    @Test
+    void consultaMercadoRechazaJugadorInexistenteCon404() throws Exception {
+        String token = registrar("mercado-not-found@example.com", new BigDecimal("100"));
+
+        mockMvc.perform(get("/api/jugadores/999/mercado")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void consultaMercadoRequiereAutenticacion() throws Exception {
+        mockMvc.perform(get("/api/jugadores/1/mercado"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void consultaMercadoReflejaStockLuegoDeComprar() throws Exception {
+        Usuario superusuario = crearSuperusuario("super-mercado-purchase@example.com");
+        Jugador jugador = jugadores.saveAndFlush(new Jugador("Messi", "Inter Miami", Liga.LA_LIGA, "Delantero"));
+        tenencias.saveAndFlush(new Tenencia(superusuario, jugador, 100, BigDecimal.ONE));
+        String token = registrar("mercado-purchase@example.com", new BigDecimal("100"));
+
+        mockMvc.perform(post("/api/ordenes/compra")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"jugadorId\":" + jugador.getId() + ",\"cantidad\":2}"))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/jugadores/" + jugador.getId() + "/mercado")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tokensDisponibles").value(98));
     }
 
     private Usuario crearSuperusuario(String email) {
