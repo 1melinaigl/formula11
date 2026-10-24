@@ -63,7 +63,10 @@ posición y liga enviados al backend. No hay cambios de backend ni almacenamient
   `ranking.js` normaliza y construye consultas, `TablaRanking` presenta y el cliente
   protegido centraliza transporte.
 - **Validación, seguridad y trazabilidad**: PASS. Se conserva la limpieza ante `401`,
-  los mensajes en español, `correlationId` y la prohibición de mostrar tokens.
+  los mensajes en español, `correlationId` y la prohibición de mostrar tokens. Aunque
+  esta feature no envía `estrategia`, un `403` del backend se interpreta como rechazo
+  de autorización de la consulta de la estrategia activa: se muestra el error
+  contractual, sin reintentar silenciosamente ni cambiar de estrategia.
 - **Calidad accesible y comprobable**: PASS condicionado a cierre. La tabla usa
   encabezados semánticos, el nombre es un enlace, filtros usan `aria-pressed` y los
   tests MSW cubren éxito, vacío, errores, filtros y ausencia de sesión.

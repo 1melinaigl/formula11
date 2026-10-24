@@ -31,7 +31,7 @@
 - [ ] CHK013 - ¿Coinciden `size=20`, la descripción de “20 por página” y el modelo de consulta? [Consistency, Spec §Acceptance Scenarios 2, Contract §Ranking]
 - [ ] CHK014 - ¿La regla de que el backend ordena y asigna `puesto` es consistente con la prohibición de reordenar o filtrar localmente? [Consistency, Spec §Contrato, Plan §Decisions, Data Model §Transformations]
 - [ ] CHK015 - ¿Los estados “Ranking vacío” y “Sin jugadores” tienen condiciones mutuamente excluyentes y comprensibles? [Consistency, Spec §User Story 2, Spec §User Story 3]
-- [ ] CHK016 - ¿Los estados de error `400`, `401` y `403` son consistentes entre el spec, el contrato frontend y las reglas de sesión? [Consistency, Spec §FR-005, Contract §Errors]
+- [x] CHK016 - ¿Los estados de error `400`, `401` y `403` son consistentes entre el spec, el contrato frontend y las reglas de sesión? [Consistency, Spec §FR-005, Contract §Errors]
 
 ## Acceptance Criteria Quality
 
@@ -52,7 +52,7 @@
 ## Non-Functional Requirements
 
 - [ ] CHK027 - ¿Los requisitos de autenticación indican que toda consulta es protegida y que no se realizan llamadas sin sesión? [Security, Spec §FR-002, Spec §User Story 3]
-- [ ] CHK028 - ¿Está especificado que los errores muestran `mensaje` y `correlationId` sin exponer el JWT? [Security, Spec §FR-005, Constitution §IV]
+- [x] CHK028 - ¿Está especificado que los errores muestran `mensaje` y `correlationId` sin exponer el JWT? [Security, Spec §FR-005, Constitution §IV]
 - [ ] CHK029 - ¿Las necesidades de teclado, foco visible, nombres accesibles y estados de los filtros están documentadas para todos los controles? [Accessibility, Constitution §V, Gap]
 - [ ] CHK030 - ¿La calidad responsive está definida para la tabla completa y no solo para Equipo y Score? [Accessibility, Spec §FR-004, Constitution §I]
 - [ ] CHK031 - ¿Está definido un objetivo medible para evitar consultas redundantes cuando se repite un filtro activo? [Performance, Plan §Decisions, Gap]
@@ -61,15 +61,15 @@
 
 - [ ] CHK032 - ¿La dependencia con la ruta de detalle `/jugadores/:id` y su disponibilidad está documentada? [Dependency, Spec §Acceptance Scenarios 5, Plan §Structure]
 - [ ] CHK033 - ¿Está documentada la dependencia con el cliente protegido y el esquema de errores compartido? [Dependency, Spec §FR-002, Contract §Errors]
-- [ ] CHK034 - ¿La lista de ligas permitidas y su origen contractual están definidos, en lugar de quedar como una suposición de UI? [Assumption, Data Model §RankingQuery, Gap]
+- [x] CHK034 - ¿La lista de ligas permitidas y su origen contractual están definidos, en lugar de quedar como una suposición de UI? [Assumption, Data Model §RankingQuery, Gap]
 - [ ] CHK035 - ¿Está documentada la compatibilidad entre el contrato de Entrega 2 y la referencia histórica de contratos de la constitución? [Dependency, Plan §Constitution Check]
 
 ## Ambiguities and Conflicts
 
-- [ ] CHK036 - ¿El spec aclara si `estrategia` siempre viene informada en una respuesta sin recálculo o si puede ser `null`? [Ambiguity, Spec §Acceptance Scenarios 3, Contract §Ranking]
-- [ ] CHK037 - ¿El spec define el comportamiento ante un `403` del ranking sin atribuirlo a una estrategia alternativa que esta feature nunca solicita? [Ambiguity, Spec §FR-005, Spec §Contrato]
+- [x] CHK036 - ¿El spec aclara si `estrategia` siempre viene informada en una respuesta sin recálculo o si puede ser `null`? [Ambiguity, Spec §Acceptance Scenarios 3, Contract §Ranking]
+- [x] CHK037 - ¿El spec define el comportamiento ante un `403` del ranking sin atribuirlo a una estrategia alternativa que esta feature nunca solicita? [Ambiguity, Spec §FR-005, Spec §Contrato]
 - [ ] CHK038 - ¿Los requisitos distinguen “variación semanal” de la ausencia de variación en la primera cotización? [Clarity, Spec §Acceptance Scenarios 4, Data Model §RankingItem]
-- [ ] CHK039 - ¿Se ha definido si el retorno con `Escape` debe llevar al menú `/` o a otra ruta de navegación? [Ambiguity, Plan §Structure, Gap]
+- [x] CHK039 - ¿Se ha definido si el retorno con `Escape` debe llevar al menú `/` o a otra ruta de navegación? [Ambiguity, Plan §Structure, Gap]
 
 ## Notes
 

@@ -11,7 +11,7 @@
 | `size` | number | Tamaño solicitado; esta feature usa 20. |
 | `totalElements` | number | Cantidad total tras filtros. |
 | `totalPages` | number | Cantidad total de páginas. |
-| `estrategia` | strategy code \| null | Estrategia activa reportada por el backend; no se solicita otra en esta feature. |
+| `estrategia` | strategy code | Estrategia activa obligatoria reportada por el backend; nunca es nula y no se solicita otra en esta feature. |
 | `version` | number \| null | Versión del último recálculo. |
 | `fecha` | `YYYY-MM-DD` \| null | Fecha de la última cotización. |
 
@@ -42,7 +42,7 @@
 | `page` | number | Base cero; inicia en 0. |
 | `size` | number | Fijo en 20. |
 | `posicion` | code \| empty | Se envía solo si hay filtro. |
-| `liga` | string \| empty | Se envía solo si hay filtro. |
+| `liga` | valor del enum `Liga` \| empty | Se envía solo si hay filtro; el valor enviado es exactamente igual a la etiqueta de la liga. |
 | `estrategia` | not sent | Fuera del alcance de esta feature. |
 
 ### Sesion
@@ -69,3 +69,5 @@
 - Las fechas `YYYY-MM-DD` se formatean por componentes, sin pasar por `Date`.
 - `null` en `score` se muestra como `—`; `null` en metadatos indica ausencia de
   recálculo y no un error.
+- Las ligas disponibles son los valores del enum `Liga` definido por el contrato;
+  cada valor se envía al backend exactamente con la misma etiqueta legible.

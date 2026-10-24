@@ -10,7 +10,8 @@ El frontend consume el endpoint mediante `solicitarProtegida`. Cada llamada incl
 - `page` es base cero; la primera consulta usa `page=0`.
 - `size` es siempre `20`.
 - `posicion` acepta `POR`, `DEF`, `MED` o `DEL`.
-- `liga` usa el nombre legible exacto del contrato.
+- `liga` acepta un valor del enum `Liga` del contrato y se envía exactamente igual
+  a su etiqueta legible, sin traducción ni transformación.
 - Los parámetros vacíos se omiten.
 - `estrategia` no se envía en esta feature; la vista es siempre de la estrategia
   activa.
@@ -69,5 +70,10 @@ no devuelve resultados.
 |---|---|
 | `400` | Show `mensaje` and `correlationId`; keep the ranking screen. |
 | `401` | Clear session and show access/error state. |
-| `403` | Show `mensaje` and `correlationId`; do not silently retry or change strategy. |
+| `403` | Aunque esta pantalla siempre consulta la estrategia activa y no envía `estrategia`, el backend puede rechazar la operación por autorización; mostrar `mensaje` y `correlationId`, sin reintentar silenciosamente ni cambiar de estrategia. |
 | `5xx` | Show `mensaje` and `correlationId` when supplied. |
+
+`clienteApi` conserva el comportamiento existente cuando la respuesta de error no
+completa el esquema: usa el `X-Correlation-Id` generado para la solicitud si el
+backend no devuelve `correlationId`, y usa `No se pudo completar la solicitud.`
+si falta `mensaje`.

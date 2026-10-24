@@ -15,6 +15,8 @@
 
 - **Decision**: enviar `posicion`, `liga`, `page` y `size=20`; omitir parámetros vacíos.
   La primera página usa `page=0` y la UI presenta `page + 1`.
+- `liga` usa un valor del enum `Liga` del contrato y lo envía exactamente igual a
+  su etiqueta legible.
 - **Rationale**: el contrato establece que el backend filtra, ordena por score y
   asigna `puesto`; evita resultados incorrectos al filtrar una sola página local.
 - **Alternatives considered**: filtrar o paginar el array ya cargado. Se descarta por
@@ -33,6 +35,12 @@
 
 - **Decision**: reutilizar `solicitarProtegida`; mostrar `mensaje` y `correlationId`,
   limpiar sesión únicamente ante `401` y mantener la pantalla ante `400`/`403`.
+- Aunque esta pantalla no envía `estrategia`, un `403` se interpreta como rechazo de
+  autorización de la consulta de la estrategia activa; no se reintenta ni se cambia
+  de estrategia.
+- Si el backend no devuelve `correlationId`, `clienteApi` conserva el
+  `X-Correlation-Id` generado para la solicitud. Si falta `mensaje`, muestra
+  `No se pudo completar la solicitud.`.
 - **Rationale**: coincide con el cliente existente y con el esquema `Error` del
   contrato, además de las reglas constitucionales de seguridad y observabilidad.
 - **Alternatives considered**: convertir todo error en acceso denegado o mostrar texto
@@ -51,9 +59,8 @@
 ## Decisión: Estado sin recálculo
 
 - **Decision**: cuando `version` y `fecha` son `null`, mostrar
-  `Estrategia activa: <nombre> · sin recálculo todavía`; si `estrategia` también
-  faltara, mostrar el estado genérico de sin recálculo sin elegir una estrategia por
-  defecto.
+  `Estrategia activa: <nombre> · sin recálculo todavía`; `estrategia` siempre viene
+  informada como estrategia activa obligatoria.
 - **Rationale**: el contrato indica que no hubo recálculo; no debe confundirse con
   error ni fabricarse una versión.
 - **Alternatives considered**: ocultar metadatos o mostrar una versión ficticia.

@@ -23,15 +23,19 @@ Sobrescribir el handler de `/api/jugadores/ranking` dentro de cada test para val
 
 1. Respuesta contractual con filas anidadas, orden y puestos recibidos.
 2. Headers protegidos y ausencia de `estrategia` en la consulta.
-3. Filtro `MED` y liga `Serie A`, con reinicio a `page=0`.
+3. Filtro `MED` y liga `Serie A` (valor del enum `Liga` enviado igual a la etiqueta),
+   con reinicio a `page=0`.
 4. Segunda página con `page=1`, UI mostrando `Página 2`.
 5. `content: []` sin filtros: `Ranking vacío`.
 6. `content: []` con filtro: `Sin jugadores`.
 7. Metadatos `estrategia` presente, `version` y `fecha` nulos:
    `Estrategia activa: <nombre> · sin recálculo todavía`.
-8. Errores `400`, `401`, `403` y `5xx` con `mensaje` y `correlationId`.
+8. Errores `400`, `401`, `403` y `5xx` con `mensaje` y `correlationId`; si falta
+   `correlationId`, se usa el `X-Correlation-Id` generado por `clienteApi`, y si falta
+   `mensaje`, se muestra `No se pudo completar la solicitud.`.
 9. Ausencia de sesión: acceso denegado y cero llamadas protegidas.
-10. Navegación desde el menú a `/ranking` y desde el nombre a `/jugadores/:id`.
+10. Navegación desde el menú a `/ranking`, desde el nombre a `/jugadores/:id` y con
+    `Escape` de vuelta a `/`.
 
 ## Manual flow
 

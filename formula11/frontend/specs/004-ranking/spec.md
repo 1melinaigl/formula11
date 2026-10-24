@@ -13,7 +13,7 @@
 - Q: ¿La paginación del ranking debe usar índices de página basados en cero (`page=0` para la primera página), como el contrato y el código actual? → A: Índice cero en la API; la interfaz muestra las páginas desde 1.
 - Q: Cuando el backend devuelve `version` o `fecha` en `null` porque todavía no hubo recálculo, ¿la pantalla debe mostrar un título genérico y mantener la tabla o el estado vacío sin metadatos? → A: Mostrar “Estrategia activa: <nombre> · sin recálculo todavía” (`estrategia` siempre viene; `version` y `fecha` son null hasta el primer recálculo) y el estado correspondiente.
 - Q: ¿Los errores `400`, `401` y `403` del endpoint de ranking deben mostrarse con el `mensaje` y `correlationId` del contrato, limpiando la sesión solo ante `401` y sin cambiar la pantalla ante `400`/`403`? → A: Mostrar `mensaje` y `correlationId`; limpiar la sesión solo ante `401`.
-- Q: ¿Los filtros deben enviar al backend los códigos contractuales de posición (`POR`, `DEF`, `MED`, `DEL`) y el nombre legible exacto de la liga, sin traducir ni filtrar localmente? → A: Enviar códigos de posición y nombre de liga al backend.
+- Q: ¿Los filtros deben enviar al backend los códigos contractuales de posición (`POR`, `DEF`, `MED`, `DEL`) y el nombre legible exacto de la liga, sin traducir ni filtrar localmente? → A: Enviar códigos de posición y el valor del enum `Liga` del contrato, igual a su etiqueta legible.
 
 ## User Scenarios & Testing
 
@@ -30,6 +30,7 @@ Como usuario autenticado, quiero ver a los jugadores ordenados según la estrate
 3. **Given** la página con `estrategia`, `version` y `fecha`, **When** se muestra el título, **Then** se indica "Estrategia activa: <nombre> v<versión> · al dd/mm/aaaa"; si todavía no hubo recálculo (`version` y `fecha` en `null`), se indica "Estrategia activa: <nombre> · sin recálculo todavía".
 4. **Given** una fila con `variacion`, **Then** la variación se muestra en verde si sube, roja si baja y "—" si no hay dato; un score ausente se muestra como "—".
 5. **Given** una fila, **When** el usuario pulsa el nombre, **Then** navega al detalle `/jugadores/:id` (feature 003).
+6. **Given** el ranking abierto, **When** el usuario pulsa `Escape`, **Then** vuelve a `/`.
 
 ### User Story 2 - Filtrar por posición (Priority: P2)
 
@@ -54,8 +55,9 @@ Como usuario, quiero ver el ranking de una sola posición, porque la estrategia 
 - **FR-002**: La consulta usa `solicitarProtegida`.
 - **FR-003**: Las filas llegan con el jugador anidado (`{ puesto, jugador, precio, variacion, score }`) dentro de una página.
 - **FR-004**: En pantallas de hasta 760px se ocultan Equipo y Score para que la tabla no desborde.
-- **FR-005**: Los errores `400`, `401` y `403` muestran el `mensaje` y `correlationId` del esquema `Error`; solo `401` limpia la sesión y `400`/`403` mantienen la pantalla.
-- **FR-006**: Los filtros envían al backend los códigos `POR`, `DEF`, `MED` o `DEL` en `posicion` y el nombre legible exacto de la liga en `liga`; el frontend no filtra localmente.
+- **FR-005**: Los errores `400`, `401` y `403` muestran el `mensaje` y `correlationId` del esquema `Error`; solo `401` limpia la sesión y `400`/`403` mantienen la pantalla. Aunque esta feature no envía `estrategia`, un `403` del backend se trata como rechazo de autorización de la consulta de la estrategia activa, sin reintentar ni cambiar de estrategia.
+- **FR-006**: Los filtros envían al backend los códigos `POR`, `DEF`, `MED` o `DEL` en `posicion` y un valor del enum `Liga` del contrato, exactamente igual a su etiqueta legible, en `liga`; el frontend no filtra localmente.
+- **FR-007**: Al pulsar `Escape` en la pantalla de ranking, la navegación vuelve a `/`.
 
 ## Contrato (`backend/specs/005-contratos-entrega2/contracts/openapi.yaml`)
 
