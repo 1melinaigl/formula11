@@ -177,3 +177,21 @@
 .market-note { color: var(--muted); }
 .market-retry { margin: 0 0 12px; padding: 6px 14px; font-size: 16px; }
 .market-form input:disabled, .market-type .filter-chip:disabled { cursor: not-allowed; opacity: .6; }
+
+.portfolio-summary { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+.portfolio-charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: start; }
+.portfolio-charts > :first-child:not(:last-child):nth-last-child(odd) { grid-column: 1 / -1; }
+.portfolio-chart { min-width: 0; min-height: 0; margin: 0; padding-bottom: 12px; }
+.portfolio-chart .player-card-heading { margin-bottom: 8px; }
+.portfolio-subtitle { margin: 26px 0 10px; color: var(--cyan); font: 400 24px var(--disp); letter-spacing: 1px; text-transform: uppercase; }
+.portfolio-table small { color: var(--muted); font-weight: 400; }
+.portfolio-sell { display: inline-block; text-decoration: none; }
+
+@media (max-width: 900px) {
+  .portfolio-charts { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 760px) {
+  .portfolio-optional, .portfolio-table small { display: none; }
+  .portfolio-table .player-position { display: none; }
+}
