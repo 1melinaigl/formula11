@@ -1,28 +1,134 @@
 # Implementation Plan: Ranking de jugadores
 
-**Branch**: `003-004-cotizaciones-ranking` | **Spec**: [spec.md](./spec.md)
+**Branch**: `003-004-cotizaciones-ranking` | **Date**: 2026-10-24 | **Spec**: [spec.md](./spec.md)
+
+## Summary
+
+La feature expone `/ranking` para usuarios autenticados y consume
+`GET /api/jugadores/ranking` mediante el cliente protegido existente. El frontend
+presenta el ranking ya ordenado por el backend, delega filtros y paginación al
+servidor, muestra los metadatos de la estrategia activa y conserva los errores
+contractuales con `mensaje` y `correlationId`. El alcance no incluye seleccionar otra
+estrategia: aunque el contrato general permite que un `SUPERUSUARIO` la solicite,
+esta pantalla siempre consulta la estrategia activa sin enviar `estrategia`.
 
 ## Technical Context
 
-Se apila sobre 003: reutiliza la ruta `/jugadores/:id`, `formatearPrecio`, `formatearVariacion`, `formatearFecha`, `nombreEstrategia` y los estilos `.quote-change`. Sin dependencias nuevas; la página no usa Recharts, así que no se carga en diferido.
+**Language/Version**: JavaScript ES modules, React 19, Vite 8.
 
-## Estructura
+**Primary Dependencies**: React Router 7, MSW 2, Vitest 5, React Testing Library y
+user-event. No se agregan dependencias nuevas.
+
+**Storage**: N/A. La sesión existente conserva el JWT mediante el mecanismo aprobado
+por `SesionContext`; el ranking no introduce estado persistente.
+
+**Testing**: Vitest, React Testing Library, user-event y MSW. La validación de cierre
+incluye `npm test`, `npm run lint` y `npm run build`.
+
+**Target Platform**: Navegadores soportados por Vite, con responsive en el corte de
+760px definido por el mockup.
+
+**Project Type**: Aplicación web frontend.
+
+**Performance Goals**: Una consulta protegida por cambio efectivo de filtros o página;
+no se filtra ni reordena localmente. La página no incorpora Recharts ni modifica el
+code splitting existente.
+
+**Constraints**:
+
+- El contrato de Entrega 2 es la autoridad para ruta, nombres, campos, paginación,
+  filtros y errores.
+- Las llamadas pasan por `solicitarProtegida`, incluyendo `Authorization` y
+  `X-Correlation-Id`.
+- La API usa `page=0` en la primera página y `size=20`; la UI muestra páginas desde 1.
+- `variacion` llega como porcentaje contractual (`12.5` = `12,5 %`) y se transforma
+  solo para reutilizar los formateadores existentes.
+- La UI, documentación y errores permanecen en español; no se expone el JWT.
+
+**Scale/Scope**: Una página paginada de hasta 20 filas visibles, con filtros de
+posición y liga enviados al backend. No hay cambios de backend ni almacenamiento.
+
+## Constitution Check
+
+*GATE: Must pass before Phase 0 research and be rechecked after Phase 1 design.*
+
+- **Fidelidad visual verificable**: PASS. Se reutilizan paneles, botones, tipografías,
+  colores y corte responsive existentes; la tabla agrega solo la superficie prevista
+  por el mockup y los estilos actuales.
+- **Contratos del backend como autoridad**: PASS con dependencia documentada. El
+  contrato pegado de Entrega 2 define el endpoint de ranking y sus formas. La
+  constitución enumera contratos históricos de Entrega 1/2; no se inventan campos y
+  la implementación debe mantener como fuente operativa el contrato de Entrega 2.
+- **Capas y límites explícitos**: PASS. `useRanking` coordina estado y llamadas,
+  `ranking.js` normaliza y construye consultas, `TablaRanking` presenta y el cliente
+  protegido centraliza transporte.
+- **Validación, seguridad y trazabilidad**: PASS. Se conserva la limpieza ante `401`,
+  los mensajes en español, `correlationId` y la prohibición de mostrar tokens.
+- **Calidad accesible y comprobable**: PASS condicionado a cierre. La tabla usa
+  encabezados semánticos, el nombre es un enlace, filtros usan `aria-pressed` y los
+  tests MSW cubren éxito, vacío, errores, filtros y ausencia de sesión.
+
+No hay violaciones que requieran Complexity Tracking. La diferencia entre la
+constitución histórica y el contrato de Entrega 2 queda como dependencia de gobierno,
+no como una excepción funcional inventada por esta feature.
+
+## Project Structure
+
+### Documentation
 
 ```text
-src/api/endpoints.js                       # ranking
-src/components/ranking/ranking.js          # normalizarRanking, construirConsultaRanking
-src/components/ranking/TablaRanking.jsx
-src/hooks/useRanking.js
-src/pages/RankingPage.jsx                  # ruta /ranking
-src/components/navegacion/MenuPrincipal.jsx  # "Ranking" deja de estar bloqueado
-src/components/navegacion/Encabezado.jsx     # breadcrumbs de /ranking y /jugadores/:id
-src/test/handlers.js                       # handler por defecto, antes de /api/jugadores/:id
-tests/pages/ranking.test.jsx
+specs/004-ranking/
+├── plan.md
+├── research.md
+├── data-model.md
+├── contracts/
+│   └── frontend-api.md
+├── quickstart.md
+└── tasks.md
 ```
 
-## Decisiones
+### Source Code
 
-- **Orden del backend**: el frontend no reordena; el puesto es el índice en la lista visible.
-- **Filtros y paginación en el backend** (contrato): cambiar posición o liga vuelve a la página 1; repetir el filtro activo no vuelve a consultar.
-- **Tabla semántica** (`<table>` con `th scope="col"`) con link en el nombre, en lugar de filas-botón, para que lectores de pantalla anuncien columnas.
-- **MSW**: el handler de `/api/jugadores/ranking` va antes que `/api/jugadores/:id`, porque MSW toma el primero que coincide.
+```text
+src/
+├── api/
+│   └── endpoints.js
+├── components/
+│   └── ranking/
+│       ├── ranking.js
+│       └── TablaRanking.jsx
+├── hooks/
+│   └── useRanking.js
+├── pages/
+│   └── RankingPage.jsx
+└── test/
+    └── handlers.js
+
+tests/
+└── pages/
+    └── ranking.test.jsx
+```
+
+**Structure Decision**: Se mantiene la arquitectura existente. La página no ejecuta
+fetch, el hook utiliza `solicitarProtegida`, los helpers aíslan transformaciones del
+contrato y MSW provee respuestas contractuales para pruebas.
+
+## Phase 0: Research
+
+La investigación está consolidada en [research.md](./research.md). Resuelve el uso
+del endpoint de Entrega 2, la semántica de paginación y filtros, la decisión de no
+enviar `estrategia`, la normalización de porcentajes y el tratamiento de errores.
+
+## Phase 1: Design
+
+- [data-model.md](./data-model.md) define la página, las filas anidadas, el jugador
+  resumido, los filtros y la sesión.
+- [contracts/frontend-api.md](./contracts/frontend-api.md) fija la consulta,
+  respuesta, headers, errores y estados visibles.
+- [quickstart.md](./quickstart.md) documenta comandos y escenarios MSW/manuales para
+  validar la feature contra el contrato.
+
+## Complexity Tracking
+
+No aplica: se reutilizan cliente, helpers de cotización, paginación, estilos y
+componentes de sesión existentes.

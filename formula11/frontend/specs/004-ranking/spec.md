@@ -11,7 +11,7 @@
 
 - Q: ¿El ranking de esta feature debe mostrar únicamente la estrategia activa y no ofrecer selector ni enviar `estrategia`, incluso para `SUPERUSUARIO`? → A: Solo estrategia activa; el frontend no envía `estrategia`.
 - Q: ¿La paginación del ranking debe usar índices de página basados en cero (`page=0` para la primera página), como el contrato y el código actual? → A: Índice cero en la API; la interfaz muestra las páginas desde 1.
-- Q: Cuando el backend devuelve `estrategia`, `version` o `fecha` en `null` porque todavía no hubo recálculo, ¿la pantalla debe mostrar un título genérico y mantener la tabla o el estado vacío sin metadatos? → → A: Mostrar “Estrategia activa: <nombre>· sin recálculo todavía” (`estrategia` siempre viene; `version` y `fecha` son null hasta el primer recálculo) y el estado correspondiente.
+- Q: Cuando el backend devuelve `version` o `fecha` en `null` porque todavía no hubo recálculo, ¿la pantalla debe mostrar un título genérico y mantener la tabla o el estado vacío sin metadatos? → A: Mostrar “Estrategia activa: <nombre> · sin recálculo todavía” (`estrategia` siempre viene; `version` y `fecha` son null hasta el primer recálculo) y el estado correspondiente.
 - Q: ¿Los errores `400`, `401` y `403` del endpoint de ranking deben mostrarse con el `mensaje` y `correlationId` del contrato, limpiando la sesión solo ante `401` y sin cambiar la pantalla ante `400`/`403`? → A: Mostrar `mensaje` y `correlationId`; limpiar la sesión solo ante `401`.
 - Q: ¿Los filtros deben enviar al backend los códigos contractuales de posición (`POR`, `DEF`, `MED`, `DEL`) y el nombre legible exacto de la liga, sin traducir ni filtrar localmente? → A: Enviar códigos de posición y nombre de liga al backend.
 
