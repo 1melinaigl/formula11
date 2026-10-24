@@ -10,62 +10,62 @@
 
 ## Requirement Completeness
 
-- [ ] CHK001 - ¿Están especificadas todas las columnas de la tabla con el campo de `OperacionResponse` del que sale cada una? [Completeness, Spec §User Story 1, Spec §Contrato]
-- [ ] CHK002 - ¿Se definen todos los accesos al historial (portfolio, confirmación de una operación) y la vuelta al portfolio? [Completeness, Spec §User Story 1]
-- [ ] CHK003 - ¿Está definido qué se muestra mientras carga una página o un cambio de filtro? [Gap]
-- [ ] CHK004 - ¿Se especifican los textos del estado vacío para cada filtro (Todas, Compras, Ventas)? [Completeness, Spec §User Story 3]
+- [x] CHK001 - ¿Están especificadas todas las columnas de la tabla con el campo de `OperacionResponse` del que sale cada una? [Completeness, Spec §User Story 1, Spec §Contrato]
+- [x] CHK002 - ¿Se definen todos los accesos al historial (portfolio, confirmación de una operación) y la vuelta al portfolio? [Completeness, Spec §User Story 1]
+- [x] CHK003 - ¿Está definido qué se muestra mientras carga una página o un cambio de filtro? [Gap]
+- [x] CHK004 - ¿Se especifican los textos del estado vacío para cada filtro (Todas, Compras, Ventas)? [Completeness, Spec §User Story 3]
 
 ## Requirement Clarity
 
-- [ ] CHK005 - ¿Está claro qué significa "contraparte" y qué se muestra si no viene? [Clarity, Gap]
-- [ ] CHK006 - ¿Se define el formato de montos (decimales, unidad) en precio, movimiento y saldo final? [Clarity, Gap]
-- [ ] CHK007 - ¿Está definido el texto exacto y la ubicación de la marca "(precio inicial)"? [Clarity, Spec §Clarifications]
+- [x] CHK005 - ¿Está claro qué significa "contraparte" y qué se muestra si no viene? [Clarity, Gap]
+- [x] CHK006 - ¿Se define el formato de montos (decimales, unidad) en precio, movimiento y saldo final? [Clarity, Gap]
+- [x] CHK007 - ¿Está definido el texto exacto y la ubicación de la marca "(precio inicial)"? [Clarity, Spec §Clarifications]
 
 ## Requirement Consistency
 
-- [ ] CHK008 - ¿Es consistente la regla del superusuario con la del portfolio (006) y la del mercado (005)? [Consistency, Spec §FR-006]
-- [ ] CHK009 - ¿Coinciden FR-002, la aclaración y el contrato respecto de los filtros que se envían (solo `tipo`, sin `jugadorId`)? [Consistency, Spec §FR-002]
-- [ ] CHK010 - ¿Son consistentes las columnas ocultas a 375px con lo que exige ver la historia de usuario (por ejemplo, la marca de precio inicial queda en una columna oculta)? [Consistency, Spec §FR-005, Spec §User Story 1]
+- [x] CHK008 - ¿Es consistente la regla del superusuario con la del portfolio (006) y la del mercado (005)? [Consistency, Spec §FR-006]
+- [x] CHK009 - ¿Coinciden FR-002, la aclaración y el contrato respecto de los filtros que se envían (solo `tipo`, sin `jugadorId`)? [Consistency, Spec §FR-002]
+- [x] CHK010 - ¿Son consistentes las columnas ocultas a 375px con lo que exige ver la historia de usuario (por ejemplo, la marca de precio inicial queda en una columna oculta)? [Consistency, Spec §FR-005, Spec §User Story 1]
 
 ## Paginación y filtro (obligatorio)
 
-- [ ] CHK011 - ¿Está especificado que cambiar el filtro vuelve a la página 1 y que repetir el filtro activo no vuelve a consultar? [Completeness, Spec §User Story 2]
-- [ ] CHK012 - ¿Se define que la paginación conserva el filtro activo al pasar de página? [Gap]
-- [ ] CHK013 - ¿Se especifica qué ocurre si llega tarde la respuesta de un filtro o página anterior (no debe pisar la vigente)? [Gap, Edge Case]
-- [ ] CHK014 - ¿Está definido cuándo se muestra la paginación (solo con más de una página) y el formato "Página N de M"? [Clarity, Spec §User Story 1]
-- [ ] CHK015 - ¿Se define el comportamiento si se pide una página fuera de rango (por ejemplo, después de que cambie el total)? [Gap, Edge Case]
+- [x] CHK011 - ¿Está especificado que cambiar el filtro vuelve a la página 1 y que repetir el filtro activo no vuelve a consultar? [Completeness, Spec §User Story 2]
+- [x] CHK012 - ¿Se define que la paginación conserva el filtro activo al pasar de página? [Gap]
+- [x] CHK013 - ¿Se especifica qué ocurre si llega tarde la respuesta de un filtro o página anterior (no debe pisar la vigente)? [Gap, Edge Case]
+- [x] CHK014 - ¿Está definido cuándo se muestra la paginación (solo con más de una página) y el formato "Página N de M"? [Clarity, Spec §User Story 1]
+- [x] CHK015 - ¿Se define el comportamiento si se pide una página fuera de rango (por ejemplo, después de que cambie el total)? [Gap, Edge Case]
 
 ## Fechas y zona horaria (obligatorio)
 
-- [ ] CHK016 - ¿Está especificado el formato exacto de las fechas `date-time` (día, mes, año, hora y minutos en 24 h) y en qué zona horaria se muestran? [Clarity, Spec §FR-004]
-- [ ] CHK017 - ¿Se define qué se muestra si la fecha no viene o es inválida? [Gap, Edge Case]
-- [ ] CHK018 - ¿Es consistente FR-004 con el contrato, que define las fechas de operaciones como `date-time` y no como `YYYY-MM-DD`? [Consistency, Spec §FR-004, Spec §Contrato]
+- [x] CHK016 - ¿Está especificado el formato exacto de las fechas `date-time` (día, mes, año, hora y minutos en 24 h) y en qué zona horaria se muestran? [Clarity, Spec §FR-004]
+- [x] CHK017 - ¿Se define qué se muestra si la fecha no viene o es inválida? [Gap, Edge Case]
+- [x] CHK018 - ¿Es consistente FR-004 con el contrato, que define las fechas de operaciones como `date-time` y no como `YYYY-MM-DD`? [Consistency, Spec §FR-004, Spec §Contrato]
 
 ## Signo del movimiento (obligatorio)
 
-- [ ] CHK019 - ¿Está especificado que el movimiento de una compra es `-total` y el de una venta `+total`, con el signo visible además del color? [Clarity, Spec §User Story 1]
-- [ ] CHK020 - ¿Se define que el tipo de operación se muestra como texto ("Compra"/"Venta") y no solo con color? [Accessibility, Spec §User Story 1]
-- [ ] CHK021 - ¿Queda claro que el movimiento usa `total` del backend y no `cantidad × precioUnitario`? [Clarity, Spec §Contrato]
+- [x] CHK019 - ¿Está especificado que el movimiento de una compra es `-total` y el de una venta `+total`, con el signo visible además del color? [Clarity, Spec §User Story 1]
+- [x] CHK020 - ¿Se define que el tipo de operación se muestra como texto ("Compra"/"Venta") y no solo con color? [Accessibility, Spec §User Story 1]
+- [x] CHK021 - ¿Queda claro que el movimiento usa `total` del backend y no `cantidad × precioUnitario`? [Clarity, Spec §Contrato]
 
 ## Acceptance Criteria Quality
 
-- [ ] CHK022 - ¿Tiene cada estado (carga, vacío según filtro, error, sin sesión, superusuario) un resultado observable con texto definido? [Measurability, Spec §User Story 3]
-- [ ] CHK023 - ¿Es verificable el orden "de la más reciente a la más antigua" sabiendo que lo fija el backend? [Measurability, Spec §Contrato]
+- [x] CHK022 - ¿Tiene cada estado (carga, vacío según filtro, error, sin sesión, superusuario) un resultado observable con texto definido? [Measurability, Spec §User Story 3]
+- [x] CHK023 - ¿Es verificable el orden "de la más reciente a la más antigua" sabiendo que lo fija el backend? [Measurability, Spec §Contrato]
 
 ## Scenario Coverage
 
-- [ ] CHK024 - ¿Están definidos los requisitos ante un `401` (limpieza de sesión) y un `403`? [Coverage, Exception Flow, Gap]
-- [ ] CHK025 - ¿Se descartan de forma definida las operaciones con un tipo desconocido? [Coverage, Spec §FR-003]
+- [x] CHK024 - ¿Están definidos los requisitos ante un `401` (limpieza de sesión) y un `403`? [Coverage, Exception Flow, Gap]
+- [x] CHK025 - ¿Se descartan de forma definida las operaciones con un tipo desconocido? [Coverage, Spec §FR-003]
 
 ## Non-Functional Requirements
 
-- [ ] CHK026 - ¿Se especifica la accesibilidad de la tabla (caption, encabezados) y del grupo de filtros (`aria-pressed`)? [Accessibility, Gap]
-- [ ] CHK027 - ¿Se documenta que la ruta usa el `usuario.id` de la sesión y que el JWT no se expone? [Security, Gap]
-- [ ] CHK028 - ¿Es medible el requisito responsive a 375px? [Measurability, Spec §FR-005]
+- [x] CHK026 - ¿Se especifica la accesibilidad de la tabla (caption, encabezados) y del grupo de filtros (`aria-pressed`)? [Accessibility, Gap]
+- [x] CHK027 - ¿Se documenta que la ruta usa el `usuario.id` de la sesión y que el JWT no se expone? [Security, Gap]
+- [x] CHK028 - ¿Es medible el requisito responsive a 375px? [Measurability, Spec §FR-005]
 
 ## Dependencies & Assumptions
 
-- [ ] CHK029 - ¿Está documentada la dependencia con el 005 (link "Ver historial") y el 006 (botón "Historial")? [Dependency, Spec §User Story 1]
+- [x] CHK029 - ¿Está documentada la dependencia con el 005 (link "Ver historial") y el 006 (botón "Historial")? [Dependency, Spec §User Story 1]
 
 ## Notes
 
