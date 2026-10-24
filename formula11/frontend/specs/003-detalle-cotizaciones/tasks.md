@@ -31,7 +31,7 @@ description: "Task list for Formula11 player detail with quote history"
 
 - [ ] T004 Agregar `estrategias()` a `src/api/endpoints.js` para centralizar `GET /api/estrategias` según el contrato de Entrega 2.
 - [ ] T005 [P] Definir en `src/components/cotizaciones/cotizaciones.js` la validación compartida de códigos `RENDIMIENTO_POSICION` y `CONSISTENCIA`, la semántica de `activa` y el error explícito cuando no existe exactamente una estrategia activa.
-- [ ] T006 [P] Ajustar `normalizarCotizaciones` en `src/components/cotizaciones/cotizaciones.js` para aceptar únicamente las formas documentadas o compatibilidad explícita con lista/`content`, conservar `jugadorId`, `estrategia`, `version`, `score` y `variacion`, y descartar fecha ausente o precio no numérico.
+- [ ] T006 [P] Ajustar `normalizarCotizaciones` en `src/components/cotizaciones/cotizaciones.js` para consumir únicamente `{ jugadorId, estrategia, cotizaciones }`, conservar `jugadorId`, `estrategia`, `version`, `score` y `variacion`, y descartar entradas sin fecha o sin precio numérico.
 - [ ] T007 [P] Agregar en `src/test/handlers.js` el handler MSW de `GET /api/estrategias` con ambas estrategias y exactamente una propiedad `activa: true`.
 - [ ] T008 [P] Crear fixtures y helpers de sesión con roles `USUARIO` y `SUPERUSUARIO` en `tests/pages/detalleJugador.test.jsx` o un helper de pruebas compartido, sin exponer tokens en aserciones ni logs.
 - [ ] T009 [P] Agregar pruebas unitarias de contrato y normalización para `GET /api/estrategias`, respuesta `{ jugadorId, estrategia, cotizaciones }`, fechas `YYYY-MM-DD`, porcentajes y errores en `tests/components/cotizaciones.test.js`.

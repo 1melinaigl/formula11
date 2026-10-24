@@ -41,14 +41,12 @@
 
 ## Response normalization
 
-- **Decision**: el contrato canónico es `{ jugadorId, estrategia, cotizaciones }`;
-  cualquier compatibilidad adicional (`content` o lista) debe conservarse solo si está
-  justificada por mocks existentes y no altera el contrato documentado.
-- **Rationale**: evita que la tolerancia del frontend oculte respuestas inválidas del
-  backend. La implementación actual requiere revisar FR-003 porque no cubre literalmente
-  todas las formas que declara.
-- **Alternatives considered**: aceptar cualquier forma sin validación; descartado por
-  riesgo de datos silenciosamente incorrectos.
+- **Decision**: el frontend consume únicamente la forma canónica
+  `{ jugadorId, estrategia, cotizaciones }`, no paginada y ordenada por fecha ascendente.
+- **Rationale**: mantiene el frontend alineado con el contrato aprobado y evita agregar
+  compatibilidad para formas que no existen en la Entrega 2.
+- **Alternatives considered**: aceptar listas u objetos paginados; descartado porque
+  agregaría código y permitiría desviarse del contrato.
 
 ## Visualization and accessibility
 

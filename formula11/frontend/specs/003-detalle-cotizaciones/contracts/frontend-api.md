@@ -1,7 +1,7 @@
 # Frontend API Contract: Detalle de jugador con evolución de cotizaciones
 
 El frontend consume estas formas mediante `solicitarProtegida`. Todas las respuestas de
-error usan `mensaje`, `correlationId` y, opcionalmente, `timestamp`.
+error usan `mensaje`, `timestamp` y `correlationId`.
 
 ## Player detail
 
