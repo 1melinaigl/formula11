@@ -1,0 +1,1548 @@
+openapi: 3.0.3
+info:
+  title: Formula11 - Contrato Entrega 2
+  version: 1.0.0
+  description: |
+    Contrato único de la Entrega 2. Lo implementan el backend (A y B) y lo consume el frontend (C) con MSW.
+    Solo cambia por PR aprobado por las tres.
+
+    Convenciones (las mismas de la Entrega 1):
+    - Todas las rutas cuelgan de /api y usan nombres en castellano.
+    - Todos los endpoints requieren JWT (bearerAuth), salvo registro y login.
+    - Hay dos roles: USUARIO y SUPERUSUARIO. El rol viaja en el JWT y en la respuesta del login.
+      Solo el superusuario administra el mercado: elige la estrategia activa, crea versiones de pesos,
+      recalcula cotizaciones, carga métricas y consulta estrategias que no sean la activa.
+      El resto de los usuarios ve siempre la estrategia activa. Si un USUARIO llama a algo de administración, recibe 403.
+    - El cliente envía X-Correlation-Id; los errores devuelven siempre el esquema Error.
+    - Ligas con su nombre legible (Premier League, La Liga, ...). Posiciones: POR, DEF, MED, DEL.
+    - Precios y montos en créditos, como número con hasta 4 decimales (BigDecimal en el backend).
+    - Porcentajes como número: 12.5 significa 12,5 %.
+    - Fechas de cotización como date (AAAA-MM-DD, una por semana); fechas de operaciones como date-time.
+    - Las listas largas se paginan como el catálogo: content, page, size, totalElements, totalPages.
+
+    Cada operación indica con x-feature y x-responsable qué feature la implementa.
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: Usuarios
+    description: Ya existe (Entrega 1).
+  - name: Catálogo
+  - name: Cotización
+  - name: Estrategias
+  - name: Métricas
+  - name: Mercado
+  - name: Portfolio
+  - name: Señales
+    description: Feature extra (detector de subvaluados).
+security:
+  - bearerAuth: []
+
+paths:
+  # ---------------------------------------------------------------- Usuarios (ya existen)
+  /api/usuarios/registro:
+    post:
+      tags: [Usuarios]
+      summary: Registra un usuario y emite un JWT
+      description: Ya existe. Al crear el usuario se crea su cuenta con el saldo inicial de créditos (monto a confirmar con el docente).
+      x-feature: 001-registro-catalogo-jugadores (existente) + 007-mercado-tokens (saldo inicial)
+      x-responsable: B
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistroUsuarioRequest'
+      responses:
+        '201':
+          description: Usuario creado y JWT emitido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistroUsuarioResponse'
+        '400':
+          $ref: '#/components/responses/ErrorValidacion'
+        '409':
+          $ref: '#/components/responses/ErrorConflicto'
+
+  /api/usuarios/login:
+    post:
+      tags: [Usuarios]
+      summary: Inicia sesión y emite un JWT
+      description: Ya existe. Cambio para la Entrega 2 - la respuesta y el JWT incluyen el rol del usuario.
+      x-feature: 002-login-usuarios (existente) + 007-mercado-tokens (rol)
+      x-responsable: B
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Credenciales válidas y JWT emitido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/ErrorValidacion'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+
+  # ---------------------------------------------------------------- Catálogo
+  /api/jugadores:
+    get:
+      tags: [Catálogo]
+      summary: Página del catálogo de jugadores
+      description: Ya existe, sin cambios.
+      x-feature: 003-paginacion-catalogo-jugadores (existente)
+      x-responsable: —
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - name: sort
+          in: query
+          description: Un único criterio con formato campo,direccion.
+          schema:
+            type: string
+            pattern: '^(id|nombre|equipo|liga|posicion),(asc|desc)$'
+            example: nombre,asc
+        - $ref: '#/components/parameters/LigaFiltro'
+        - name: equipo
+          in: query
+          description: Texto parcial del equipo, sin distinguir mayúsculas.
+          schema:
+            type: string
+            minLength: 1
+        - name: posicion
+          in: query
+          description: Texto parcial de la posición, sin distinguir mayúsculas.
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        '200':
+          description: Página de jugadores, posiblemente vacía.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JugadoresPageResponse'
+        '400':
+          $ref: '#/components/responses/ErrorValidacion'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+
+  /api/jugadores/sincronizacion:
+    post:
+      tags: [Catálogo]
+      summary: Sincroniza el catálogo con Football-Data
+      description: Ya existe, sin cambios.
+      x-feature: 004-integracion-api-futbol-catalogo (existente)
+      x-responsable: —
+      responses:
+        '200':
+          description: Sincronización completa o parcial.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SincronizacionResponse'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+        '429':
+          $ref: '#/components/responses/ErrorProveedor'
+        '502':
+          $ref: '#/components/responses/ErrorProveedor'
+        '503':
+          $ref: '#/components/responses/ErrorProveedor'
+
+  /api/jugadores/{jugadorId}:
+    get:
+      tags: [Catálogo]
+      summary: Detalle de un jugador con su cotización actual
+      x-feature: 008-cotizacion-fecha-ranking
+      x-responsable: A
+      parameters:
+        - $ref: '#/components/parameters/JugadorId'
+      responses:
+        '200':
+          description: Detalle del jugador.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JugadorDetalleResponse'
+        '400':
+          $ref: '#/components/responses/ErrorValidacion'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+        '404':
+          $ref: '#/components/responses/ErrorNoEncontrado'
+
+  /api/jugadores/ranking:
+    get:
+      tags: [Cotización]
+      summary: Ranking de jugadores según la estrategia activa
+      description: |
+        Ordena por el score de la última cotización, de mayor a menor. El superusuario puede pedir el ranking
+        de otra estrategia con el parámetro estrategia. En el backend, esta ruta literal tiene que declararse para que no la capture /api/jugadores/{jugadorId}.
+      x-feature: 008-cotizacion-fecha-ranking
+      x-responsable: A
+      parameters:
+        - $ref: '#/components/parameters/EstrategiaFiltro'
+        - $ref: '#/components/parameters/LigaFiltro'
+        - $ref: '#/components/parameters/PosicionFiltro'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Página del ranking, posiblemente vacía si todavía no hubo recálculo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RankingPageResponse'
+        '400':
+          $ref: '#/components/responses/ErrorValidacion'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+        '403':
+          $ref: '#/components/responses/ErrorSoloSuperusuario'
+
+  # ---------------------------------------------------------------- Cotización
+  /api/jugadores/{jugadorId}/cotizaciones:
+    get:
+      tags: [Cotización]
+      summary: Historial de cotizaciones de un jugador
+      description: Una cotización por semana, ordenadas por fecha ascendente (lista para graficar). Sin paginar, porque una temporada tiene menos de 52 semanas.
+      x-feature: 008-cotizacion-fecha-ranking
+      x-responsable: A
+      parameters:
+        - $ref: '#/components/parameters/JugadorId'
+        - $ref: '#/components/parameters/EstrategiaFiltro'
+        - $ref: '#/components/parameters/Desde'
+        - $ref: '#/components/parameters/Hasta'
+      responses:
+        '200':
+          description: Historial, posiblemente vacío.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistorialCotizacionesResponse'
+        '400':
+          $ref: '#/components/responses/ErrorValidacion'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+        '403':
+          $ref: '#/components/responses/ErrorSoloSuperusuario'
+        '404':
+          $ref: '#/components/responses/ErrorNoEncontrado'
+
+  /api/jugadores/{jugadorId}/cotizaciones/vigente:
+    get:
+      tags: [Cotización]
+      summary: Cotización de un jugador a una fecha
+      description: Devuelve la última cotización con fecha menor o igual a la pedida. Sin fecha, usa la fecha actual del servidor.
+      x-feature: 008-cotizacion-fecha-ranking
+      x-responsable: A
+      parameters:
+        - $ref: '#/components/parameters/JugadorId'
+        - $ref: '#/components/parameters/EstrategiaFiltro'
+        - name: fecha
+          in: query
+          description: Fecha a consultar. Por defecto, hoy.
+          schema:
+            type: string
+            format: date
+            example: '2026-09-14'
+      responses:
+        '200':
+          description: Cotización vigente a esa fecha.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cotizacion'
+        '400':
+          $ref: '#/components/responses/ErrorValidacion'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+        '403':
+          $ref: '#/components/responses/ErrorSoloSuperusuario'
+        '404':
+          description: El jugador no existe o no tiene cotizaciones hasta esa fecha.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/cotizaciones/recalcular:
+    post:
+      tags: [Cotización]
+      summary: Recalcula las cotizaciones (job manual)
+      description: |
+        Llama al mismo método que el job semanal. Calcula las dos estrategias para todos los jugadores.
+        Sin cuerpo, recalcula la semana actual. Con desde y hasta, recalcula todas las semanas del rango (backfill histórico).
+        Si una semana ya estaba calculada, la reemplaza. Es transaccional por semana.
+      x-feature: 006-estrategias-cotizacion
+      x-responsable: A
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecalculoRequest'
+      responses:
+        '200':
+          description: Recálculo terminado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecalculoResponse'
+        '400':
+          $ref: '#/components/responses/ErrorValidacion'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+        '403':
+          $ref: '#/components/responses/ErrorSoloSuperusuario'
+        '409':
+          description: Ya hay un recálculo en curso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ---------------------------------------------------------------- Estrategias
+  /api/estrategias:
+    get:
+      tags: [Estrategias]
+      summary: Lista las estrategias con su versión vigente
+      x-feature: 006-estrategias-cotizacion
+      x-responsable: A
+      responses:
+        '200':
+          description: Las dos estrategias, con la activa marcada.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EstrategiaResponse'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+
+  /api/estrategias/{codigo}/versiones:
+    get:
+      tags: [Estrategias]
+      summary: Historial de versiones de una estrategia
+      x-feature: 006-estrategias-cotizacion
+      x-responsable: A
+      parameters:
+        - $ref: '#/components/parameters/CodigoEstrategia'
+      responses:
+        '200':
+          description: Versiones de la más nueva a la más vieja.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EstrategiaResponse'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+        '404':
+          $ref: '#/components/responses/ErrorNoEncontrado'
+    post:
+      tags: [Estrategias]
+      summary: Crea una versión nueva con otros pesos o parámetros
+      description: Nunca edita una versión existente. La versión nueva se usa a partir del próximo recálculo.
+      x-feature: 006-estrategias-cotizacion
+      x-responsable: A
+      parameters:
+        - $ref: '#/components/parameters/CodigoEstrategia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NuevaVersionRequest'
+      responses:
+        '201':
+          description: Versión creada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstrategiaResponse'
+        '400':
+          description: Métrica desconocida, posición faltante o parámetro fuera de rango.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+        '403':
+          $ref: '#/components/responses/ErrorSoloSuperusuario'
+        '404':
+          $ref: '#/components/responses/ErrorNoEncontrado'
+
+  /api/estrategias/{codigo}/activar:
+    post:
+      tags: [Estrategias]
+      summary: Elige la estrategia con la que opera el mercado
+      description: |
+        Desde ese momento, las compras, las ventas, el portfolio, el detalle, el historial y el ranking que ve el público usan esta estrategia.
+        Como cada estrategia tiene su propia serie de precios, el valor de los portfolios cambia de golpe al activar otra.
+      x-feature: 006-estrategias-cotizacion
+      x-responsable: A
+      parameters:
+        - $ref: '#/components/parameters/CodigoEstrategia'
+      responses:
+        '200':
+          description: Estrategia activada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstrategiaResponse'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+        '403':
+          $ref: '#/components/responses/ErrorSoloSuperusuario'
+        '404':
+          $ref: '#/components/responses/ErrorNoEncontrado'
+
+  # ---------------------------------------------------------------- Métricas (scraper)
+  /api/metricas/sincronizacion:
+    post:
+      tags: [Métricas]
+      summary: Dispara la carga de métricas desde WhoScored
+      description: |
+        Asincrónico, porque la carga histórica puede tardar varios minutos. Devuelve 202 con la ejecución creada,
+        y el avance se consulta en /api/metricas/sincronizacion/{ejecucionId}.
+        Sin cuerpo, carga los partidos nuevos desde la última carga. Con desde, carga desde esa fecha.
+      x-feature: 011-scraper-whoscored
+      x-responsable: A
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SincronizacionMetricasRequest'
+      responses:
+        '202':
+          description: Carga iniciada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EjecucionMetricasResponse'
+        '400':
+          $ref: '#/components/responses/ErrorValidacion'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+        '403':
+          $ref: '#/components/responses/ErrorSoloSuperusuario'
+        '409':
+          description: Ya hay una carga en curso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/metricas/sincronizacion/{ejecucionId}:
+    get:
+      tags: [Métricas]
+      summary: Estado y resumen de una carga de métricas
+      x-feature: 011-scraper-whoscored
+      x-responsable: A
+      parameters:
+        - name: ejecucionId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Estado de la ejecución.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EjecucionMetricasResponse'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+        '403':
+          $ref: '#/components/responses/ErrorSoloSuperusuario'
+        '404':
+          $ref: '#/components/responses/ErrorNoEncontrado'
+
+  /api/metricas/pendientes:
+    get:
+      tags: [Métricas]
+      summary: Jugadores de WhoScored que no se pudieron vincular con el catálogo
+      x-feature: 011-scraper-whoscored
+      x-responsable: A
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Página de pendientes, posiblemente vacía.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendientesPageResponse'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+        '403':
+          $ref: '#/components/responses/ErrorSoloSuperusuario'
+
+  # ---------------------------------------------------------------- Mercado
+  /api/jugadores/{jugadorId}/mercado:
+    get:
+      tags: [Mercado]
+      summary: Datos de mercado de un jugador (disponibilidad y precio)
+      description: Lo usa la pantalla de compra para mostrar cuántos tokens quedan y a qué precio.
+      x-feature: 007-mercado-tokens
+      x-responsable: B
+      parameters:
+        - $ref: '#/components/parameters/JugadorId'
+      responses:
+        '200':
+          description: Datos de mercado del jugador.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MercadoJugadorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+        '404':
+          $ref: '#/components/responses/ErrorNoEncontrado'
+
+  /api/ordenes/compra:
+    post:
+      tags: [Mercado]
+      summary: Compra tokens de un jugador al superusuario
+      description: |
+        El comprador es el usuario del JWT (no va en el cuerpo). Usa la cotización vigente según el Clock del servidor;
+        para la demo de "comprar al inicio del campeonato" se configura una fecha fija en el Clock.
+        Registra la transacción y la auditoría.
+      x-feature: 007-mercado-tokens
+      x-responsable: B
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrdenRequest'
+      responses:
+        '201':
+          description: Compra realizada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperacionResponse'
+        '400':
+          $ref: '#/components/responses/ErrorValidacion'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+        '404':
+          $ref: '#/components/responses/ErrorNoEncontrado'
+        '409':
+          description: El superusuario no tiene tokens suficientes de ese jugador.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: El usuario no tiene saldo suficiente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/ordenes/venta:
+    post:
+      tags: [Mercado]
+      summary: Vende tokens de un jugador al superusuario
+      description: El vendedor es el usuario del JWT. Usa la cotización vigente, suma el monto al saldo y registra la transacción y la auditoría.
+      x-feature: 007-mercado-tokens
+      x-responsable: B
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrdenRequest'
+      responses:
+        '201':
+          description: Venta realizada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperacionResponse'
+        '400':
+          $ref: '#/components/responses/ErrorValidacion'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+        '404':
+          $ref: '#/components/responses/ErrorNoEncontrado'
+        '422':
+          description: El usuario no tiene esa cantidad de tokens del jugador.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ---------------------------------------------------------------- Portfolio
+  /api/usuarios/{usuarioId}/portfolio:
+    get:
+      tags: [Portfolio]
+      summary: Posición actual del usuario
+      description: Solo el propio usuario puede ver su portfolio (403 si el id no coincide con el del JWT).
+      x-feature: 009-portfolio-historial
+      x-responsable: B
+      parameters:
+        - $ref: '#/components/parameters/UsuarioId'
+      responses:
+        '200':
+          description: Portfolio valuado con la cotización vigente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioResponse'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+        '403':
+          $ref: '#/components/responses/ErrorProhibido'
+        '404':
+          $ref: '#/components/responses/ErrorNoEncontrado'
+
+  /api/usuarios/{usuarioId}/portfolio/evolucion:
+    get:
+      tags: [Portfolio]
+      summary: Evolución semanal del valor del portfolio contra lo invertido
+      description: Un punto por cada fecha de cotización. Alimenta el gráfico principal del portfolio.
+      x-feature: 009-portfolio-historial
+      x-responsable: B
+      parameters:
+        - $ref: '#/components/parameters/UsuarioId'
+        - $ref: '#/components/parameters/Desde'
+        - $ref: '#/components/parameters/Hasta'
+      responses:
+        '200':
+          description: Serie, posiblemente vacía.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvolucionPortfolioResponse'
+        '400':
+          $ref: '#/components/responses/ErrorValidacion'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+        '403':
+          $ref: '#/components/responses/ErrorProhibido'
+        '404':
+          $ref: '#/components/responses/ErrorNoEncontrado'
+
+  /api/usuarios/{usuarioId}/transacciones:
+    get:
+      tags: [Portfolio]
+      summary: Historial de operaciones del usuario
+      description: De la más nueva a la más vieja.
+      x-feature: 009-portfolio-historial
+      x-responsable: B
+      parameters:
+        - $ref: '#/components/parameters/UsuarioId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - name: tipo
+          in: query
+          schema:
+            type: string
+            enum: [COMPRA, VENTA]
+        - name: jugadorId
+          in: query
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Página de operaciones, posiblemente vacía.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransaccionesPageResponse'
+        '400':
+          $ref: '#/components/responses/ErrorValidacion'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+        '403':
+          $ref: '#/components/responses/ErrorProhibido'
+        '404':
+          $ref: '#/components/responses/ErrorNoEncontrado'
+
+  # ---------------------------------------------------------------- Señales (feature extra)
+  /api/senales:
+    get:
+      tags: [Señales]
+      summary: Señales de jugadores subvaluados
+      description: |
+        Con vigentes=true (por defecto), solo las del último recálculo. El front consulta cada 30 segundos
+        y muestra como alerta las señales cuyo id todavía no vio.
+      x-feature: 010-feature-extra
+      x-responsable: A
+      parameters:
+        - name: vigentes
+          in: query
+          schema:
+            type: boolean
+            default: true
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Página de señales, posiblemente vacía.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SenalesPageResponse'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+
+  /api/senales/aciertos:
+    get:
+      tags: [Señales]
+      summary: Panel de aciertos de las señales
+      description: Por cada semana con señales, compara cuánto subieron los jugadores señalados contra el promedio del mercado una semana después.
+      x-feature: 010-feature-extra
+      x-responsable: A
+      responses:
+        '200':
+          description: Resultados medidos por semana.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AciertosResponse'
+        '401':
+          $ref: '#/components/responses/ErrorNoAutorizado'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    JugadorId:
+      name: jugadorId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    UsuarioId:
+      name: usuarioId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    CodigoEstrategia:
+      name: codigo
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/CodigoEstrategia'
+    EstrategiaFiltro:
+      name: estrategia
+      in: query
+      description: Estrategia a consultar. Por defecto, la activa. Solo el superusuario puede pedir una que no sea la activa.
+      schema:
+        $ref: '#/components/schemas/CodigoEstrategia'
+    LigaFiltro:
+      name: liga
+      in: query
+      schema:
+        $ref: '#/components/schemas/Liga'
+    PosicionFiltro:
+      name: posicion
+      in: query
+      schema:
+        $ref: '#/components/schemas/Posicion'
+    Desde:
+      name: desde
+      in: query
+      description: Fecha inicial inclusive.
+      schema:
+        type: string
+        format: date
+    Hasta:
+      name: hasta
+      in: query
+      description: Fecha final inclusive.
+      schema:
+        type: string
+        format: date
+    Page:
+      name: page
+      in: query
+      description: Índice de página base 0.
+      schema:
+        type: integer
+        format: int32
+        minimum: 0
+        default: 0
+    Size:
+      name: size
+      in: query
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  responses:
+    ErrorValidacion:
+      description: Datos o parámetros ausentes o con formato inválido.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ErrorNoAutorizado:
+      description: JWT ausente, inválido o vencido, o credenciales incorrectas.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ErrorProhibido:
+      description: El recurso pertenece a otro usuario.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ErrorSoloSuperusuario:
+      description: La operación es de administración del mercado y solo la puede hacer el superusuario.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ErrorNoEncontrado:
+      description: El recurso no existe.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ErrorConflicto:
+      description: El recurso ya existe.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ErrorProveedor:
+      description: El proveedor externo limitó, rechazó o no respondió la solicitud.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    # ---------- comunes
+    Error:
+      type: object
+      required: [mensaje, timestamp, correlationId]
+      properties:
+        mensaje:
+          type: string
+          example: El usuario no tiene saldo suficiente.
+        timestamp:
+          type: string
+          format: date-time
+        correlationId:
+          type: string
+    Liga:
+      type: string
+      enum: [Premier League, Bundesliga, La Liga, Serie A, Ligue 1]
+    Posicion:
+      type: string
+      enum: [POR, DEF, MED, DEL]
+    CodigoEstrategia:
+      type: string
+      enum: [RENDIMIENTO_POSICION, CONSISTENCIA]
+      description: RENDIMIENTO_POSICION es la estrategia A y CONSISTENCIA es la B.
+    Creditos:
+      type: number
+      minimum: 0
+      description: Créditos con hasta 4 decimales.
+      example: 1.1840
+    Porcentaje:
+      type: number
+      description: Porcentaje; 12.5 significa 12,5 %. Puede ser negativo.
+      example: 12.5
+    Pagina:
+      type: object
+      required: [page, size, totalElements, totalPages]
+      properties:
+        page:
+          type: integer
+          format: int32
+          minimum: 0
+        size:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 100
+        totalElements:
+          type: integer
+          format: int64
+          minimum: 0
+        totalPages:
+          type: integer
+          format: int32
+          minimum: 0
+
+    # ---------- usuarios (existentes)
+    RegistroUsuarioRequest:
+      type: object
+      required: [nombre, email, password]
+      properties:
+        nombre:
+          type: string
+          minLength: 1
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 72
+    RegistroUsuarioResponse:
+      type: object
+      required: [id, nombre, email, fechaRegistro, token]
+      properties:
+        id:
+          type: integer
+          format: int64
+        nombre:
+          type: string
+        email:
+          type: string
+          format: email
+        fechaRegistro:
+          type: string
+          format: date-time
+        token:
+          type: string
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 72
+    Rol:
+      type: string
+      enum: [USUARIO, SUPERUSUARIO]
+      description: Los usuarios que se registran son siempre USUARIO. El SUPERUSUARIO se crea con la migración inicial del mercado, con credenciales tomadas de variables de entorno.
+    LoginResponse:
+      type: object
+      required: [id, nombre, email, rol, token]
+      properties:
+        id:
+          type: integer
+          format: int64
+        nombre:
+          type: string
+        email:
+          type: string
+          format: email
+        rol:
+          $ref: '#/components/schemas/Rol'
+        token:
+          type: string
+
+    # ---------- catálogo
+    JugadorResponse:
+      type: object
+      required: [id, nombre, equipo, liga, posicion]
+      properties:
+        id:
+          type: integer
+          format: int64
+        nombre:
+          type: string
+          example: Nicolò Barella
+        equipo:
+          type: string
+          example: Inter de Milán
+        liga:
+          $ref: '#/components/schemas/Liga'
+        posicion:
+          type: string
+          example: MED
+    JugadoresPageResponse:
+      allOf:
+        - $ref: '#/components/schemas/Pagina'
+        - type: object
+          required: [content]
+          properties:
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/JugadorResponse'
+    SincronizacionResponse:
+      type: object
+      required: [estado, ligas, creados, actualizados, omitidos, correlationId]
+      properties:
+        estado:
+          type: string
+          enum: [COMPLETADA, PARCIAL, NO_EJECUTADA]
+        ligas:
+          type: array
+          items:
+            type: object
+            required: [liga, estado, creados, actualizados, omitidos]
+            properties:
+              liga:
+                $ref: '#/components/schemas/Liga'
+              estado:
+                type: string
+                enum: [COMPLETADA, FALLIDA]
+              creados:
+                type: integer
+              actualizados:
+                type: integer
+              omitidos:
+                type: integer
+              error:
+                type: string
+                nullable: true
+        creados:
+          type: integer
+        actualizados:
+          type: integer
+        omitidos:
+          type: integer
+        correlationId:
+          type: string
+    JugadorDetalleResponse:
+      allOf:
+        - $ref: '#/components/schemas/JugadorResponse'
+        - type: object
+          required: [cotizacionActual]
+          properties:
+            cotizacionActual:
+              allOf:
+                - $ref: '#/components/schemas/Cotizacion'
+              nullable: true
+              description: Cotización vigente de la estrategia activa. Null si todavía no hubo ningún recálculo.
+
+    # ---------- cotización
+    Cotizacion:
+      type: object
+      required: [jugadorId, fecha, precio, score, variacion, estrategia, version]
+      properties:
+        jugadorId:
+          type: integer
+          format: int64
+        fecha:
+          type: string
+          format: date
+          description: Fecha de cierre de la semana cotizada.
+          example: '2026-10-18'
+        precio:
+          $ref: '#/components/schemas/Creditos'
+        score:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Score normalizado de esa semana.
+          example: 0.73
+        variacion:
+          allOf:
+            - $ref: '#/components/schemas/Porcentaje'
+          nullable: true
+          description: Variación contra la semana anterior. Null en la primera cotización.
+        estrategia:
+          $ref: '#/components/schemas/CodigoEstrategia'
+        version:
+          type: integer
+          format: int32
+          minimum: 1
+    HistorialCotizacionesResponse:
+      type: object
+      required: [jugadorId, estrategia, cotizaciones]
+      properties:
+        jugadorId:
+          type: integer
+          format: int64
+        estrategia:
+          $ref: '#/components/schemas/CodigoEstrategia'
+        cotizaciones:
+          type: array
+          items:
+            $ref: '#/components/schemas/Cotizacion'
+    RankingItem:
+      type: object
+      required: [puesto, jugador, precio, variacion, score]
+      properties:
+        puesto:
+          type: integer
+          format: int32
+          minimum: 1
+        jugador:
+          $ref: '#/components/schemas/JugadorResponse'
+        precio:
+          $ref: '#/components/schemas/Creditos'
+        variacion:
+          allOf:
+            - $ref: '#/components/schemas/Porcentaje'
+          nullable: true
+        score:
+          type: number
+          minimum: 0
+          maximum: 1
+    RankingPageResponse:
+      allOf:
+        - $ref: '#/components/schemas/Pagina'
+        - type: object
+          required: [estrategia, version, fecha, content]
+          properties:
+            estrategia:
+              $ref: '#/components/schemas/CodigoEstrategia'
+            version:
+              type: integer
+              format: int32
+              nullable: true
+            fecha:
+              type: string
+              format: date
+              nullable: true
+              description: Fecha de la última cotización usada. Null si todavía no hubo recálculo.
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/RankingItem'
+    RecalculoRequest:
+      type: object
+      properties:
+        desde:
+          type: string
+          format: date
+          description: Primera semana a recalcular. Si se manda, hasta también es obligatorio.
+        hasta:
+          type: string
+          format: date
+    RecalculoResponse:
+      type: object
+      required: [estado, semanasCalculadas, jugadoresCotizados, jugadoresSinMetricas, estrategias, inicio, fin, correlationId]
+      properties:
+        estado:
+          type: string
+          enum: [COMPLETADO]
+        semanasCalculadas:
+          type: integer
+          format: int32
+        jugadoresCotizados:
+          type: integer
+          format: int32
+        jugadoresSinMetricas:
+          type: integer
+          format: int32
+          description: Jugadores que mantuvieron el precio por no tener partidos en la semana.
+        estrategias:
+          type: array
+          items:
+            type: object
+            required: [codigo, version]
+            properties:
+              codigo:
+                $ref: '#/components/schemas/CodigoEstrategia'
+              version:
+                type: integer
+                format: int32
+        inicio:
+          type: string
+          format: date-time
+        fin:
+          type: string
+          format: date-time
+        correlationId:
+          type: string
+
+    # ---------- estrategias
+    Pesos:
+      type: object
+      description: |
+        Peso de cada métrica, agrupado por posición (POR, DEF, MED, DEL) en la estrategia A,
+        o bajo la clave TODAS en la estrategia B. Un peso negativo resta.
+        Métricas válidas: goles, asistencias, tiros, pasesClave, regates, entradas, intercepciones, rating,
+        atajadas, vallaInvicta, amarillas, rojas, golesRecibidos, menosDe90Minutos, titularidad, suplencias.
+      additionalProperties:
+        type: object
+        additionalProperties:
+          type: number
+      example:
+        DEL:
+          goles: 0.30
+          tiros: 0.15
+          asistencias: 0.15
+          rating: 0.20
+          amarillas: -0.05
+          rojas: -0.15
+    ParametrosEstrategia:
+      type: object
+      required: [k, topeVariacion, piso]
+      properties:
+        k:
+          type: number
+          example: 0.4
+          description: Sensibilidad del precio al score.
+        topeVariacion:
+          type: number
+          example: 0.20
+          description: Variación semanal máxima, en tanto por uno.
+        piso:
+          $ref: '#/components/schemas/Creditos'
+        lambda:
+          type: number
+          nullable: true
+          example: 1.0
+          description: Solo estrategia B. Peso del castigo por desvío del rating.
+        ventanaPartidos:
+          type: integer
+          nullable: true
+          example: 6
+          description: Solo estrategia B.
+        minimoPartidos:
+          type: integer
+          nullable: true
+          example: 4
+          description: Solo estrategia B. Con menos partidos, el jugador usa el score de la A.
+    EstrategiaResponse:
+      type: object
+      required: [codigo, nombre, version, activa, pesos, parametros, creadaEn]
+      properties:
+        codigo:
+          $ref: '#/components/schemas/CodigoEstrategia'
+        nombre:
+          type: string
+          example: Rendimiento por posición
+        version:
+          type: integer
+          format: int32
+          minimum: 1
+        activa:
+          type: boolean
+        pesos:
+          $ref: '#/components/schemas/Pesos'
+        parametros:
+          $ref: '#/components/schemas/ParametrosEstrategia'
+        creadaEn:
+          type: string
+          format: date-time
+    NuevaVersionRequest:
+      type: object
+      required: [pesos, parametros]
+      properties:
+        pesos:
+          $ref: '#/components/schemas/Pesos'
+        parametros:
+          $ref: '#/components/schemas/ParametrosEstrategia'
+
+    # ---------- métricas
+    SincronizacionMetricasRequest:
+      type: object
+      properties:
+        desde:
+          type: string
+          format: date
+          description: Cargar partidos desde esta fecha (carga histórica). Sin valor, solo los partidos nuevos.
+    EjecucionMetricasResponse:
+      type: object
+      required: [id, estado, inicio, ligas, correlationId]
+      properties:
+        id:
+          type: integer
+          format: int64
+        estado:
+          type: string
+          enum: [EN_CURSO, COMPLETADA, PARCIAL, FALLIDA]
+        inicio:
+          type: string
+          format: date-time
+        fin:
+          type: string
+          format: date-time
+          nullable: true
+        ligas:
+          type: array
+          description: Vacío mientras la ejecución recién empieza.
+          items:
+            type: object
+            required: [liga, estado, partidosCargados, partidosOmitidos, jugadoresVinculados, pendientes]
+            properties:
+              liga:
+                $ref: '#/components/schemas/Liga'
+              estado:
+                type: string
+                enum: [EN_CURSO, COMPLETADA, FALLIDA]
+              partidosCargados:
+                type: integer
+              partidosOmitidos:
+                type: integer
+              jugadoresVinculados:
+                type: integer
+              pendientes:
+                type: integer
+              error:
+                type: string
+                nullable: true
+        correlationId:
+          type: string
+    PendienteVinculacion:
+      type: object
+      required: [whoscoredId, nombre, equipo, liga, detectadoEn]
+      properties:
+        whoscoredId:
+          type: string
+        nombre:
+          type: string
+        equipo:
+          type: string
+        liga:
+          $ref: '#/components/schemas/Liga'
+        detectadoEn:
+          type: string
+          format: date-time
+    PendientesPageResponse:
+      allOf:
+        - $ref: '#/components/schemas/Pagina'
+        - type: object
+          required: [content]
+          properties:
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/PendienteVinculacion'
+
+    # ---------- mercado
+    MercadoJugadorResponse:
+      type: object
+      required: [jugadorId, tokensEmitidos, tokensDisponibles, precioVigente]
+      properties:
+        jugadorId:
+          type: integer
+          format: int64
+        tokensEmitidos:
+          type: integer
+          example: 100
+        tokensDisponibles:
+          type: integer
+          description: Tokens que todavía tiene el superusuario.
+          example: 64
+        precioVigente:
+          $ref: '#/components/schemas/Creditos'
+        fechaCotizacion:
+          type: string
+          format: date
+          nullable: true
+          description: Null si todavía no hubo recálculo (precio inicial de 1 crédito).
+    OrdenRequest:
+      type: object
+      required: [jugadorId, cantidad]
+      properties:
+        jugadorId:
+          type: integer
+          format: int64
+        cantidad:
+          type: integer
+          minimum: 1
+          maximum: 100
+    OperacionResponse:
+      type: object
+      required: [id, tipo, jugador, cantidad, precioUnitario, total, saldoPosterior, contraparte, fecha, estrategia, version]
+      properties:
+        id:
+          type: integer
+          format: int64
+        tipo:
+          type: string
+          enum: [COMPRA, VENTA]
+        jugador:
+          $ref: '#/components/schemas/JugadorResponse'
+        cantidad:
+          type: integer
+        precioUnitario:
+          $ref: '#/components/schemas/Creditos'
+        total:
+          $ref: '#/components/schemas/Creditos'
+        saldoPosterior:
+          $ref: '#/components/schemas/Creditos'
+        contraparte:
+          type: string
+          example: superusuario
+        fecha:
+          type: string
+          format: date-time
+        estrategia:
+          allOf:
+            - $ref: '#/components/schemas/CodigoEstrategia'
+          nullable: true
+          description: Estrategia de la cotización usada. Null si se operó al precio inicial.
+        version:
+          type: integer
+          format: int32
+          nullable: true
+
+    # ---------- portfolio
+    PosicionPortfolio:
+      type: object
+      required: [jugador, cantidad, precioPromedio, precioActual, invertido, valorActual, ganancia, gananciaPorcentaje]
+      properties:
+        jugador:
+          $ref: '#/components/schemas/JugadorResponse'
+        cantidad:
+          type: integer
+        precioPromedio:
+          $ref: '#/components/schemas/Creditos'
+        precioActual:
+          $ref: '#/components/schemas/Creditos'
+        invertido:
+          $ref: '#/components/schemas/Creditos'
+        valorActual:
+          $ref: '#/components/schemas/Creditos'
+        ganancia:
+          type: number
+          description: valorActual − invertido, en créditos. Puede ser negativa.
+        gananciaPorcentaje:
+          $ref: '#/components/schemas/Porcentaje'
+    PortfolioResponse:
+      type: object
+      required: [usuarioId, fechaValuacion, saldo, invertido, valorTenencias, ganancia, gananciaPorcentaje, posiciones]
+      properties:
+        usuarioId:
+          type: integer
+          format: int64
+        fechaValuacion:
+          type: string
+          format: date
+        saldo:
+          $ref: '#/components/schemas/Creditos'
+        invertido:
+          $ref: '#/components/schemas/Creditos'
+        valorTenencias:
+          $ref: '#/components/schemas/Creditos'
+        ganancia:
+          type: number
+        gananciaPorcentaje:
+          $ref: '#/components/schemas/Porcentaje'
+        posiciones:
+          type: array
+          description: Una por jugador con cantidad mayor a cero. Alcanza para los gráficos de composición y de ganancia por jugador.
+          items:
+            $ref: '#/components/schemas/PosicionPortfolio'
+    EvolucionPortfolioResponse:
+      type: object
+      required: [usuarioId, puntos]
+      properties:
+        usuarioId:
+          type: integer
+          format: int64
+        puntos:
+          type: array
+          items:
+            type: object
+            required: [fecha, valor, invertido]
+            properties:
+              fecha:
+                type: string
+                format: date
+              valor:
+                $ref: '#/components/schemas/Creditos'
+              invertido:
+                $ref: '#/components/schemas/Creditos'
+    TransaccionesPageResponse:
+      allOf:
+        - $ref: '#/components/schemas/Pagina'
+        - type: object
+          required: [content]
+          properties:
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/OperacionResponse'
+
+    # ---------- señales
+    Senal:
+      type: object
+      required: [id, jugador, fecha, tipo, brecha, precio, precioEstimado]
+      properties:
+        id:
+          type: integer
+          format: int64
+        jugador:
+          $ref: '#/components/schemas/JugadorResponse'
+        fecha:
+          type: string
+          format: date
+          description: Semana del recálculo que generó la señal.
+        tipo:
+          type: string
+          enum: [ENTRE_ESTRATEGIAS, PRECIO_ATRASADO]
+        brecha:
+          allOf:
+            - $ref: '#/components/schemas/Porcentaje'
+          description: Cuánto por debajo de su valor estimado está el precio.
+          example: 18
+        precio:
+          $ref: '#/components/schemas/Creditos'
+        precioEstimado:
+          $ref: '#/components/schemas/Creditos'
+    SenalesPageResponse:
+      allOf:
+        - $ref: '#/components/schemas/Pagina'
+        - type: object
+          required: [content]
+          properties:
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/Senal'
+    AciertosResponse:
+      type: object
+      required: [semanas, tasaAcierto, diferenciaPromedio]
+      properties:
+        tasaAcierto:
+          allOf:
+            - $ref: '#/components/schemas/Porcentaje'
+          description: Porcentaje de señales cuyo jugador subió más que el mercado a la semana siguiente.
+        diferenciaPromedio:
+          allOf:
+            - $ref: '#/components/schemas/Porcentaje'
+          description: Suba promedio de los señalados menos la suba promedio del mercado.
+        semanas:
+          type: array
+          items:
+            type: object
+            required: [fecha, senales, variacionSenalados, variacionMercado, aciertos]
+            properties:
+              fecha:
+                type: string
+                format: date
+              senales:
+                type: integer
+              variacionSenalados:
+                $ref: '#/components/schemas/Porcentaje'
+              variacionMercado:
+                $ref: '#/components/schemas/Porcentaje'
+              aciertos:
+                type: integer
