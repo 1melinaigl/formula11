@@ -5,18 +5,25 @@
 **Status**: Draft
 **Input**: Plan de desarrollo Entrega 2, track C (Frontend): "003-detalle-cotizaciones (ficha + gráfico de evolución)". Endpoints del documento de visión: `GET /players/:id` y `GET /players/:id/quotes`.
 
+## Clarifications
+
+### Session 2026-10-24
+
+- Q: ¿Qué debe mostrar el detalle de un jugador a un usuario autenticado con rol `USUARIO`? → A: Solo la estrategia activa.
+- Q: ¿Debe el detalle consultar `GET /api/estrategias` para marcar cuál estrategia es la activa cuando lo visualiza un `SUPERUSUARIO`? → A: Sí, consultar y marcar la activa.
+
 ## User Scenarios & Testing
 
 ### User Story 1 - Ver la ficha y la cotización vigente (Priority: P1)
 
 Como usuario autenticado, quiero abrir el detalle de un jugador desde el catálogo y ver su ficha junto con su cotización vigente para decidir si me interesa operar con él.
 
-**Independent Test**: Con MSW, `GET /api/jugadores/7` y `GET /api/jugadores/7/cotizaciones` devuelven datos; la pantalla `/jugadores/7` muestra la ficha y una tarjeta por estrategia con precio, variación semanal, fecha y score.
+**Independent Test**: Con MSW, `GET /api/jugadores/7` y `GET /api/jugadores/7/cotizaciones` devuelven datos; la pantalla `/jugadores/7` muestra la ficha y una tarjeta para la estrategia activa con precio, variación semanal, fecha y score. El superusuario puede consultar y comparar la otra estrategia.
 
 **Acceptance Scenarios**:
 
 1. **Given** la ficha de un jugador en el catálogo, **When** el usuario pulsa "Ver cotizaciones", **Then** navega a `/jugadores/:id`.
-2. **Given** cotizaciones de una o más estrategias, **When** se muestra el detalle, **Then** hay una tarjeta por estrategia con la última cotización, la variación semanal que informa el backend (verde si sube, roja si baja) y la fecha.
+2. **Given** un usuario autenticado, **When** se muestra el detalle, **Then** hay una tarjeta para la estrategia activa con la última cotización, la variación semanal que informa el backend (verde si sube, roja si baja) y la fecha. El superusuario puede ver una tarjeta adicional para la estrategia solicitada.
 3. **Given** una estrategia con una sola cotización, **When** se muestra su tarjeta, **Then** indica "Sin cotización anterior" en lugar de una variación.
 4. **Given** el detalle abierto, **When** el usuario pulsa "Volver al catálogo" o `Escape`, **Then** vuelve a `/catalogo`.
 
@@ -28,7 +35,7 @@ Como usuario, quiero ver un gráfico con la evolución del precio del jugador pa
 
 **Acceptance Scenarios**:
 
-1. **Given** cotizaciones de varias estrategias (solo el superusuario), **When** se dibuja el gráfico, **Then** hay una línea por estrategia sobre el mismo eje de fechas, con leyenda y tooltip en créditos.
+1. **Given** cotizaciones de varias estrategias (solo el superusuario), **When** se dibuja el gráfico, **Then** hay una línea por estrategia sobre el mismo eje de fechas, con leyenda y tooltip en créditos, y la estrategia activa está marcada según `GET /api/estrategias`.
 2. **Given** el historial, **When** el usuario despliega "Ver historial completo", **Then** ve una tabla ordenada de la más reciente a la más antigua con fecha, estrategia y versión, precio y score.
 3. **Given** fechas `YYYY-MM-DD`, **When** se muestran, **Then** se formatean `dd/mm/aaaa` sin correrse de día por zona horaria.
 
@@ -48,6 +55,7 @@ Como usuario, quiero ver un gráfico con la evolución del precio del jugador pa
 - **FR-002**: Ambas consultas usan `solicitarProtegida` (Bearer, `X-Correlation-Id`, limpieza de sesión ante `401`).
 - **FR-003**: La respuesta de cotizaciones se acepta como lista o como objeto paginado (`content`) y se descartan entradas sin fecha o con precio no numérico.
 - **FR-004**: La librería de gráficos se carga de forma diferida para no agrandar el bundle inicial.
+- **FR-005**: Para un `SUPERUSUARIO`, el detalle consulta `GET /api/estrategias` y marca la estrategia cuya propiedad `activa` es verdadera; para un `USUARIO`, solo consulta y muestra la estrategia activa del endpoint de cotizaciones.
 
 ## Contrato (`backend/specs/005-contratos-entrega2/contracts/openapi.yaml`)
 
@@ -55,4 +63,5 @@ Como usuario, quiero ver un gráfico con la evolución del precio del jugador pa
 - `GET /api/jugadores/{jugadorId}/cotizaciones[?estrategia=]` → `{ jugadorId, estrategia, cotizaciones: Cotizacion[] }`, ordenadas por fecha ascendente, sin paginar.
 - `Cotizacion`: `{ jugadorId, fecha, precio, score, variacion, estrategia, version }`; `variacion` es un porcentaje (12.5 = 12,5 %) y es null en la primera semana.
 - Estrategias: `RENDIMIENTO_POSICION` (A) y `CONSISTENCIA` (B). El público ve solo la activa; pedir otra es exclusivo del `SUPERUSUARIO` (403 para el resto). Por eso la comparación de las dos curvas se muestra solo al superusuario (el `rol` llega en la respuesta del login).
+- `GET /api/estrategias` devuelve las estrategias con la propiedad `activa`; el detalle del `SUPERUSUARIO` la usa para marcar la estrategia activa junto con la comparación.
 - Fuera de alcance: cotización a una fecha (`/cotizaciones/vigente?fecha=`).
