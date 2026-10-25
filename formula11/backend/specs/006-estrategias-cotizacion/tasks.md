@@ -33,7 +33,7 @@ description: "Task list for weekly player valuation strategies and quotations"
 - [x] T009 Crear `EstrategiaValuacion` en `com.formula11.model.valuacion` como interfaz Strategy para scores brutos por jugador.
 - [x] T010 Implementar `RendimientoPosicion` promediando métricas por jugador/semana, estandarizando cada métrica antes de aplicar pesos y separando el grupo por posición.
 - [x] T011 Implementar `Consistencia` con los últimos seis partidos hasta el domingo, cálculo de disponibilidad y fallback al score normalizado de `RendimientoPosicion`.
-- [x] T012 Crear `CotizacionVigente` en `com.formula11.model` como record con fecha nullable para distinguir el precio inicial.
+- [x] T012 Usar el record anidado `CotizacionVigentePort.Cotizacion` definido por la interfaz existente en `com.formula11.service`; no crear un record duplicado en `com.formula11.model`.
 
 **Checkpoint**: Los tests unitarios del dominio pasan sin cargar Spring ni PostgreSQL.
 
@@ -110,17 +110,17 @@ description: "Task list for weekly player valuation strategies and quotations"
 
 ### Tests for scheduler and integration
 
-- [ ] T044 [P] Probar el scheduler con `ActualizacionMetricasPort` exitoso, fallido y sin implementación: siempre registra el evento y recalcula con métricas locales.
-- [ ] T045 [P] Probar `CotizacionVigenteService` para estrategia activa, fecha `<=` solicitada, precio inicial con fecha/estrategia/versión `null` y cache hit/miss.
-- [ ] T046 [P] Probar invalidación de caché después de recálculo confirmado y activación de otra estrategia.
+- [x] T044 [P] Probar el scheduler con `ActualizacionMetricasPort` exitoso, fallido y sin implementación: siempre registra el evento y recalcula con métricas locales.
+- [x] T045 [P] Probar `CotizacionVigenteService` usando `vigente(Jugador, Instant)`, conversión con la zona del `Clock`, estrategia activa, fecha `<=` local, precio inicial con `fechaCotizacion`/estrategia/versión `null` y cache hit/miss.
+- [x] T046 [P] Probar invalidación de caché después de recálculo confirmado y activación de otra estrategia.
 
 ### Implementation for scheduler and integration
 
-- [ ] T047 Crear `ActualizacionMetricasPort` y su implementación inicial no operativa, registrando que la carga queda a cargo de la feature 011.
-- [ ] T048 Crear `CotizacionCacheConfig` con caché Caffeine propia, clave/tipo aislado de `footballApiCache` e invalidación explícita; conectar la invalidación en `EstrategiaService` al activar y en `RecalculoService` al terminar.
-- [ ] T049 Crear `CotizacionVigentePort` en `com.formula11.service` y `CotizacionVigenteService` para resolver la última cotización de la estrategia activa o el precio inicial; si existe `CotizacionFijaAdapter` como implementación provisoria de la feature 007, eliminarlo.
-- [ ] T050 Crear `CotizacionScheduler` con `@EnableScheduling`, cron configurable `app.cotizacion.cron` por defecto lunes 06:00, MDC/correlationId y limpieza en `finally`.
-- [ ] T051 Hacer que el scheduler capture y registre fallas de `ActualizacionMetricasPort` y llame el mismo método de `RecalculoService` con la semana cerrada.
+- [x] T047 Crear `ActualizacionMetricasPort` y su implementación inicial no operativa, registrando que la carga queda a cargo de la feature 011.
+- [x] T048 Crear `CotizacionCacheConfig` con caché Caffeine propia, clave/tipo aislado de `footballApiCache` e invalidación explícita; conectar la invalidación en `EstrategiaService` al activar y en `RecalculoService` al terminar.
+- [x] T049 Implementar sin modificar la interfaz existente `CotizacionVigentePort` en `com.formula11.service`, usando su método `vigente(Jugador, Instant)` y su record `CotizacionVigentePort.Cotizacion`; convertir el `Instant` con la zona del `Clock`, resolver la última cotización de la estrategia activa o el precio inicial y eliminar `CotizacionFijaAdapter` si existe al mergear.
+- [x] T050 Crear `CotizacionScheduler` con `@EnableScheduling`, cron configurable `app.cotizacion.cron` por defecto lunes 06:00, MDC/correlationId y limpieza en `finally`.
+- [x] T051 Hacer que el scheduler capture y registre fallas de `ActualizacionMetricasPort` y llame el mismo método de `RecalculoService` con la semana cerrada.
 
 **Checkpoint**: El job corre con `Clock`, continúa ante fallas de métricas y el puerto de mercado devuelve datos cacheables y coherentes.
 

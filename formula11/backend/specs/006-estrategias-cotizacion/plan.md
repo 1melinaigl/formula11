@@ -44,7 +44,7 @@ El endpoint manual y el scheduler llamarán al mismo método de `RecalculoServic
 Crear en `com.formula11.model`:
 
 - `MetricaPartido`: datos de jugador/partido, con valores de conteo ausentes tratados como cero y validación de minutos.
-- `CotizacionVigente`: record de integración con el mercado.
+- `CotizacionVigentePort.Cotizacion`: record anidado de la interfaz existente en `com.formula11.service`, definida por la feature 007 y no modificable por esta feature.
 
 Las entidades JPA `MetricaPartido`, `Estrategia` y `Cotizacion` viven en `com.formula11.model`, sin sufijo, siguiendo la convención de `Jugador` y `Usuario`.
 
@@ -81,7 +81,7 @@ V13 y V14 quedan libres dentro del rango reservado para futuras evoluciones.
 - `RecalculoService`: valida rango, determina el domingo de la última semana cerrada con el `Clock`, toma un lock en memoria, procesa semanas y devuelve `RecalculoResponse`. La selección de métricas se hace por semana/posición en lote.
 - `RecalculoSemanaService`: componente separado con método `@Transactional` para una semana; elimina/reemplaza las cotizaciones de esa semana y persiste en batch. Esto evita self-invocation de `@Transactional`.
 - `EstrategiaService`: listar, historial, crear versión inmutable y activar estrategia; invalida caché al activar.
-- `CotizacionVigenteService`: implementa `CotizacionVigentePort`, consulta la estrategia activa y la última cotización con fecha menor o igual a la solicitada; sin registro devuelve `CotizacionVigente(jugadorId, 1, null, null, null)`.
+- `CotizacionVigenteService`: implementa `CotizacionVigentePort.vigente(Jugador, Instant)` sin modificar la interfaz, convierte el `Instant` a `LocalDate` con la zona del `Clock` inyectado y consulta la estrategia activa y la última cotización con fecha menor o igual; sin registro devuelve `CotizacionVigentePort.Cotizacion(1, null, null, null)`. Si existe `CotizacionFijaAdapter` al mergear, se elimina.
 - `ActualizacionMetricasPort`: interfaz invocada antes del recálculo del job. Su implementación inicial registra que no hay actualización operativa, sin fallar; cualquier excepción del adapter se registra y no impide recalcular con datos persistidos.
 - `CotizacionCacheConfig`: caché Caffeine siguiendo el patrón de `FootballCacheConfig`; invalidación tras cada recálculo confirmado y al activar estrategia.
 
@@ -119,7 +119,7 @@ backend/
 │   ├── dto/{RecalculoRequest,RecalculoResponse,EstrategiaResponse,NuevaVersionRequest}.java
 │   ├── exception/{GlobalExceptionHandler,...}.java
 │   ├── model/
-│   │   ├── {MetricaPartido,Estrategia,Cotizacion,CotizacionVigente}.java
+│   │   ├── {MetricaPartido,Estrategia,Cotizacion}.java
 │   │   └── valuacion/
 │   │       ├── {EstrategiaValuacion,RendimientoPosicion,Consistencia}.java
 │   │       ├── {Normalizador,CalculadoraPrecio}.java

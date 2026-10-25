@@ -22,7 +22,10 @@ public class CotizacionScheduler {
         String correlationId = UUID.randomUUID().toString();
         MDC.put("correlationId", correlationId);
         try {
-            try { actualizacion.actualizar(); }
+            try {
+                actualizacion.actualizar();
+                log.info("Actualización de métricas completada; se recalculará con datos locales");
+            }
             catch (RuntimeException exception) { log.warn("No se pudieron actualizar las métricas; se usarán datos locales", exception); }
             recalculo.recalcular(null);
         } finally { MDC.remove("correlationId"); }

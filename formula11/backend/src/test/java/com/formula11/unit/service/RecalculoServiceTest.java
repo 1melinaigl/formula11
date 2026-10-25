@@ -34,6 +34,7 @@ class RecalculoServiceTest {
 
         assertEquals(1, result.semanasCalculadas());
         verify(semanas).procesar(LocalDate.of(2026, 1, 4));
+        verify(cache).invalidate();
     }
 
     @Test

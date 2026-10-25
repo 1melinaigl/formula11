@@ -144,8 +144,8 @@ Como superusuario quiero recalcular un rango de semanas usando las métricas per
 - **FR-020**: El scheduler MUST tener cron configurable, solicitar primero la actualización de métricas mediante una interfaz y luego invocar el mismo método de service del endpoint manual. No MUST contener lógica de negocio.
 - **FR-021**: Todo Service que use fecha u hora actual MUST recibir un `java.time.Clock` inyectado; no MUST llamar directamente a `LocalDate.now()` ni `Instant.now()`.
 - **FR-022**: La compra o venta de tokens no forma parte de esta feature, pero cualquier integración futura MUST delegar en métodos reutilizables de Service; un Controller solo traduce HTTP.
-- **FR-023**: La implementación de `CotizacionVigentePort` MUST exponer `obtener(Long jugadorId, LocalDate fecha)` y devolver el último registro de la estrategia activa con fecha menor o igual a la solicitada.
-- **FR-024**: Si no existe cotización vigente, `CotizacionVigentePort` MUST devolver `CotizacionVigente(jugadorId, 1 crédito, null, null, null)`, donde la fecha `null` distingue el precio inicial del mercado. El puerto debe estar en `com.formula11.service` y el record en `com.formula11.model` si todavía no existen; debe eliminarse `CotizacionFijaAdapter` si es provisoria.
+- **FR-023**: La implementación de `CotizacionVigentePort` existente en `com.formula11.service` MUST implementar `vigente(Jugador jugador, Instant fecha)` sin modificar la interfaz. Debe convertir el `Instant` a `LocalDate` usando la zona del `Clock` inyectado y devolver la última cotización de la estrategia activa con fecha menor o igual a esa fecha local.
+- **FR-024**: Si no existe cotización vigente, la implementación MUST devolver `CotizacionVigentePort.Cotizacion(1 crédito, null, null, null)`, donde `estrategia`, `version` y `fechaCotizacion` nulos distinguen el precio inicial del mercado. Si existe `CotizacionFijaAdapter` al mergear esta feature, se elimina.
 - **FR-025**: La caché de cotización vigente MUST invalidarse al finalizar cada recálculo y al activar otra estrategia.
 - **FR-026**: Los logs estructurados del scheduler y del recálculo MUST incluir `correlationId` sin registrar secretos.
 - **FR-027**: Las migraciones Flyway MUST usar el rango reservado V10 a V14 para esta feature; esta implementación usa V10, V11 y V12 para las tablas, índices y seeds requeridos, y V13 y V14 quedan libres.
@@ -168,7 +168,7 @@ No se agregan endpoints para la carga de métricas ni para consultar historial p
 - **MetricaPartido**: métricas de un jugador en un partido, identificadas de forma única por jugador y fecha.
 - **Estrategia**: configuración versionada de una fórmula, con pesos por métrica, parámetros, estado activo y fecha de creación.
 - **Cotizacion**: resultado semanal por jugador y estrategia, con precio, score y snapshot de la configuración usada.
-- **CotizacionVigente**: record de integración con el mercado: `jugadorId`, `precio`, `fecha`, `estrategia` y `version`.
+- **CotizacionVigentePort.Cotizacion**: record anidado de la interfaz existente, con `precio`, `estrategia`, `version` y `fechaCotizacion`; la implementación de esta feature lo devuelve tal cual.
 - **Recálculo**: ejecución transaccional de una o varias semanas, con estado, contadores, estrategias calculadas, inicio, fin y `correlationId`.
 
 ## Non-Functional Requirements
