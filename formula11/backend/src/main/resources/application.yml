@@ -8,6 +8,9 @@ spring:
     properties:
       hibernate:
         format_sql: false
+        jdbc:
+          batch_size: 50
+        order_inserts: true
   flyway:
     enabled: true
 management:
@@ -22,6 +25,10 @@ server:
   error:
     include-message: never
 app:
+  clock:
+    fecha-fija: ${APP_CLOCK_FECHA_FIJA:}
+  cotizacion:
+    cron: ${APP_COTIZACION_CRON:0 0 6 ? * MON}
   jwt:
     expiration: 3600
     secret: change-me-local-secret-key-must-be-at-least-32-bytes
