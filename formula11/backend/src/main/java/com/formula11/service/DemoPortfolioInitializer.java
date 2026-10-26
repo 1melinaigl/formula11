@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @Profile("local")
 @Order(2)
 public class DemoPortfolioInitializer implements ApplicationRunner {
-    // Tokens que compra cada usuario de demo de cada jugador; distintos para que los portfolios se diferencien.
+    // tokens que compra cada usuario de demo de cada jugador distintos para que los portfolios se diferencien.
     private static final int[] CANTIDADES = {10, 8, 5, 3};
     private final UsuarioRepository usuarioRepository;
     private final JugadorRepository jugadorRepository;
@@ -80,8 +80,7 @@ public class DemoPortfolioInitializer implements ApplicationRunner {
         }
     }
 
-    // El primer jugador (menor id) de cada liga, en el orden de Liga: uno por liga también sirve
-    // para mostrar en la demo la cotización de un jugador de cada liga.
+    // el primer jugador (menor id) de cada liga, en el orden de Liga: uno por liga también sirve para mostrar en la demo la cotización de un jugador de cada liga.
     private static List<Jugador> unoPorLiga(List<Jugador> todos) {
         Map<Liga, Jugador> primeros = todos.stream().collect(Collectors.toMap(
                 Jugador::getLiga, jugador -> jugador,

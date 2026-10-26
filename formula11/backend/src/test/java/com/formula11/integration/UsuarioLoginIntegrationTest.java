@@ -47,7 +47,6 @@ class UsuarioLoginIntegrationTest {
 
     @BeforeEach
     void limpiarUsuarios() {
-        // El SuperusuarioInitializer crea al superusuario con sus tenencias: se conserva y se borran los usuarios comunes.
         jdbc.update("DELETE FROM cuentas");
         jdbc.update("DELETE FROM usuarios WHERE rol = 'USUARIO'");
     }

@@ -8,7 +8,6 @@ import java.util.Optional;
 import java.util.List;
 
 public interface TenenciaRepository extends JpaRepository<Tenencia, Long> {
-    // Trae el jugador en la misma consulta: el portfolio lo serializa fuera de la transacción (open-in-view: false).
     @EntityGraph(attributePaths = "jugador")
     List<Tenencia> findByUsuarioIdOrderByJugadorIdAsc(Long usuarioId);
     @Lock(LockModeType.PESSIMISTIC_WRITE)

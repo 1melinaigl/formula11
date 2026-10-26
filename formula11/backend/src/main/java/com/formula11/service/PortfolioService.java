@@ -233,8 +233,6 @@ public class PortfolioService {
         }
     }
 
-    // Regla común a portfolio, evolución e historial. Se compara el id antes de buscar al usuario
-    // pedido, para no revelar qué identificadores existen; el superusuario no tiene portfolio.
     private Usuario verificarAcceso(Long solicitanteId, Long usuarioId) {
         if (!usuarioId.equals(solicitanteId)) {
             throw new AccesoPortfolioDenegadoException();

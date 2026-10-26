@@ -4,8 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 
-// Lee saldoUsuario del snapshot "despues" de una auditoría de mercado.
-// Un snapshot ausente o mal formado es una inconsistencia interna (500), no un error del cliente.
+// lee saldoUsuario del snapshot despues de una auditoría de mercado
 public final class AuditoriaSaldoParser {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
