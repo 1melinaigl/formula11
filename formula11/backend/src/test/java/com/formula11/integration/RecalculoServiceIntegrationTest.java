@@ -84,7 +84,8 @@ class RecalculoServiceIntegrationTest {
                 LocalDate.of(2026, 1, 4), LocalDate.of(2026, 1, 18)));
 
         assertEquals(3, response.semanasCalculadas());
-        assertEquals(18, cotizaciones.count());
+        assertEquals(jugadores.count() * estrategias.count() * response.semanasCalculadas(),
+                cotizaciones.count());
         List<Estrategia> configuraciones = estrategias.findAll();
         assertEquals(2, configuraciones.size());
         for (Jugador jugador : jugadoresCreados) {
