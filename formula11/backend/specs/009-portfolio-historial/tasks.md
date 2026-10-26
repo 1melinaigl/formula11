@@ -45,12 +45,12 @@
 
 ## Phase 5 - User Story 3: Consultar historial
 
-- [ ] T020 Implementar `PortfolioService.historial` con filtros opcionales AND, paginación, orden `fecha DESC, id DESC` (pasado en el `Pageable`) y resultado de dominio: con una única consulta `findByOperacionIdIn` sobre los ids de la página, arma cada `OperacionHistorial` con el saldo de `AuditoriaSaldoParser.parsear(auditoria.getDespues())`.
-- [ ] T021 Mapear `HistorialTransaccionesResultado` a `TransaccionesPageResponse` con `OperacionResponse.from(transaccion, saldoPosterior)`; el controller no consulta repositorios.
-- [ ] T022 Completar `GET /api/usuarios/{usuarioId}/transacciones` con validación de `page`, `size`, tipo y `@Positive jugadorId` (incluyendo `400` para valores no numéricos), devolviendo `200` vacío para jugador positivo inexistente.
-- [ ] T023 [P] Agregar tests unitarios de filtros combinados, página vacía, orden por fecha/id, saldo posterior desde JSONB y auditoría faltante.
-- [ ] T024 Agregar test de integración con Testcontainers que verifique la consulta por ids de auditoría y no exponga operaciones de otro usuario.
-- [ ] T025 Agregar test E2E MockMvc de historial para `200`, filtros, `400`, `401`, `403` y jugador inexistente con página vacía.
+- [x] T020 Implementar `PortfolioService.historial` con filtros opcionales AND, paginación, orden `fecha DESC, id DESC` (pasado en el `Pageable`) y resultado de dominio: con una única consulta `findByOperacionIdIn` sobre los ids de la página, arma cada `OperacionHistorial` con el saldo de `AuditoriaSaldoParser.parsear(auditoria.getDespues())`.
+- [x] T021 Mapear `HistorialTransaccionesResultado` a `TransaccionesPageResponse` con `OperacionResponse.from(transaccion, saldoPosterior)`; el controller no consulta repositorios.
+- [x] T022 Completar `GET /api/usuarios/{usuarioId}/transacciones` con validación de `page`, `size`, tipo y `@Positive jugadorId` (incluyendo `400` para valores no numéricos), devolviendo `200` vacío para jugador positivo inexistente.
+- [x] T023 [P] Agregar tests unitarios de filtros combinados, página vacía, orden por fecha/id, saldo posterior desde JSONB y auditoría faltante.
+- [x] T024 Agregar test de integración con Testcontainers que verifique la consulta por ids de auditoría y no exponga operaciones de otro usuario.
+- [x] T025 Agregar test E2E MockMvc de historial para `200`, filtros, `400`, `401`, `403` y jugador inexistente con página vacía.
 
 ## Phase 6 - Demo local
 

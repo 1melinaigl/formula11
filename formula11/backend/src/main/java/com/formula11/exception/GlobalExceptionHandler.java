@@ -11,6 +11,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import jakarta.validation.ConstraintViolationException;
 
 import java.time.Instant;
 
@@ -31,6 +32,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> tipoDeArgumento(MethodArgumentTypeMismatchException exception, HttpServletRequest request) {
         return responder(HttpStatus.BAD_REQUEST, "El parámetro " + exception.getName() + " no es válido", request);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> restriccion(ConstraintViolationException exception,
+                                                       HttpServletRequest request) {
+        return responder(HttpStatus.BAD_REQUEST, "La solicitud no es válida", request);
     }
 
     @ExceptionHandler(UsuarioService.EmailDuplicadoException.class)

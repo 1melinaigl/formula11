@@ -8,11 +8,16 @@ import com.formula11.model.Tenencia;
 import com.formula11.model.Transaccion;
 import com.formula11.model.Usuario;
 import com.formula11.persistence.CuentaRepository;
+import com.formula11.persistence.AuditoriaMercadoRepository;
 import com.formula11.persistence.TenenciaRepository;
 import com.formula11.persistence.TransaccionRepository;
 import com.formula11.persistence.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -35,6 +40,7 @@ public class PortfolioService {
     private final CuentaRepository cuentaRepository;
     private final TenenciaRepository tenenciaRepository;
     private final TransaccionRepository transaccionRepository;
+    private final AuditoriaMercadoRepository auditoriaRepository;
     private final CotizacionVigentePort cotizacionPort;
     private final CotizacionHistoricaPort cotizacionHistoricaPort;
     private final Clock clock;
@@ -43,6 +49,7 @@ public class PortfolioService {
                              CuentaRepository cuentaRepository,
                              TenenciaRepository tenenciaRepository,
                              TransaccionRepository transaccionRepository,
+                             AuditoriaMercadoRepository auditoriaRepository,
                              CotizacionVigentePort cotizacionPort,
                              CotizacionHistoricaPort cotizacionHistoricaPort,
                              Clock clock) {
@@ -50,6 +57,7 @@ public class PortfolioService {
         this.cuentaRepository = cuentaRepository;
         this.tenenciaRepository = tenenciaRepository;
         this.transaccionRepository = transaccionRepository;
+        this.auditoriaRepository = auditoriaRepository;
         this.cotizacionPort = cotizacionPort;
         this.cotizacionHistoricaPort = cotizacionHistoricaPort;
         this.clock = clock;
@@ -153,6 +161,42 @@ public class PortfolioService {
             puntos.add(new PuntoEvolucionResultado(fecha, dinero(valor), dinero(invertido)));
         }
         return new EvolucionPortfolioResultado(usuario, puntos);
+    }
+
+    @Transactional(readOnly = true)
+    public HistorialTransaccionesResultado historial(Long solicitanteId, Long usuarioId,
+                                                     Transaccion.Tipo tipo, Long jugadorId,
+                                                     int page, int size) {
+        verificarAcceso(solicitanteId, usuarioId);
+        Pageable pageable = PageRequest.of(page, size,
+                Sort.by(Sort.Order.desc("fecha"), Sort.Order.desc("id")));
+        Page<Transaccion> pagina = transaccionRepository.buscarHistorial(
+                usuarioId, tipo, jugadorId, pageable);
+        List<Transaccion> transacciones = pagina.getContent();
+        if (transacciones.isEmpty()) {
+            return new HistorialTransaccionesResultado(
+                    List.of(), pagina.getNumber(), pagina.getSize(),
+                    pagina.getTotalElements(), pagina.getTotalPages());
+        }
+
+        List<Long> ids = transacciones.stream().map(Transaccion::getId).toList();
+        Map<Long, com.formula11.model.AuditoriaMercado> auditorias = auditoriaRepository
+                .findByOperacionIdIn(ids).stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        auditoria -> auditoria.getOperacion().getId(),
+                        auditoria -> auditoria));
+        List<OperacionHistorial> operaciones = transacciones.stream().map(transaccion -> {
+            com.formula11.model.AuditoriaMercado auditoria = auditorias.get(transaccion.getId());
+            if (auditoria == null) {
+                throw new IllegalStateException(
+                        "No existe auditoría para la operación " + transaccion.getId());
+            }
+            return new OperacionHistorial(
+                    transaccion, AuditoriaSaldoParser.parsear(auditoria.getDespues()));
+        }).toList();
+        return new HistorialTransaccionesResultado(
+                operaciones, pagina.getNumber(), pagina.getSize(),
+                pagina.getTotalElements(), pagina.getTotalPages());
     }
 
     private static LocalDate fechaDe(Transaccion transaccion) {

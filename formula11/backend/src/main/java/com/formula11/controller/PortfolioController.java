@@ -2,6 +2,8 @@ package com.formula11.controller;
 
 import com.formula11.dto.PortfolioResponse;
 import com.formula11.dto.EvolucionPortfolioResponse;
+import com.formula11.dto.TransaccionesPageResponse;
+import com.formula11.model.Transaccion;
 import com.formula11.service.PuntoEvolucionResultado;
 import java.time.LocalDate;
 import java.util.List;
@@ -12,8 +14,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
 
 @RestController
+@Validated
 @RequestMapping("/api/usuarios/{usuarioId}")
 public class PortfolioController {
     private final PortfolioService portfolioService;
@@ -41,5 +45,21 @@ public class PortfolioController {
         return new EvolucionPortfolioResponse(
                 resultado.usuario().getId(),
                 puntos.stream().map(com.formula11.dto.PuntoEvolucionResponse::from).toList());
+    }
+
+    @GetMapping("/transacciones")
+    public TransaccionesPageResponse historial(
+            @PathVariable Long usuarioId,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "0")
+            @jakarta.validation.constraints.Min(0) int page,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "20")
+            @jakarta.validation.constraints.Min(1) @jakarta.validation.constraints.Max(100) int size,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) Transaccion.Tipo tipo,
+            @org.springframework.web.bind.annotation.RequestParam(required = false)
+            @jakarta.validation.constraints.Positive Long jugadorId,
+            Authentication authentication) {
+        Long solicitanteId = usuarioService.obtenerIdPorEmail(authentication.getName());
+        return TransaccionesPageResponse.from(
+                portfolioService.historial(solicitanteId, usuarioId, tipo, jugadorId, page, size));
     }
 }

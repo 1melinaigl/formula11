@@ -15,6 +15,7 @@ public interface TransaccionRepository extends JpaRepository<Transaccion, Long> 
 
     @Query("""
             select t from Transaccion t
+            join fetch t.jugador
             where t.usuario.id = :usuarioId
               and (:tipo is null or t.tipo = :tipo)
               and (:jugadorId is null or t.jugador.id = :jugadorId)

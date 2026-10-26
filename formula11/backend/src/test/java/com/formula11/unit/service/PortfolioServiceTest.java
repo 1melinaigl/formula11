@@ -16,6 +16,8 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -29,6 +31,7 @@ class PortfolioServiceTest {
     @Mock CuentaRepository cuentas;
     @Mock TenenciaRepository tenencias;
     @Mock TransaccionRepository transacciones;
+    @Mock AuditoriaMercadoRepository auditorias;
     @Mock CotizacionVigentePort cotizaciones;
     @Mock CotizacionHistoricaPort cotizacionesHistoricas;
 
@@ -41,7 +44,7 @@ class PortfolioServiceTest {
     void preparar() {
         ahora = Instant.parse("2026-10-25T22:30:15Z");
         service = new PortfolioService(
-                usuarios, cuentas, tenencias, transacciones, cotizaciones, cotizacionesHistoricas,
+                usuarios, cuentas, tenencias, transacciones, auditorias, cotizaciones, cotizacionesHistoricas,
                 Clock.fixed(ahora, ZoneOffset.UTC));
         usuario = new Usuario("Ana", "ana-portfolio@example.com", "hash", ahora);
         jugador = new Jugador("Messi", "Inter Miami", Liga.LA_LIGA, "Delantero");
@@ -151,6 +154,58 @@ class PortfolioServiceTest {
         assertThrows(com.formula11.exception.AccesoPortfolioDenegadoException.class,
                 () -> service.evolucion(9L, 1L, null, null));
         verifyNoInteractions(transacciones, cotizacionesHistoricas);
+    }
+
+    @Test
+    void filtraEnBaseOrdenaYCompletaSaldoDesdeUnaConsultaDeAuditoria() {
+        Usuario contraparte = new Usuario("Super", "super-history@example.com", "hash", ahora);
+        Transaccion transaccion = new Transaccion(
+                Transaccion.Tipo.COMPRA, usuario, jugador, 2, new BigDecimal("2.0000"),
+                contraparte, ahora, "activa", 1);
+        ReflectionTestUtils.setField(transaccion, "id", 7L);
+        var auditoria = new AuditoriaMercado(
+                usuario, transaccion, "{\"saldoUsuario\":100.0000}",
+                "{\"saldoUsuario\":96.0000}", ahora);
+        when(transacciones.buscarHistorial(eq(1L), eq(Transaccion.Tipo.COMPRA), eq(3L), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(transaccion), Pageable.ofSize(20), 1));
+        when(auditorias.findByOperacionIdIn(List.of(7L))).thenReturn(List.of(auditoria));
+
+        HistorialTransaccionesResultado resultado = service.historial(
+                1L, 1L, Transaccion.Tipo.COMPRA, 3L, 0, 20);
+
+        assertEquals(0, new BigDecimal("96.0000")
+                .compareTo(resultado.contenido().get(0).saldoPosterior()));
+        verify(auditorias, times(1)).findByOperacionIdIn(List.of(7L));
+        var pageableCaptor = org.mockito.ArgumentCaptor.forClass(Pageable.class);
+        verify(transacciones).buscarHistorial(eq(1L), eq(Transaccion.Tipo.COMPRA), eq(3L),
+                pageableCaptor.capture());
+        assertEquals("fecha: DESC,id: DESC", pageableCaptor.getValue().getSort().toString());
+    }
+
+    @Test
+    void devuelvePaginaVaciaSinConsultarAuditorias() {
+        when(transacciones.buscarHistorial(eq(1L), isNull(), isNull(), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(), Pageable.ofSize(20), 0));
+
+        HistorialTransaccionesResultado resultado = service.historial(1L, 1L, null, null, 0, 20);
+
+        assertTrue(resultado.contenido().isEmpty());
+        verifyNoInteractions(auditorias);
+    }
+
+    @Test
+    void auditoriaFaltanteEsErrorExplicito() {
+        Usuario contraparte = new Usuario("Super", "super-history-missing@example.com", "hash", ahora);
+        Transaccion transaccion = new Transaccion(
+                Transaccion.Tipo.COMPRA, usuario, jugador, 1, BigDecimal.ONE,
+                contraparte, ahora, null, null);
+        ReflectionTestUtils.setField(transaccion, "id", 8L);
+        when(transacciones.buscarHistorial(anyLong(), isNull(), isNull(), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(transaccion)));
+        when(auditorias.findByOperacionIdIn(List.of(8L))).thenReturn(List.of());
+
+        assertThrows(IllegalStateException.class,
+                () -> service.historial(1L, 1L, null, null, 0, 20));
     }
 
     @Test
