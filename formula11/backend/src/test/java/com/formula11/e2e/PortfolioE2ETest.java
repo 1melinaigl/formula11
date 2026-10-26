@@ -1,6 +1,9 @@
 package com.formula11.e2e;
 
 import com.formula11.model.Cuenta;
+import com.formula11.model.Jugador;
+import com.formula11.model.Liga;
+import com.formula11.model.Tenencia;
 import com.formula11.model.Rol;
 import com.formula11.model.Usuario;
 import com.formula11.persistence.*;
@@ -23,6 +26,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.math.BigDecimal;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -43,6 +47,8 @@ class PortfolioE2ETest {
     @Autowired MockMvc mockMvc;
     @Autowired UsuarioRepository usuarios;
     @Autowired CuentaRepository cuentas;
+    @Autowired JugadorRepository jugadores;
+    @Autowired TenenciaRepository tenencias;
     @Autowired JwtService jwtService;
     @Autowired JdbcTemplate jdbc;
 
@@ -64,6 +70,21 @@ class PortfolioE2ETest {
         mockMvc.perform(get("/api/usuarios/" + usuario.getId() + "/portfolio")
                         .header("Authorization", "Bearer " + token(usuario)))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void portfolioConPosicionesDevuelveLosDatosDelJugador() throws Exception {
+        Usuario usuario = crearUsuario("portfolio-posiciones@example.com");
+        cuentas.saveAndFlush(new Cuenta(usuario, new BigDecimal("80")));
+        Jugador jugador = jugadores.saveAndFlush(new Jugador("Messi", "Inter Miami", Liga.LA_LIGA, "DEL"));
+        tenencias.saveAndFlush(new Tenencia(usuario, jugador, 20, BigDecimal.ONE));
+
+        mockMvc.perform(get("/api/usuarios/" + usuario.getId() + "/portfolio")
+                        .header("Authorization", "Bearer " + token(usuario)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.posiciones.length()").value(1))
+                .andExpect(jsonPath("$.posiciones[0].jugador.nombre").value("Messi"))
+                .andExpect(jsonPath("$.posiciones[0].cantidad").value(20));
     }
 
     @Test
