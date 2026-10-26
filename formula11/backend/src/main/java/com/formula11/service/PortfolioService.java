@@ -5,9 +5,11 @@ import com.formula11.exception.RecursoNoEncontradoException;
 import com.formula11.model.Cuenta;
 import com.formula11.model.Jugador;
 import com.formula11.model.Tenencia;
+import com.formula11.model.Transaccion;
 import com.formula11.model.Usuario;
 import com.formula11.persistence.CuentaRepository;
 import com.formula11.persistence.TenenciaRepository;
+import com.formula11.persistence.TransaccionRepository;
 import com.formula11.persistence.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +21,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,18 +34,24 @@ public class PortfolioService {
     private final UsuarioRepository usuarioRepository;
     private final CuentaRepository cuentaRepository;
     private final TenenciaRepository tenenciaRepository;
+    private final TransaccionRepository transaccionRepository;
     private final CotizacionVigentePort cotizacionPort;
+    private final CotizacionHistoricaPort cotizacionHistoricaPort;
     private final Clock clock;
 
     public PortfolioService(UsuarioRepository usuarioRepository,
                              CuentaRepository cuentaRepository,
                              TenenciaRepository tenenciaRepository,
+                             TransaccionRepository transaccionRepository,
                              CotizacionVigentePort cotizacionPort,
+                             CotizacionHistoricaPort cotizacionHistoricaPort,
                              Clock clock) {
         this.usuarioRepository = usuarioRepository;
         this.cuentaRepository = cuentaRepository;
         this.tenenciaRepository = tenenciaRepository;
+        this.transaccionRepository = transaccionRepository;
         this.cotizacionPort = cotizacionPort;
+        this.cotizacionHistoricaPort = cotizacionHistoricaPort;
         this.clock = clock;
     }
 
@@ -89,6 +98,95 @@ public class PortfolioService {
                 ganancia,
                 porcentaje(ganancia, invertido),
                 posiciones);
+    }
+
+    @Transactional(readOnly = true)
+    public EvolucionPortfolioResultado evolucion(Long solicitanteId, Long usuarioId,
+                                                  LocalDate desde, LocalDate hasta) {
+        Usuario usuario = verificarAcceso(solicitanteId, usuarioId);
+        LocalDate hoy = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC);
+        LocalDate fechaHasta = hasta == null ? hoy : hasta;
+        LocalDate fechaDesde = desde;
+        if (fechaDesde == null) {
+            fechaDesde = transaccionRepository.findFirstFechaByUsuarioId(usuarioId)
+                    .map(fecha -> LocalDate.ofInstant(fecha, ZoneOffset.UTC))
+                    .orElse(fechaHasta);
+        }
+        if (fechaDesde.isAfter(fechaHasta)) {
+            throw new IllegalArgumentException("La fecha desde no puede ser posterior a hasta");
+        }
+
+        List<Transaccion> transacciones =
+                transaccionRepository.findByUsuarioIdOrderByFechaAscIdAsc(usuarioId);
+        List<LocalDate> fechas = cotizacionHistoricaPort.fechasCotizacion(fechaDesde, fechaHasta);
+        Map<Long, TenenciaHistorica> tenencias = new LinkedHashMap<>();
+        List<PuntoEvolucionResultado> puntos = new ArrayList<>();
+        int indiceTransaccion = 0;
+
+        for (LocalDate fecha : fechas) {
+            while (indiceTransaccion < transacciones.size()
+                    && !fechaDe(transacciones.get(indiceTransaccion)).isAfter(fecha)) {
+                aplicar(transacciones.get(indiceTransaccion), tenencias);
+                indiceTransaccion++;
+            }
+
+            List<Long> jugadores = tenencias.values().stream()
+                    .filter(tenencia -> tenencia.cantidad > 0)
+                    .map(tenencia -> tenencia.jugador.getId())
+                    .toList();
+            Map<Long, BigDecimal> precios = cotizacionHistoricaPort.preciosA(jugadores, fecha);
+            BigDecimal invertido = ceroDinero();
+            BigDecimal valor = ceroDinero();
+            for (TenenciaHistorica tenencia : tenencias.values()) {
+                if (tenencia.cantidad <= 0) {
+                    continue;
+                }
+                BigDecimal cantidad = BigDecimal.valueOf(tenencia.cantidad);
+                invertido = dinero(invertido.add(dinero(tenencia.precioPromedio.multiply(cantidad))));
+                BigDecimal precio = precios.get(tenencia.jugador.getId());
+                if (precio == null) {
+                    throw new IllegalStateException(
+                            "No hay cotización histórica para el jugador " + tenencia.jugador.getId());
+                }
+                valor = dinero(valor.add(dinero(precio.multiply(cantidad))));
+            }
+            puntos.add(new PuntoEvolucionResultado(fecha, dinero(valor), dinero(invertido)));
+        }
+        return new EvolucionPortfolioResultado(usuario, puntos);
+    }
+
+    private static LocalDate fechaDe(Transaccion transaccion) {
+        return LocalDate.ofInstant(transaccion.getFecha(), ZoneOffset.UTC);
+    }
+
+    private static void aplicar(Transaccion transaccion, Map<Long, TenenciaHistorica> tenencias) {
+        Long jugadorId = transaccion.getJugador().getId();
+        TenenciaHistorica tenencia = tenencias.computeIfAbsent(
+                jugadorId, ignored -> new TenenciaHistorica(transaccion.getJugador()));
+        if (transaccion.getTipo() == Transaccion.Tipo.COMPRA) {
+            BigDecimal cantidadAnterior = BigDecimal.valueOf(tenencia.cantidad);
+            BigDecimal cantidadCompra = BigDecimal.valueOf(transaccion.getCantidad());
+            int cantidadNueva = tenencia.cantidad + transaccion.getCantidad();
+            tenencia.precioPromedio = tenencia.precioPromedio.multiply(cantidadAnterior)
+                    .add(transaccion.getPrecioUnitario().multiply(cantidadCompra))
+                    .divide(BigDecimal.valueOf(cantidadNueva), DINERO_SCALE, REDONDEO);
+            tenencia.cantidad = cantidadNueva;
+        } else {
+            tenencia.cantidad -= transaccion.getCantidad();
+            if (tenencia.cantidad < 0) {
+                throw new IllegalStateException("La reconstrucción histórica produjo una tenencia negativa");
+            }
+        }
+    }
+
+    private static final class TenenciaHistorica {
+        private final Jugador jugador;
+        private int cantidad;
+        private BigDecimal precioPromedio = ceroDinero();
+
+        private TenenciaHistorica(Jugador jugador) {
+            this.jugador = jugador;
+        }
     }
 
     // Regla común a portfolio, evolución e historial. Se compara el id antes de buscar al usuario

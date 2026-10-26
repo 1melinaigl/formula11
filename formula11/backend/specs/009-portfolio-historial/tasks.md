@@ -37,11 +37,11 @@
 
 ## Phase 4 - User Story 2: Consultar evolución
 
-- [ ] T015 Implementar `PortfolioService.evolucion` con defaults, validación de intervalo, transacciones UTC, reconstrucción de tenencias y precios por fecha mediante `CotizacionHistoricaPort`.
-- [ ] T016 Crear `EvolucionPortfolioResponse` y el DTO de punto, y agregar `/portfolio/evolucion` al controller.
-- [ ] T017 [P] Agregar tests unitarios de evolución con compras, ventas, promedio ponderado, serie vacía, defaults, `desde > hasta`, redondeo y `Clock.fixed`.
-- [ ] T018 Agregar test de integración con Testcontainers para transacciones, cotizaciones históricas y reconstrucción UTC.
-- [ ] T019 Agregar test E2E MockMvc de evolución para `200`, `400`, `401` y `403`, incluyendo intervalo sin cotizaciones.
+- [x] T015 Implementar `PortfolioService.evolucion` con defaults, validación de intervalo, transacciones UTC, reconstrucción de tenencias y precios por fecha mediante `CotizacionHistoricaPort`.
+- [x] T016 Crear `EvolucionPortfolioResponse` y el DTO de punto, y agregar `/portfolio/evolucion` al controller.
+- [x] T017 [P] Agregar tests unitarios de evolución con compras, ventas, promedio ponderado, serie vacía, defaults, `desde > hasta`, redondeo y `Clock.fixed`.
+- [x] T018 Agregar test de integración con Testcontainers para transacciones, cotizaciones históricas y reconstrucción UTC.
+- [x] T019 Agregar test E2E MockMvc de evolución para `200`, `400`, `401` y `403`, incluyendo intervalo sin cotizaciones.
 
 ## Phase 5 - User Story 3: Consultar historial
 

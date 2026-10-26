@@ -28,7 +28,9 @@ class PortfolioServiceTest {
     @Mock UsuarioRepository usuarios;
     @Mock CuentaRepository cuentas;
     @Mock TenenciaRepository tenencias;
+    @Mock TransaccionRepository transacciones;
     @Mock CotizacionVigentePort cotizaciones;
+    @Mock CotizacionHistoricaPort cotizacionesHistoricas;
 
     private PortfolioService service;
     private Usuario usuario;
@@ -39,7 +41,7 @@ class PortfolioServiceTest {
     void preparar() {
         ahora = Instant.parse("2026-10-25T22:30:15Z");
         service = new PortfolioService(
-                usuarios, cuentas, tenencias, cotizaciones,
+                usuarios, cuentas, tenencias, transacciones, cotizaciones, cotizacionesHistoricas,
                 Clock.fixed(ahora, ZoneOffset.UTC));
         usuario = new Usuario("Ana", "ana-portfolio@example.com", "hash", ahora);
         jugador = new Jugador("Messi", "Inter Miami", Liga.LA_LIGA, "Delantero");
@@ -93,6 +95,62 @@ class PortfolioServiceTest {
         assertEquals(new BigDecimal("-12.0000"), resultado.ganancia());
         assertEquals(new BigDecimal("-60.00"), resultado.gananciaPorcentaje());
         assertEquals(new BigDecimal("-12.0000"), resultado.posiciones().get(0).ganancia());
+    }
+
+    @Test
+    void reconstruyeComprasYVentasEnUtcYConsultaPreciosUnaVezPorFecha() {
+        Usuario contraparte = new Usuario("Super", "super-portfolio@example.com", "hash", ahora);
+        Jugador segundoJugador = new Jugador("Mbappe", "Real Madrid", Liga.LA_LIGA, "Delantero");
+        ReflectionTestUtils.setField(segundoJugador, "id", 4L);
+        Instant compra = Instant.parse("2026-10-25T23:30:00Z");
+        Instant venta = Instant.parse("2026-10-26T00:30:00Z");
+        Transaccion compraTransaccion = new Transaccion(
+                Transaccion.Tipo.COMPRA, usuario, jugador, 2, new BigDecimal("2.0000"),
+                contraparte, compra, "activa", 1);
+        Transaccion ventaTransaccion = new Transaccion(
+                Transaccion.Tipo.VENTA, usuario, jugador, 1, new BigDecimal("3.0000"),
+                contraparte, venta, "activa", 1);
+        Transaccion segundaCompra = new Transaccion(
+                Transaccion.Tipo.COMPRA, usuario, segundoJugador, 1, new BigDecimal("5.0000"),
+                contraparte, venta, "activa", 1);
+        when(transacciones.findFirstFechaByUsuarioId(1L)).thenReturn(Optional.of(compra));
+        when(transacciones.findByUsuarioIdOrderByFechaAscIdAsc(1L))
+                .thenReturn(List.of(compraTransaccion, ventaTransaccion, segundaCompra));
+        var lunes = java.time.LocalDate.of(2026, 10, 26);
+        when(cotizacionesHistoricas.fechasCotizacion(
+                java.time.LocalDate.of(2026, 10, 25), lunes)).thenReturn(List.of(lunes));
+        when(cotizacionesHistoricas.preciosA(List.of(3L, 4L), lunes))
+                .thenReturn(java.util.Map.of(3L, new BigDecimal("4.0000"), 4L, new BigDecimal("6.0000")));
+
+        EvolucionPortfolioResultado resultado = service.evolucion(
+                1L, 1L, java.time.LocalDate.of(2026, 10, 25), lunes);
+
+        assertEquals(new BigDecimal("7.0000"), resultado.puntos().get(0).invertido());
+        assertEquals(new BigDecimal("10.0000"), resultado.puntos().get(0).valor());
+        verify(cotizacionesHistoricas, times(1)).preciosA(List.of(3L, 4L), lunes);
+    }
+
+    @Test
+    void usaDefaultsYDevuelveSerieVacia() {
+        when(transacciones.findFirstFechaByUsuarioId(1L))
+                .thenReturn(Optional.of(Instant.parse("2026-10-20T23:00:00Z")));
+        when(cotizacionesHistoricas.fechasCotizacion(
+                java.time.LocalDate.of(2026, 10, 20),
+                java.time.LocalDate.of(2026, 10, 25))).thenReturn(List.of());
+
+        EvolucionPortfolioResultado resultado = service.evolucion(1L, 1L, null, null);
+
+        assertTrue(resultado.puntos().isEmpty());
+    }
+
+    @Test
+    void rechazaIntervaloInvertidoYAccesoAjenoAntesDeConsultar() {
+        assertThrows(IllegalArgumentException.class, () -> service.evolucion(
+                1L, 1L, java.time.LocalDate.of(2026, 10, 26),
+                java.time.LocalDate.of(2026, 10, 25)));
+        assertThrows(com.formula11.exception.AccesoPortfolioDenegadoException.class,
+                () -> service.evolucion(9L, 1L, null, null));
+        verifyNoInteractions(transacciones, cotizacionesHistoricas);
     }
 
     @Test
