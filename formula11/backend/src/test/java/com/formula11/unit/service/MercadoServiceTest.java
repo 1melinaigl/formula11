@@ -70,6 +70,18 @@ class MercadoServiceTest {
     }
 
     @Test
+    void compraConClockExplicitoUsaLaFechaRecibida() {
+        Clock relojDemo = Clock.fixed(Instant.parse("2026-08-01T00:00:00Z"), ZoneOffset.UTC);
+        when(cotizaciones.vigente(jugador, relojDemo.instant()))
+                .thenReturn(new CotizacionVigentePort.CotizacionVigente(BigDecimal.ONE, null, null, null));
+
+        ResultadoOperacion resultado = service.comprar(1L, 3L, 2, relojDemo);
+
+        assertEquals(Instant.parse("2026-08-01T00:00:00Z"), resultado.transaccion().getFecha());
+        verify(cotizaciones).vigente(jugador, Instant.parse("2026-08-01T00:00:00Z"));
+    }
+
+    @Test
     void rechazaSaldoInsuficienteSinPersistir() {
         cuenta.debitar(new BigDecimal("100"));
         assertThrows(OperacionNoValidaException.class, () -> service.comprar(1L, 3L, 1));

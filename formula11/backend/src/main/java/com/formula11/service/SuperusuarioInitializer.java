@@ -8,10 +8,12 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.core.annotation.Order;
 import java.math.BigDecimal;
 import java.time.Clock;
 
 @Component
+@Order(1)
 public class SuperusuarioInitializer implements ApplicationRunner {
     private static final int TOKENS_EMITIDOS = 100;
     private static final BigDecimal PRECIO_INICIAL = BigDecimal.ONE;

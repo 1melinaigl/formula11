@@ -5,8 +5,12 @@ import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import java.util.Optional;
+import java.util.List;
 
 public interface TenenciaRepository extends JpaRepository<Tenencia, Long> {
+    // Trae el jugador en la misma consulta: el portfolio lo serializa fuera de la transacción (open-in-view: false).
+    @EntityGraph(attributePaths = "jugador")
+    List<Tenencia> findByUsuarioIdOrderByJugadorIdAsc(Long usuarioId);
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select t from Tenencia t where t.usuario.id = :usuarioId and t.jugador.id = :jugadorId")
     Optional<Tenencia> findByUsuarioIdAndJugadorIdForUpdate(@Param("usuarioId") Long usuarioId, @Param("jugadorId") Long jugadorId);

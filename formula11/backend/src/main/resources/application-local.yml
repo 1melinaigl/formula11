@@ -14,3 +14,10 @@ app:
 mercado:
   superusuario-email: superusuario@formula11.com
   superusuario-password: Superusuario123!
+  demo-usuarios:
+    - demo1@formula11.com
+    - demo2@formula11.com
+    - demo3@formula11.com
+    - demo4@formula11.com
+  demo-fecha-inicio: 2026-08-01
+  demo-password: DemoFormula11!

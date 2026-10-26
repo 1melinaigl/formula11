@@ -11,6 +11,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.time.Instant;
@@ -48,6 +49,12 @@ public class GlobalExceptionHandler {
         return responder(HttpStatus.BAD_REQUEST, "El parámetro " + exception.getName() + " no es válido", request);
     }
 
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> restriccion(ConstraintViolationException exception,
+                                                       HttpServletRequest request) {
+        return responder(HttpStatus.BAD_REQUEST, "La solicitud no es válida", request);
+    }
+
     @ExceptionHandler(UsuarioService.EmailDuplicadoException.class)
     public ResponseEntity<ErrorResponse> duplicado(UsuarioService.EmailDuplicadoException exception, HttpServletRequest request) {
         return responder(HttpStatus.CONFLICT, exception.getMessage(), request);
@@ -55,6 +62,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(SuperusuarioNoOperaException.class)
     public ResponseEntity<ErrorResponse> superusuario(SuperusuarioNoOperaException exception, HttpServletRequest request) {
+        return responder(HttpStatus.FORBIDDEN, exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(AccesoPortfolioDenegadoException.class)
+    public ResponseEntity<ErrorResponse> accesoPortfolio(AccesoPortfolioDenegadoException exception, HttpServletRequest request) {
         return responder(HttpStatus.FORBIDDEN, exception.getMessage(), request);
     }
 
