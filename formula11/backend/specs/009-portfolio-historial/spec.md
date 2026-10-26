@@ -20,6 +20,8 @@ según las operaciones marcadas con `x-feature: 009-portfolio-historial` en
 - Q: ¿Qué redondeo usan los cálculos? → A: Montos con 4 decimales y porcentajes con 2, siempre `HALF_UP`.
 - Q: ¿Qué se responde si el `{usuarioId}` no es el del JWT? → A: `403`, antes de verificar si ese usuario existe, para no revelar qué identificadores existen.
 - Q: ¿Qué valores toman `desde` y `hasta` si no se envían? → A: Son opcionales en el contrato. `hasta` es la fecha del `Clock`; `desde` es la fecha de la primera transacción del usuario, o `hasta` si no tiene transacciones.
+- Q: ¿Qué zona horaria se usa para convertir `Transaccion.fecha` (`TIMESTAMPTZ`) a fecha calendario en la evolución? → A: UTC.
+- Q: ¿Qué ocurre si el filtro `jugadorId` del historial no existe? → A: Se responde `200` con una página vacía; el filtro no valida la existencia del jugador.
 
 ## User Scenarios & Testing
 
@@ -204,9 +206,10 @@ operaciones del usuario autenticado.
 
 Los endpoints MUST respetar las respuestas del contrato: `200` para consultas
 exitosas, `400` para validación, `401` para autenticación ausente o inválida, `403`
-para propietario incorrecto o superusuario, y `404` para usuario o jugador no
-encontrado cuando corresponda. Una respuesta de error MUST usar el esquema `Error`
-existente y no filtrar datos.
+para propietario incorrecto o superusuario, y `404` para usuario no encontrado
+cuando corresponda. Un `jugadorId` inexistente usado como filtro del historial
+produce `200` con una página vacía. Una respuesta de error MUST usar el esquema
+`Error` existente y no filtrar datos.
 
 ### Migraciones Flyway
 
@@ -256,7 +259,7 @@ si el plan detecta otra consulta lenta se agrega un índice en `V26`.
   `CotizacionVigentePort` ya existen o son provistas por las features precedentes.
 - Los importes usan la representación contractual `Creditos` con 4 decimales, como el
   mercado; los porcentajes, 2 decimales (FR-006a).
-- La fecha de evolución se maneja como fecha de calendario, mientras que las
+- La fecha de evolución se maneja como fecha de calendario UTC, mientras que las
   transacciones conservan su instante original.
 - La tabla de cotizaciones y sus estrategias pertenecen a A (006); la implementación
   real de `CotizacionHistoricaPort` llega con la 008.
