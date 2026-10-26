@@ -28,8 +28,7 @@ class CotizacionVigenteServiceTest {
     @Mock CotizacionRepository cotizaciones;
     @Mock EstrategiaRepository estrategias;
 
-    private final ZoneId zona = ZoneId.of("America/Argentina/Buenos_Aires");
-    private final Clock clock = Clock.fixed(Instant.parse("2026-10-25T02:00:00Z"), zona);
+    private final Clock clock = Clock.fixed(Instant.parse("2026-10-25T02:00:00Z"), ZoneOffset.UTC);
 
     @Test
     void convierteInstantConLaZonaYBuscaLaCotizacionVigente() {
@@ -43,7 +42,7 @@ class CotizacionVigenteServiceTest {
         var result = servicio(Caffeine.newBuilder().build()).vigente(jugador,
                 Instant.parse("2026-10-25T02:30:00Z"));
 
-        assertEquals(new CotizacionVigentePort.Cotizacion(
+        assertEquals(new CotizacionVigentePort.CotizacionVigente(
                 new BigDecimal("1.2345"), "RENDIMIENTO_POSICION", 1,
                 LocalDate.of(2026, 10, 24)), result);
     }
@@ -55,7 +54,7 @@ class CotizacionVigenteServiceTest {
 
         var result = servicio(Caffeine.newBuilder().build()).vigente(jugador, clock.instant());
 
-        assertEquals(new CotizacionVigentePort.Cotizacion(
+        assertEquals(new CotizacionVigentePort.CotizacionVigente(
                 BigDecimal.ONE, null, null, null), result);
     }
 
@@ -66,7 +65,7 @@ class CotizacionVigenteServiceTest {
         when(estrategias.findByActivaTrue()).thenReturn(Optional.of(activa));
         when(cotizaciones.findTopByJugadorIdAndEstrategiaAndFechaLessThanEqualOrderByFechaDesc(
                 9L, "RENDIMIENTO_POSICION", LocalDate.of(2026, 10, 24))).thenReturn(Optional.empty());
-        Cache<String, CotizacionVigentePort.Cotizacion> cache = Caffeine.newBuilder().build();
+        Cache<String, CotizacionVigentePort.CotizacionVigente> cache = Caffeine.newBuilder().build();
         var service = servicio(cache);
 
         var first = service.vigente(jugador, clock.instant());
@@ -79,7 +78,7 @@ class CotizacionVigenteServiceTest {
                         9L, "RENDIMIENTO_POSICION", LocalDate.of(2026, 10, 24));
     }
 
-    private CotizacionVigenteService servicio(Cache<String, CotizacionVigentePort.Cotizacion> cache) {
+    private CotizacionVigenteService servicio(Cache<String, CotizacionVigentePort.CotizacionVigente> cache) {
         return new CotizacionVigenteService(cotizaciones, estrategias, clock, cache);
     }
 

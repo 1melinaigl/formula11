@@ -10,7 +10,7 @@ import java.time.Duration;
 @Configuration
 public class CotizacionCacheConfig {
     @Bean
-    Cache<String, CotizacionVigentePort.Cotizacion> cotizacionVigenteCache() {
+    Cache<String, CotizacionVigentePort.CotizacionVigente> cotizacionVigenteCache() {
         return Caffeine.newBuilder().expireAfterWrite(Duration.ofMinutes(15)).maximumSize(10_000).build();
     }
 }

@@ -39,7 +39,7 @@ El resultado se limita a una variación semanal de `±20 %`, respeta el piso con
 
 ### Semana y Clock
 
-La semana es lunes–domingo en `America/Argentina/Buenos_Aires`. La fecha persistida de una cotización es el domingo de cierre. El recálculo sin cuerpo procesa el domingo anterior a la fecha del `Clock`; el scheduler corre el lunes a las 06:00 por cron configurable. Todo service dependiente de fecha/hora recibe `Clock`.
+La semana es lunes–domingo en la zona de negocio `ClockConfig.ZONA_NEGOCIO` (`America/Argentina/Buenos_Aires`). El bean `Clock` es UTC; las semanas y fechas de cotización se calculan siempre con la zona de negocio. La fecha persistida de una cotización es el domingo de cierre. El recálculo sin cuerpo procesa el domingo anterior a la fecha del `Clock`; el scheduler corre el lunes a las 06:00 por cron configurable. Todo service dependiente de fecha/hora recibe `Clock`.
 
 ### Actualización de métricas
 

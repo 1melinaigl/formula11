@@ -1,6 +1,7 @@
 package com.formula11.service;
 
 import com.github.benmanes.caffeine.cache.Cache;
+import com.formula11.config.ClockConfig;
 import com.formula11.model.Estrategia;
 import com.formula11.model.Jugador;
 import com.formula11.persistence.*;
@@ -15,10 +16,10 @@ public class CotizacionVigenteService implements CotizacionVigentePort {
     private final CotizacionRepository cotizaciones;
     private final EstrategiaRepository estrategias;
     private final Clock clock;
-    private final Cache<String, CotizacionVigentePort.Cotizacion> cache;
+    private final Cache<String, CotizacionVigentePort.CotizacionVigente> cache;
 
     public CotizacionVigenteService(CotizacionRepository cotizaciones, EstrategiaRepository estrategias,
-                                    Clock clock, Cache<String, CotizacionVigentePort.Cotizacion> cache) {
+                                    Clock clock, Cache<String, CotizacionVigentePort.CotizacionVigente> cache) {
         this.cotizaciones = cotizaciones;
         this.estrategias = estrategias;
         this.clock = clock;
@@ -26,24 +27,24 @@ public class CotizacionVigenteService implements CotizacionVigentePort {
     }
 
     @Override
-    public Cotizacion vigente(Jugador jugador, Instant fecha) {
-        LocalDate fechaLocal = LocalDate.ofInstant(fecha, clock.getZone());
+    public CotizacionVigentePort.CotizacionVigente vigente(Jugador jugador, Instant fecha) {
+        LocalDate fechaLocal = LocalDate.ofInstant(fecha, ClockConfig.ZONA_NEGOCIO);
         String key = jugador.getId() + ":" + fechaLocal;
-        CotizacionVigentePort.Cotizacion cached = cache.getIfPresent(key);
+        CotizacionVigentePort.CotizacionVigente cached = cache.getIfPresent(key);
         if (cached != null) return cached;
         String codigo = estrategias.findByActivaTrue().map(Estrategia::getCodigo).orElse(null);
         com.formula11.model.Cotizacion value = codigo == null ? null :
                 cotizaciones.findTopByJugadorIdAndEstrategiaAndFechaLessThanEqualOrderByFechaDesc(
                         jugador.getId(), codigo, fechaLocal).orElse(null);
-        CotizacionVigentePort.Cotizacion result = value == null
-                ? new CotizacionVigentePort.Cotizacion(BigDecimal.ONE, null, null, null)
+        CotizacionVigentePort.CotizacionVigente result = value == null
+                ? new CotizacionVigentePort.CotizacionVigente(BigDecimal.ONE, null, null, null)
                 : toCotizacion(value);
         cache.put(key, result);
         return result;
     }
 
-    private CotizacionVigentePort.Cotizacion toCotizacion(com.formula11.model.Cotizacion cotizacion) {
-        return new CotizacionVigentePort.Cotizacion(cotizacion.getPrecio(), cotizacion.getEstrategia(),
+    private CotizacionVigentePort.CotizacionVigente toCotizacion(com.formula11.model.Cotizacion cotizacion) {
+        return new CotizacionVigentePort.CotizacionVigente(cotizacion.getPrecio(), cotizacion.getEstrategia(),
                 cotizacion.getVersion(), cotizacion.getFecha());
     }
 }

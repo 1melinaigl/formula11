@@ -23,8 +23,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @Testcontainers
 @ActiveProfiles("test")
 class RecalculoServiceIntegrationTest {
-    private static final ZoneId ZONA = ZoneId.of("America/Argentina/Buenos_Aires");
-
     @Container
     static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine");
 
@@ -44,17 +42,31 @@ class RecalculoServiceIntegrationTest {
 
     @BeforeEach
     void limpiar() {
-        cotizaciones.deleteAll();
-        metricas.deleteAll();
-        jugadores.deleteAll();
+        List<Jugador> jugadoresDelTest = jugadoresDelSeed();
+        Set<Long> idsJugadores = jugadoresDelTest.stream().map(Jugador::getId).collect(java.util.stream.Collectors.toSet());
+        Set<LocalDate> fechasCotizacion = Set.of(
+                LocalDate.of(2026, 1, 4),
+                LocalDate.of(2026, 1, 11),
+                LocalDate.of(2026, 1, 18));
+        for (Estrategia estrategia : estrategias.findAll()) {
+            for (Long idJugador : idsJugadores) {
+                cotizaciones.deleteAll(cotizaciones.findByJugadorIdAndEstrategiaOrderByFechaAsc(
+                                idJugador, estrategia.getCodigo()).stream()
+                        .filter(cotizacion -> fechasCotizacion.contains(cotizacion.getFecha()))
+                        .toList());
+            }
+        }
+        metricas.deleteAll(metricas.findByFechaPartidoBetween(
+                        LocalDate.of(2026, 1, 2), LocalDate.of(2026, 1, 16)).stream()
+                .filter(metrica -> idsJugadores.contains(metrica.getJugador().getId()))
+                .filter(metrica -> "test".equals(metrica.getFuente()))
+                .toList());
     }
 
     @Test
     void recalculaTresSemanasYEncadenaElPrecioDeCadaEstrategia() {
-        List<Jugador> jugadoresCreados = jugadores.saveAllAndFlush(List.of(
-                new Jugador("Jugador Uno", "Equipo", Liga.LA_LIGA, "DEL"),
-                new Jugador("Jugador Dos", "Equipo", Liga.LA_LIGA, "DEL"),
-                new Jugador("Jugador Tres", "Equipo", Liga.LA_LIGA, "DEL")));
+        List<Jugador> jugadoresCreados = jugadoresDelSeed();
+        assertEquals(3, jugadoresCreados.size());
         List<LocalDate> domingos = List.of(
                 LocalDate.of(2026, 1, 4),
                 LocalDate.of(2026, 1, 11),
@@ -100,6 +112,15 @@ class RecalculoServiceIntegrationTest {
         return new MetricaPartido(jugador, fecha, 90, true,
                 valor, 0, valor, 0, valor, 0, 0, 0, 0, 0,
                 0, 0, new BigDecimal("7.0").add(BigDecimal.valueOf(valor).movePointLeft(1)), "test");
+    }
+
+    private List<Jugador> jugadoresDelSeed() {
+        Set<Liga> ligasSeleccionadas = EnumSet.noneOf(Liga.class);
+        return jugadores.findAllByOrderByNombreAsc().stream()
+                .filter(jugador -> "DEL".equals(jugador.getPosicion()))
+                .filter(jugador -> ligasSeleccionadas.add(jugador.getLiga()))
+                .limit(3)
+                .toList();
     }
 
     private static BigDecimal valor(Estrategia estrategia, String nombre, double fallback) {

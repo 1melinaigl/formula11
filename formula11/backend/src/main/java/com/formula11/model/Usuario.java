@@ -2,6 +2,7 @@ package com.formula11.model;
 
 import jakarta.persistence.*;
 import java.time.Instant;
+import java.time.Clock;
 
 @Entity
 @Table(name = "usuarios")
@@ -17,14 +18,21 @@ public class Usuario {
     private String passwordHash;
     @Column(name = "fecha_registro", nullable = false)
     private Instant fechaRegistro;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Rol rol = Rol.USUARIO;
 
     protected Usuario() { }
 
     public Usuario(String nombre, String email, String passwordHash) {
+        this(nombre, email, passwordHash, Clock.systemUTC().instant());
+    }
+
+    public Usuario(String nombre, String email, String passwordHash, Instant fechaRegistro) {
         this.nombre = requireText(nombre, "El nombre es obligatorio");
         this.email = normalizarEmail(email);
         this.passwordHash = requireText(passwordHash, "La contraseña es obligatoria");
-        this.fechaRegistro = Instant.now();
+        this.fechaRegistro = java.util.Objects.requireNonNull(fechaRegistro, "La fecha de registro es obligatoria");
     }
 
     private static String requireText(String value, String message) {
@@ -43,4 +51,7 @@ public class Usuario {
     public String getEmail() { return email; }
     public String getPasswordHash() { return passwordHash; }
     public Instant getFechaRegistro() { return fechaRegistro; }
+    public Rol getRol() { return rol; }
+    public boolean esSuperusuario() { return rol == Rol.SUPERUSUARIO; }
+    public void asignarRol(Rol rol) { this.rol = java.util.Objects.requireNonNull(rol, "El rol es obligatorio"); }
 }

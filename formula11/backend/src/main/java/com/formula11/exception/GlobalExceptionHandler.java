@@ -53,6 +53,26 @@ public class GlobalExceptionHandler {
         return responder(HttpStatus.CONFLICT, exception.getMessage(), request);
     }
 
+    @ExceptionHandler(SuperusuarioNoOperaException.class)
+    public ResponseEntity<ErrorResponse> superusuario(SuperusuarioNoOperaException exception, HttpServletRequest request) {
+        return responder(HttpStatus.FORBIDDEN, exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(RecursoNoEncontradoException.class)
+    public ResponseEntity<ErrorResponse> noEncontrado(RecursoNoEncontradoException exception, HttpServletRequest request) {
+        return responder(HttpStatus.NOT_FOUND, exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(ConflictoMercadoException.class)
+    public ResponseEntity<ErrorResponse> conflicto(ConflictoMercadoException exception, HttpServletRequest request) {
+        return responder(HttpStatus.CONFLICT, exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(OperacionNoValidaException.class)
+    public ResponseEntity<ErrorResponse> operacionNoValida(OperacionNoValidaException exception, HttpServletRequest request) {
+        return responder(HttpStatus.UNPROCESSABLE_ENTITY, exception.getMessage(), request);
+    }
+
     @ExceptionHandler(CredencialesInvalidasException.class)
     public ResponseEntity<ErrorResponse> credencialesInvalidas(CredencialesInvalidasException exception, HttpServletRequest request) {
         return responder(HttpStatus.UNAUTHORIZED, exception.getMessage(), request);

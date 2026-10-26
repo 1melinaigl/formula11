@@ -9,17 +9,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ClockConfigTest {
     @Test
-    void creaClockEnZonaArgentinaConFechaFija() {
+    void creaClockEnUtcConFechaFijaYPermiteObtenerFechaDeNegocio() {
         Clock clock = new ClockConfig().clock("2026-10-24");
 
-        assertEquals(ZoneId.of("America/Argentina/Buenos_Aires"), clock.getZone());
-        assertEquals(LocalDate.of(2026, 10, 24), LocalDate.now(clock));
+        assertEquals(ZoneOffset.UTC, clock.getZone());
+        assertEquals(LocalDate.of(2026, 10, 24),
+                LocalDate.ofInstant(clock.instant(), ClockConfig.ZONA_NEGOCIO));
     }
 
     @Test
     void creaClockDeSistemaCuandoNoHayFechaFija() {
         Clock clock = new ClockConfig().clock("");
 
-        assertEquals(ZoneId.of("America/Argentina/Buenos_Aires"), clock.getZone());
+        assertEquals(ZoneOffset.UTC, clock.getZone());
     }
 }

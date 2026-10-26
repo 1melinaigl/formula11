@@ -4,6 +4,8 @@ import com.formula11.dto.LoginRequest;
 import com.formula11.exception.CredencialesInvalidasException;
 import com.formula11.model.Usuario;
 import com.formula11.persistence.UsuarioRepository;
+import com.formula11.persistence.CuentaRepository;
+import com.formula11.config.MercadoProperties;
 import com.formula11.security.JwtService;
 import com.formula11.service.UsuarioService;
 import org.junit.jupiter.api.Test;
@@ -18,6 +20,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -33,6 +36,10 @@ class UsuarioLoginServiceTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private JwtService jwtService;
+    @Mock
+    private CuentaRepository cuentaRepository;
+    @Mock
+    private MercadoProperties mercadoProperties;
 
     @InjectMocks
     private UsuarioService usuarioService;
@@ -42,7 +49,7 @@ class UsuarioLoginServiceTest {
         Usuario usuario = usuario("Ana", "ana@example.com", "hash-encriptado", 1L);
         when(usuarioRepository.findByEmail("ana@example.com")).thenReturn(Optional.of(usuario));
         when(passwordEncoder.matches("Secreto123!", "hash-encriptado")).thenReturn(true);
-        when(jwtService.generarToken(1L, "ana@example.com")).thenReturn("token-jwt");
+        when(jwtService.generarToken(1L, "ana@example.com", usuario.getRol())).thenReturn("token-jwt");
 
         var respuesta = usuarioService.login(new LoginRequest(" ANA@EXAMPLE.COM ", "Secreto123!"));
 
@@ -51,7 +58,7 @@ class UsuarioLoginServiceTest {
         assertEquals("ana@example.com", respuesta.email());
         assertEquals("token-jwt", respuesta.token());
         verify(usuarioRepository).findByEmail("ana@example.com");
-        verify(jwtService).generarToken(1L, "ana@example.com");
+        verify(jwtService).generarToken(1L, "ana@example.com", usuario.getRol());
     }
 
     @Test
@@ -64,7 +71,7 @@ class UsuarioLoginServiceTest {
 
         assertEquals("Las credenciales no son válidas", exception.getMessage());
         verify(passwordEncoder, never()).matches("Secreto123!", "hash-encriptado");
-        verify(jwtService, never()).generarToken(anyLong(), eq("no-existe@example.com"));
+        verify(jwtService, never()).generarToken(anyLong(), eq("no-existe@example.com"), any());
     }
 
     @Test
@@ -78,7 +85,7 @@ class UsuarioLoginServiceTest {
             () -> usuarioService.login(request));
 
     assertEquals("Las credenciales no son válidas", exception.getMessage());
-    verify(jwtService, never()).generarToken(anyLong(), eq("ana@example.com"));
+    verify(jwtService, never()).generarToken(anyLong(), eq("ana@example.com"), any());
 }
     private Usuario usuario(String nombre, String email, String passwordHash, Long id) {
         Usuario usuario = new Usuario(nombre, email, passwordHash);

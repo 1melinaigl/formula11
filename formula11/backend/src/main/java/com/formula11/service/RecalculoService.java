@@ -1,6 +1,7 @@
 package com.formula11.service;
 
 import com.formula11.dto.*;
+import com.formula11.config.ClockConfig;
 import com.formula11.model.Estrategia;
 import com.formula11.persistence.EstrategiaRepository;
 import org.slf4j.*;
@@ -56,7 +57,7 @@ public class RecalculoService {
     }
 
     private LocalDate ultimaSemanaCerrada() {
-        return LocalDate.ofInstant(clock.instant(), clock.getZone()).minusDays(1)
+        return LocalDate.ofInstant(clock.instant(), ClockConfig.ZONA_NEGOCIO).minusDays(1)
                 .with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.SUNDAY));
     }
     private LocalDate domingoDeSemana(LocalDate fecha) { return fecha.with(java.time.DayOfWeek.SUNDAY); }

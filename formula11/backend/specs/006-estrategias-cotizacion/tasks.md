@@ -33,7 +33,7 @@ description: "Task list for weekly player valuation strategies and quotations"
 - [x] T009 Crear `EstrategiaValuacion` en `com.formula11.model.valuacion` como interfaz Strategy para scores brutos por jugador.
 - [x] T010 Implementar `RendimientoPosicion` promediando métricas por jugador/semana, estandarizando cada métrica antes de aplicar pesos y separando el grupo por posición.
 - [x] T011 Implementar `Consistencia` con los últimos seis partidos hasta el domingo, cálculo de disponibilidad y fallback al score normalizado de `RendimientoPosicion`.
-- [x] T012 Usar el record anidado `CotizacionVigentePort.Cotizacion` definido por la interfaz existente en `com.formula11.service`; no crear un record duplicado en `com.formula11.model`.
+- [x] T012 Usar el record anidado `CotizacionVigentePort.CotizacionVigente` definido por la interfaz existente en `com.formula11.service`; no crear un record duplicado en `com.formula11.model`.
 
 **Checkpoint**: Los tests unitarios del dominio pasan sin cargar Spring ni PostgreSQL.
 
@@ -43,14 +43,14 @@ description: "Task list for weekly player valuation strategies and quotations"
 
 ### Tests for persistence
 
-- [x] T013 [P] Probar `ClockConfig` con zona `America/Argentina/Buenos_Aires` y fecha fija opcional para demos/tests.
+- [x] T013 [P] Probar `ClockConfig` con bean UTC, zona de negocio `ClockConfig.ZONA_NEGOCIO` (`America/Argentina/Buenos_Aires`) y fecha fija opcional para demos/tests.
 - [x] T014 [P] Crear integración de `MetricaPartidoRepository` con Testcontainers para unicidad por jugador/fecha y consulta de toda una semana sin N+1.
 - [x] T015 [P] Crear integración de `EstrategiaRepository` para seeds, versión vigente, historial descendente, estrategia activa y unicidad de activación.
 - [x] T016 [P] Crear integración de `CotizacionRepository` para unicidad jugador/estrategia/fecha, consulta por fecha descendente, reemplazo semanal y lectura vigente `<= fecha`.
 
 ### Implementation for persistence
 
-- [x] T017 Crear `ClockConfig` con bean `Clock` en `America/Argentina/Buenos_Aires` y propiedad opcional `app.clock.fecha-fija`.
+- [x] T017 Crear `ClockConfig` con bean `Clock` en UTC, constante de zona de negocio `ClockConfig.ZONA_NEGOCIO` (`America/Argentina/Buenos_Aires`) y propiedad opcional `app.clock.fecha-fija`.
 - [x] T018 Crear `V10__crear_metricas_partido.sql` con tabla, foreign key a `jugadores`, campos de métricas, la secuencia para `MetricaPartido` usada por `GenerationType.SEQUENCE` con `allocationSize = 50` e índice `(jugador_id, fecha_partido)`.
 - [x] T019 Crear entidad JPA `MetricaPartido` en `com.formula11.model` usando `GenerationType.SEQUENCE` con `allocationSize = 50`, crear su secuencia en V10 y agregar `MetricaPartidoRepository` con consulta batch por rango semanal y jugadores.
 - [x] T020 Crear `V11__crear_estrategias.sql` con `IDENTITY`, `jsonb`, restricciones, versionado, índice/constraint de estrategia activa y seeds de `RENDIMIENTO_POSICION` y `CONSISTENCIA` versión 1; no crear secuencias en esta migración.
@@ -111,14 +111,14 @@ description: "Task list for weekly player valuation strategies and quotations"
 ### Tests for scheduler and integration
 
 - [x] T044 [P] Probar el scheduler con `ActualizacionMetricasPort` exitoso, fallido y sin implementación: siempre registra el evento y recalcula con métricas locales.
-- [x] T045 [P] Probar `CotizacionVigenteService` usando `vigente(Jugador, Instant)`, conversión con la zona del `Clock`, estrategia activa, fecha `<=` local, precio inicial con `fechaCotizacion`/estrategia/versión `null` y cache hit/miss.
+- [x] T045 [P] Probar `CotizacionVigenteService` usando `vigente(Jugador, Instant)`, conversión con `ClockConfig.ZONA_NEGOCIO` (el `Clock` es UTC), estrategia activa, fecha `<=` local, precio inicial con `fechaCotizacion`/estrategia/versión `null` y cache hit/miss.
 - [x] T046 [P] Probar invalidación de caché después de recálculo confirmado y activación de otra estrategia.
 
 ### Implementation for scheduler and integration
 
 - [x] T047 Crear `ActualizacionMetricasPort` y su implementación inicial no operativa, registrando que la carga queda a cargo de la feature 011.
 - [x] T048 Crear `CotizacionCacheConfig` con caché Caffeine propia, clave/tipo aislado de `footballApiCache` e invalidación explícita; conectar la invalidación en `EstrategiaService` al activar y en `RecalculoService` al terminar.
-- [x] T049 Implementar sin modificar la interfaz existente `CotizacionVigentePort` en `com.formula11.service`, usando su método `vigente(Jugador, Instant)` y su record `CotizacionVigentePort.Cotizacion`; convertir el `Instant` con la zona del `Clock`, resolver la última cotización de la estrategia activa o el precio inicial y eliminar `CotizacionFijaAdapter` si existe al mergear.
+- [x] T049 Implementar sin modificar la interfaz existente `CotizacionVigentePort` en `com.formula11.service`, usando su método `vigente(Jugador, Instant)` y su record `CotizacionVigentePort.CotizacionVigente`; convertir el `Instant` con `ClockConfig.ZONA_NEGOCIO` (el `Clock` es UTC), resolver la última cotización de la estrategia activa o el precio inicial y eliminar `CotizacionFijaAdapter` si existe al mergear.
 - [x] T050 Crear `CotizacionScheduler` con `@EnableScheduling`, cron configurable `app.cotizacion.cron` por defecto lunes 06:00, MDC/correlationId y limpieza en `finally`.
 - [x] T051 Hacer que el scheduler capture y registre fallas de `ActualizacionMetricasPort` y llame el mismo método de `RecalculoService` con la semana cerrada.
 

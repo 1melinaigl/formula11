@@ -24,8 +24,7 @@ class RecalculoServiceTest {
 
     @Test
     void sinCuerpoProcesaUltimoDomingoCerrado() {
-        Clock clock = Clock.fixed(LocalDate.of(2026, 1, 7).atStartOfDay(ZoneId.of("America/Argentina/Buenos_Aires")).toInstant(),
-                ZoneId.of("America/Argentina/Buenos_Aires"));
+        Clock clock = Clock.fixed(Instant.parse("2026-01-07T00:00:00Z"), ZoneOffset.UTC);
         when(semanas.procesar(LocalDate.of(2026, 1, 4)))
                 .thenReturn(new RecalculoSemanaService.SemanaResultado(4, 1));
         when(estrategias.findAll()).thenReturn(List.of(estrategia()));

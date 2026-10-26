@@ -44,7 +44,7 @@ El endpoint manual y el scheduler llamarán al mismo método de `RecalculoServic
 Crear en `com.formula11.model`:
 
 - `MetricaPartido`: datos de jugador/partido, con valores de conteo ausentes tratados como cero y validación de minutos.
-- `CotizacionVigentePort.Cotizacion`: record anidado de la interfaz existente en `com.formula11.service`, definida por la feature 007 y no modificable por esta feature.
+- `CotizacionVigentePort.CotizacionVigente`: record anidado de la interfaz existente en `com.formula11.service`, definida por la feature 007 y no modificable por esta feature.
 
 Las entidades JPA `MetricaPartido`, `Estrategia` y `Cotizacion` viven en `com.formula11.model`, sin sufijo, siguiendo la convención de `Jugador` y `Usuario`.
 
@@ -78,10 +78,10 @@ V13 y V14 quedan libres dentro del rango reservado para futuras evoluciones.
 
 ### Services and adapters
 
-- `RecalculoService`: valida rango, determina el domingo de la última semana cerrada con el `Clock`, toma un lock en memoria, procesa semanas y devuelve `RecalculoResponse`. La selección de métricas se hace por semana/posición en lote.
+- `RecalculoService`: valida rango, determina el domingo de la última semana cerrada con la fecha de negocio del `Clock` UTC en `ClockConfig.ZONA_NEGOCIO`, toma un lock en memoria, procesa semanas y devuelve `RecalculoResponse`. La selección de métricas se hace por semana/posición en lote.
 - `RecalculoSemanaService`: componente separado con método `@Transactional` para una semana; elimina/reemplaza las cotizaciones de esa semana y persiste en batch. Esto evita self-invocation de `@Transactional`.
 - `EstrategiaService`: listar, historial, crear versión inmutable y activar estrategia; invalida caché al activar.
-- `CotizacionVigenteService`: implementa `CotizacionVigentePort.vigente(Jugador, Instant)` sin modificar la interfaz, convierte el `Instant` a `LocalDate` con la zona del `Clock` inyectado y consulta la estrategia activa y la última cotización con fecha menor o igual; sin registro devuelve `CotizacionVigentePort.Cotizacion(1, null, null, null)`. Si existe `CotizacionFijaAdapter` al mergear, se elimina.
+- `CotizacionVigenteService`: implementa `CotizacionVigentePort.vigente(Jugador, Instant)` sin modificar la interfaz, convierte el `Instant` a `LocalDate` con `ClockConfig.ZONA_NEGOCIO` (el `Clock` inyectado es UTC) y consulta la estrategia activa y la última cotización con fecha menor o igual; sin registro devuelve `CotizacionVigentePort.CotizacionVigente(1, null, null, null)`. Si existe `CotizacionFijaAdapter` al mergear, se elimina.
 - `ActualizacionMetricasPort`: interfaz invocada antes del recálculo del job. Su implementación inicial registra que no hay actualización operativa, sin fallar; cualquier excepción del adapter se registra y no impide recalcular con datos persistidos.
 - `CotizacionCacheConfig`: caché Caffeine siguiendo el patrón de `FootballCacheConfig`; invalidación tras cada recálculo confirmado y al activar estrategia.
 
@@ -101,7 +101,7 @@ Crear controllers documentados con `@Operation` y `@ApiResponse`:
 
 Validar que los códigos, rangos, pesos, posiciones y parámetros produzcan los códigos `400`, `401`, `403`, `404` y `409` definidos por el contrato. Agregar `@EnableMethodSecurity` y `AccessDeniedException` → `403` en el handler global.
 
-Crear `ClockConfig` con zona `America/Argentina/Buenos_Aires` y propiedad opcional `app.clock.fecha-fija` para demos/tests. Configurar `@EnableScheduling`, `app.cotizacion.cron` con lunes 06:00 como default y job que:
+Crear `ClockConfig` con un bean `Clock` en UTC, la constante `ClockConfig.ZONA_NEGOCIO` en `America/Argentina/Buenos_Aires` y la propiedad opcional `app.clock.fecha-fija` para demos/tests. Las semanas y fechas de cotización deben calcularse con la zona de negocio. Configurar `@EnableScheduling`, `app.cotizacion.cron` con lunes 06:00 como default y job que:
 
 1. genera `correlationId` propio en MDC;
 2. llama `ActualizacionMetricasPort`;

@@ -6,11 +6,11 @@ import java.time.Instant;
 import java.time.LocalDate;
 
 public interface CotizacionVigentePort {
-    Cotizacion vigente(Jugador jugador, Instant fecha);
+    CotizacionVigente vigente(Jugador jugador, Instant fecha);
 
     // estrategia, version y fechaCotizacion son null mientras se opera al precio inicial (sin recálculo).
-    record Cotizacion(BigDecimal precio, String estrategia, Integer version, LocalDate fechaCotizacion) {
-        public Cotizacion {
+    record CotizacionVigente(BigDecimal precio, String estrategia, Integer version, LocalDate fechaCotizacion) {
+        public CotizacionVigente {
             if (precio == null || precio.signum() <= 0) {
                 throw new IllegalArgumentException("La cotización debe ser positiva");
             }

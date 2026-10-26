@@ -10,7 +10,7 @@ import static org.mockito.Mockito.*;
 class CotizacionCacheInvalidatorTest {
     @Test
     void invalidaTodaLaCache() {
-        Cache<String, CotizacionVigentePort.Cotizacion> cache = mock(Cache.class);
+        Cache<String, CotizacionVigentePort.CotizacionVigente> cache = mock(Cache.class);
 
         new CotizacionCacheInvalidator(cache).invalidate();
 

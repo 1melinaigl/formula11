@@ -10,4 +10,5 @@ public interface JugadorRepository extends JpaRepository<Jugador, Long>, JpaSpec
     List<Jugador> findAllByOrderByNombreAsc();
     Optional<Jugador> findByExternalProviderAndExternalId(String externalProvider, String externalId);
     void deleteAllByOrigen(String origen);
+    List<Jugador> findAllByOrigen(String origen);
 }
