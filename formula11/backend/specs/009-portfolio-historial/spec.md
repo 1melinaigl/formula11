@@ -10,6 +10,17 @@
 según las operaciones marcadas con `x-feature: 009-portfolio-historial` en
 `specs/005-contratos-entrega2/contracts/openapi.yaml`.
 
+## Clarifications
+
+### Session 2026-10-25
+
+- Q: ¿Esta feature crea una tabla de cotizaciones históricas? → A: No. La tabla `cotizacion` es de A (feature 006). La evolución lee las cotizaciones solo mediante `CotizacionHistoricaPort`, que A implementa en la feature 008 con la firma acordada.
+- Q: ¿Qué pasa con la evolución hasta que A entregue la 008? → A: Se usa `CotizacionHistoricaFijaAdapter`, registrado en todos los perfiles: un punto por semana (los lunes) y precio 1 para todos los jugadores. Se borra cuando se mergea la 008.
+- Q: ¿Cómo se calculan las tenencias e invertido a una fecha pasada? → A: Recorriendo las transacciones del usuario con fecha menor o igual a ese día, con la misma regla de precio promedio ponderado del mercado. Los precios son los de la estrategia activa.
+- Q: ¿Qué redondeo usan los cálculos? → A: Montos con 4 decimales y porcentajes con 2, siempre `HALF_UP`.
+- Q: ¿Qué se responde si el `{usuarioId}` no es el del JWT? → A: `403`, antes de verificar si ese usuario existe, para no revelar qué identificadores existen.
+- Q: ¿Qué valores toman `desde` y `hasta` si no se envían? → A: Son opcionales en el contrato. `hasta` es la fecha del `Clock`; `desde` es la fecha de la primera transacción del usuario, o `hasta` si no tiene transacciones.
+
 ## User Scenarios & Testing
 
 ### User Story 1 - Consultar el portfolio actual (Priority: P1)
@@ -95,11 +106,14 @@ operaciones del usuario autenticado.
   evitando división por cero.
 - Ganancia negativa: se conserva el signo negativo tanto en `ganancia` como en el
   porcentaje.
-- Cotización vigente faltante o inválida para una posición: la operación no debe
-  inventar un valor ni devolver una respuesta parcial; se informa el error mediante el
-  mecanismo estándar de la aplicación.
-- Usuario inexistente: `404` en los tres endpoints cuando corresponde; JWT ausente o
-  inválido: `401`.
+- Jugador sin cotización: `CotizacionVigentePort` y `CotizacionHistoricaPort` devuelven
+  precio 1, igual que en el mercado; no hay valuaciones faltantes.
+- `{usuarioId}` distinto al del JWT: `403` sin verificar si ese usuario existe. `404`
+  solo aplica si el usuario del propio JWT ya no existe. JWT ausente o inválido: `401`.
+- `desde` y `hasta` ausentes: `hasta` es la fecha del `Clock` y `desde` la de la primera
+  transacción del usuario (o `hasta` si no tiene transacciones).
+- Ventas en el pasado: al reconstruir una fecha, una venta reduce la cantidad sin
+  cambiar el precio promedio, igual que en el mercado.
 - Parámetros `page`, `size`, `tipo`, `jugadorId`, `desde` y `hasta` inválidos: `400`.
 - No se exponen transacciones de otro usuario aun cuando el solicitante conozca su
   identificador.
@@ -124,18 +138,41 @@ operaciones del usuario autenticado.
   del `Clock` inyectable.
 - **FR-006**: `ganancia` MUST ser `valorTenencias - invertido`; cuando `invertido` sea
   positivo, `gananciaPorcentaje` MUST ser `ganancia / invertido * 100`, y en otro caso
-  MUST ser cero.
+  MUST ser cero. Lo mismo aplica a cada posición.
+- **FR-006a**: Los montos (`saldo`, `invertido`, `valorTenencias`, `ganancia`, precios y
+  valores) MUST usar `BigDecimal` con 4 decimales y los porcentajes 2 decimales, siempre
+  con redondeo `HALF_UP`.
 - **FR-007**: El sistema MUST exponer
   `GET /api/usuarios/{usuarioId}/portfolio/evolucion` con `desde` y `hasta`, y devolver
   `EvolucionPortfolioResponse` con un punto por fecha de cotización.
-- **FR-008**: Cada punto de evolución MUST incluir `fecha`, `valor` e `invertido`. El
-  valor MUST calcularse con las tenencias que el usuario tenía a esa fecha y la
-  cotización histórica de cada jugador; el invertido MUST representar el costo de esas
-  tenencias a esa fecha.
-- **FR-009**: La evolución MUST consultar un `CotizacionHistoricaPort`, independiente
-  de la persistencia concreta de cotizaciones. Hasta que A entregue la tabla de la
-  feature 006, se MUST proveer una implementación provisoria explícita, reemplazable y
-  limitada al perfil local/pruebas.
+- **FR-008**: Cada punto de evolución MUST incluir `fecha`, `valor` e `invertido`. Las
+  tenencias del usuario a esa fecha MUST reconstruirse recorriendo sus transacciones con
+  fecha menor o igual a ese día (una compra suma cantidad y recalcula el precio promedio
+  ponderado; una venta resta cantidad sin cambiarlo). `invertido` es la suma de
+  `cantidad * precioPromedio` y `valor` la suma de `cantidad * precio` con el precio de
+  `CotizacionHistoricaPort` a esa fecha, de la estrategia activa.
+- **FR-008a**: `desde` y `hasta` son opcionales: `hasta` por defecto es la fecha del
+  `Clock` y `desde` la de la primera transacción del usuario (o `hasta` si no tiene).
+- **FR-009**: La evolución MUST obtener fechas y precios solo mediante
+  `CotizacionHistoricaPort`, en el paquete `com.formula11.service`, con esta firma,
+  acordada con A, que lo implementa en la feature 008:
+
+  ```java
+  public interface CotizacionHistoricaPort {
+      // Fechas de cotización de la estrategia activa dentro de [desde, hasta], ascendentes y sin repetir.
+      List<LocalDate> fechasCotizacion(LocalDate desde, LocalDate hasta);
+
+      // Precio de cada jugador vigente a esa fecha: último registro de la estrategia activa con fecha <= fecha.
+      // Un jugador sin cotización a esa fecha vale 1 crédito. El mapa trae una entrada por cada id pedido.
+      Map<Long, BigDecimal> preciosA(Collection<Long> jugadorIds, LocalDate fecha);
+  }
+  ```
+
+  Esta feature NO crea tablas de cotizaciones ni lee la tabla `cotizacion` de A.
+- **FR-009a**: Hasta que se mergee la 008, MUST existir `CotizacionHistoricaFijaAdapter`,
+  registrado en todos los perfiles (si faltara, la aplicación no arrancaría): devuelve un
+  lunes por semana dentro del intervalo y precio 1 para cada jugador. Quien mergee
+  segunda entre la 008 y la 009 MUST borrarlo, para que exista una sola implementación.
 - **FR-010**: El sistema MUST exponer
   `GET /api/usuarios/{usuarioId}/transacciones` con `page`, `size`, `tipo` y
   `jugadorId`, devolviendo `TransaccionesPageResponse` con `OperacionResponse`.
@@ -144,18 +181,24 @@ operaciones del usuario autenticado.
 - **FR-012**: Los filtros MUST combinarse (AND) y aplicarse en la consulta del usuario
   autenticado, no sobre resultados de otro usuario.
 - **FR-013**: Solo el propio usuario MUST acceder a su portfolio, evolución e historial.
-  Un identificador diferente al del JWT MUST producir `403`; el superusuario MUST
-  producir `403` para portfolio y evolución y no MUST tener `Cuenta`.
+  Un identificador diferente al del JWT MUST producir `403` antes de verificar si ese
+  usuario existe. El superusuario MUST recibir `403` en los tres endpoints, porque no
+  tiene `Cuenta`, portfolio ni operaciones propias.
 - **FR-014**: El sistema MUST reutilizar `Cuenta`, `Tenencia` y `Transaccion` de la
   feature 007 sin duplicar entidades ni alterar las reglas del mercado.
 - **FR-015**: `Clock` MUST ser inyectable para obtener fechas reproducibles en pruebas y
   para cargar el escenario 3 de la demo.
-- **FR-016**: En el perfil `local`, al levantar la aplicación, el sistema MUST cargar
-  de forma idempotente datos de prueba para cuatro usuarios que compren cinco jugadores
-  al inicio del campeonato, usando una fecha fija del `Clock`. No MUST cargar esos
-  datos en perfiles distintos de `local`.
-- **FR-017**: Las migraciones Flyway de esta feature MUST estar contenidas en el rango
-  V26 a V29 y ser compatibles con las migraciones V20 a V25 de la feature 007.
+- **FR-016**: En el perfil `local`, al levantar la aplicación, un inicializador
+  (`ApplicationRunner` activo solo en `local`, que corre después de
+  `SuperusuarioInitializer`) MUST cargar de forma idempotente cuatro usuarios de demo
+  que compran cinco jugadores al inicio del campeonato. Las compras MUST hacerse con
+  las reglas de `MercadoService` (validaciones, transacción y auditoría) y con un
+  `Clock` fijo en la fecha de inicio del campeonato, configurable en
+  `application-local.yml`. Si los usuarios de demo ya existen, no se carga nada. No MUST
+  cargarse en otros perfiles ni mediante Flyway.
+- **FR-017**: Esta feature no necesita migraciones nuevas. Si el plan detecta que hace
+  falta un índice de lectura, MUST usar la `V26`; `V27` a `V29` quedan libres dentro
+  del rango de B.
 
 ### Autorización y respuestas HTTP
 
@@ -167,19 +210,10 @@ existente y no filtrar datos.
 
 ### Migraciones Flyway
 
-El contenido esperado del rango es:
-
-| Versión | Contenido |
-|---|---|
-| `V26__crear_cotizaciones_historicas.sql` | Estructura para fecha, jugador, precio y metadatos/versionado de cotizaciones históricas, con FK a `jugadores`, unicidad por `(jugador_id, fecha)` e índices para consultar por fecha. |
-| `V27__indices_portfolio_historial.sql` | Índices de lectura para tenencias por usuario/cantidad y transacciones por usuario, fecha e identificadores usados por los filtros, sin cambiar el modelo de la feature 007. |
-| `V28__datos_demo_portfolio_local.sql` | No debe contener datos productivos: si se incluye, debe ser seguro/idempotente y quedar restringido al perfil local mediante el mecanismo de inicialización de la aplicación. |
-| `V29__ajustes_cotizaciones_historicas.sql` | Constraints, índices o ajustes finales necesarios para que `CotizacionHistoricaPort` soporte fechas de evolución; debe ser compatible con la futura tabla entregada por A. |
-
-La carga de los cuatro usuarios, sus cinco jugadores y las compras de demostración
-debe ejecutarse preferentemente como inicializador de perfil local después de que
-existan usuarios, jugadores, cuentas y tenencias. No debe depender de que Flyway
-conozca credenciales ni insertar duplicados en cada arranque.
+Esta feature no crea tablas: reutiliza `cuentas`, `tenencias` y `transacciones` de la
+007, y las cotizaciones son de A. La 007 ya creó el índice
+`ix_transacciones_usuario_fecha (usuario_id, fecha DESC)`, que cubre el historial. Solo
+si el plan detecta otra consulta lenta se agrega un índice en `V26`.
 
 ### Key Entities
 
@@ -187,8 +221,9 @@ conozca credenciales ni insertar duplicados en cada arranque.
 - **PosicionPortfolio**: costo, valuación y resultado de una tenencia individual.
 - **EvolucionPortfolioResponse**: serie de puntos diarios/semanales, uno por fecha
   disponible de cotización dentro del intervalo.
-- **CotizacionHistoricaPort**: puerto que obtiene cotizaciones por jugador y fecha;
-  abstrae la tabla definitiva de la feature 006.
+- **CotizacionHistoricaPort**: puerto que devuelve las fechas de cotización y los
+  precios de varios jugadores a una fecha. Lo implementa A en la 008; mientras tanto,
+  `CotizacionHistoricaFijaAdapter`.
 - **Cuenta**: saldo disponible del usuario, reutilizada desde 007.
 - **Tenencia**: cantidad y precio promedio por usuario y jugador, reutilizada desde 007.
 - **Transaccion**: compra o venta confirmada, reutilizada desde 007 y fuente del
@@ -211,19 +246,19 @@ conozca credenciales ni insertar duplicados en cada arranque.
   rechazadas con `403` y sin datos en el cuerpo de negocio.
 - **SC-005**: Levantar dos veces con perfil `local` deja los mismos cuatro usuarios,
   cinco jugadores y operaciones de demo, sin duplicados ni cambios acumulativos.
-- **SC-006**: Las pruebas con `Clock.fixed` producen fechas y resultados repetibles,
-  y las migraciones V26–V29 se aplican sin error sobre el esquema de 007.
+- **SC-006**: Las pruebas con `Clock.fixed` producen fechas y resultados repetibles.
+- **SC-007**: Reemplazar `CotizacionHistoricaFijaAdapter` por la implementación de A no
+  requiere cambiar controllers, services ni respuestas.
 
 ## Assumptions
 
 - La autenticación, `Usuario`, `Jugador`, `Cuenta`, `Tenencia`, `Transaccion` y
   `CotizacionVigentePort` ya existen o son provistas por las features precedentes.
-- Los importes usan la representación contractual `Creditos` y la precisión monetaria
-  vigente del mercado; no se agregan redondeos específicos a esta feature.
+- Los importes usan la representación contractual `Creditos` con 4 decimales, como el
+  mercado; los porcentajes, 2 decimales (FR-006a).
 - La fecha de evolución se maneja como fecha de calendario, mientras que las
   transacciones conservan su instante original.
-- La tabla definitiva de cotizaciones y su estrategia pertenecen a la feature 006 de
-  A; el puerto y el adaptador provisorio de esta feature deben poder reemplazarse sin
-  cambiar los controladores ni las respuestas OpenAPI.
+- La tabla de cotizaciones y sus estrategias pertenecen a A (006); la implementación
+  real de `CotizacionHistoricaPort` llega con la 008.
 - La demo local usa usuarios y datos sintéticos, no modifica el comportamiento de
   producción y puede reinicializarse de manera idempotente.
