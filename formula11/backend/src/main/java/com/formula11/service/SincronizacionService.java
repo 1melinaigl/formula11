@@ -9,6 +9,11 @@ import com.formula11.dto.SincronizacionResponse;
 import com.formula11.model.Jugador;
 import com.formula11.model.Liga;
 import com.formula11.persistence.JugadorRepository;
+import com.formula11.persistence.TenenciaRepository;
+import com.formula11.persistence.TransaccionRepository;
+import com.formula11.persistence.UsuarioRepository;
+import com.formula11.model.Rol;
+import com.formula11.model.Usuario;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,10 +27,18 @@ public class SincronizacionService {
 
     private final FootballDataPort footballDataPort;
     private final JugadorRepository jugadorRepository;
+    private final TenenciaRepository tenenciaRepository;
+    private final TransaccionRepository transaccionRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    public SincronizacionService(FootballDataPort footballDataPort, JugadorRepository jugadorRepository) {
+    public SincronizacionService(FootballDataPort footballDataPort, JugadorRepository jugadorRepository,
+                                 TenenciaRepository tenenciaRepository, TransaccionRepository transaccionRepository,
+                                 UsuarioRepository usuarioRepository) {
         this.footballDataPort = footballDataPort;
         this.jugadorRepository = jugadorRepository;
+        this.tenenciaRepository = tenenciaRepository;
+        this.transaccionRepository = transaccionRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @Transactional
@@ -38,11 +51,21 @@ public class SincronizacionService {
         int actualizados = 0;
         int omitidos = 0;
         int exitosas = 0;
-        jugadorRepository.deleteAllByOrigen("LEGACY");
+        Usuario superusuario = usuarioRepository.findByRol(Rol.SUPERUSUARIO).orElse(null);
+        // Los LEGACY con transacciones se conservan: sus operaciones y tenencias son historial.
+        // Sin transacciones, la única tenencia posible es la del superusuario, que se borra antes por la FK.
+        for (Jugador jugador : jugadorRepository.findAllByOrigen("LEGACY")) {
+            if (!transaccionRepository.existsByJugadorId(jugador.getId())) {
+                if (superusuario != null) {
+                    tenenciaRepository.deleteByUsuarioIdAndJugadorId(superusuario.getId(), jugador.getId());
+                }
+                jugadorRepository.delete(jugador);
+            }
+        }
 
         for (Liga liga : Liga.values()) {
             try {
-                int[] totales = sincronizarLiga(liga);
+                int[] totales = sincronizarLiga(liga, superusuario);
                 creados += totales[0];
                 actualizados += totales[1];
                 omitidos += totales[2];
@@ -62,7 +85,7 @@ public class SincronizacionService {
         return new SincronizacionResponse(estado, resultados, creados, actualizados, omitidos, MDC.get("correlationId"));
     }
 
-    private int[] sincronizarLiga(Liga liga) {
+    private int[] sincronizarLiga(Liga liga, Usuario superusuario) {
         int creados = 0;
         int actualizados = 0;
         int omitidos = 0;
@@ -76,7 +99,10 @@ public class SincronizacionService {
                 Liga ligaJugador = Liga.valueOf(player.liga());
                 Jugador jugador = jugadorRepository.findByExternalProviderAndExternalId(PROVIDER, player.externalId()).orElse(null);
                 if (jugador == null) {
-                    jugadorRepository.save(new Jugador(player.nombre(), player.equipo(), ligaJugador, player.posicion(), PROVIDER, player.externalId()));
+                    Jugador guardado = jugadorRepository.save(new Jugador(player.nombre(), player.equipo(), ligaJugador, player.posicion(), PROVIDER, player.externalId()));
+                    if (superusuario != null) {
+                        tenenciaRepository.save(new com.formula11.model.Tenencia(superusuario, guardado, 100, java.math.BigDecimal.ONE));
+                    }
                     creados++;
                 } else {
                     jugador.actualizarDesdeExterno(PROVIDER, player.externalId(), player.nombre(), player.equipo(), ligaJugador, player.posicion());

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.formula11.model.Jugador;
 import com.formula11.model.Liga;
 import com.formula11.persistence.JugadorRepository;
+import com.formula11.persistence.TenenciaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,9 +49,12 @@ class RegistroCatalogoE2ETest {
     private ObjectMapper objectMapper;
     @Autowired
     private JugadorRepository jugadorRepository;
+    @Autowired
+    private TenenciaRepository tenenciaRepository;
 
     @BeforeEach
     void limpiarCatalogo() {
+        tenenciaRepository.deleteAll();
         jugadorRepository.deleteAll();
     }
 

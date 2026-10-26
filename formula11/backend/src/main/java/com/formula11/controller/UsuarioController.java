@@ -32,7 +32,7 @@ public class UsuarioController {
     @PostMapping("/login")
     @SecurityRequirements
     @Operation(summary = "Login de usuario", description = "Autentica un usuario registrado y emite un JWT")
-    @ApiResponse(responseCode = "200", description = "Login exitoso")
+    @ApiResponse(responseCode = "200", description = "Login exitoso; la respuesta incluye el rol autenticado")
     @ApiResponse(responseCode = "400", description = "Datos de login inválidos")
     @ApiResponse(responseCode = "401", description = "Credenciales inválidas")
     public LoginResponse login(@Valid @RequestBody LoginRequest request) {
