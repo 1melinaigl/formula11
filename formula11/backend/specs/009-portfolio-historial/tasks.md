@@ -14,18 +14,18 @@
 
 ## Phase 1 - Setup
 
-- [ ] T001 [P] Revisar `specs/005-contratos-entrega2/contracts/openapi.yaml` (fuente contractual) y Postman para confirmar rutas, parámetros, respuestas y ejemplos de los tres endpoints.
-- [ ] T002 [P] Definir records/clases de resultados de dominio inmutables fuera de `dto`: portfolio, posición, evolución, punto y página de transacciones.
-- [ ] T003 [P] Agregar `CotizacionHistoricaPort` en `com.formula11.service` con la firma exacta de la especificación.
+- [x] T001 [P] Revisar `specs/005-contratos-entrega2/contracts/openapi.yaml` (fuente contractual) y Postman para confirmar rutas, parámetros, respuestas y ejemplos de los tres endpoints.
+- [x] T002 [P] Definir records/clases de resultados de dominio inmutables fuera de `dto`: portfolio, posición, evolución, punto y página de transacciones.
+- [x] T003 [P] Agregar `CotizacionHistoricaPort` en `com.formula11.service` con la firma exacta de la especificación.
 
 ## Phase 2 - Foundational
 
-- [ ] T004 Implementar `CotizacionHistoricaFijaAdapter` en `adapter`, activo en todos los perfiles, con lunes semanales inclusivos, precio `1.0000` y tests unitarios.
-- [ ] T005 Agregar a `TenenciaRepository` la lectura de tenencias del usuario ordenada por `jugador.id`, y a `TransaccionRepository` las consultas paginadas filtrables, con todos los filtros aplicados en la base de datos, el orden `fecha DESC, id DESC`, la lista cronológica y la primera fecha.
-- [ ] T006 Agregar a `AuditoriaMercadoRepository` una consulta de solo lectura por ids de operación (`findByOperacionIdIn(Collection<Long>)`) que recupere las auditorías de una página en una sola consulta; mantenerlo append-only, sin `update` ni `delete`, y agregar `AuditoriaMercado.getOperacion()` junto con los accesores necesarios.
-- [ ] T007 Implementar el parser tipado de `despues.saldoUsuario`, el factory `OperacionResponse.from(Transaccion, BigDecimal saldoPosterior)` y el mapper transacción-a-operación que complete `saldoPosterior` desde la auditoría; mantener `from(ResultadoOperacion)` y tratar auditoría ausente como error explícito.
-- [ ] T008 Crear `AccesoPortfolioDenegadoException`, mapearla a `403` en `GlobalExceptionHandler` y agregar tests unitarios del handler.
-- [ ] T009 Verificar con `EXPLAIN` las consultas contra PostgreSQL; crear únicamente V26 si el índice de la 007 no cubre el patrón real.
+- [x] T004 Implementar `CotizacionHistoricaFijaAdapter` en `adapter`, activo en todos los perfiles, con lunes semanales inclusivos, precio `1.0000` y tests unitarios.
+- [x] T005 Agregar a `TenenciaRepository` la lectura de tenencias del usuario ordenada por `jugador.id`, y a `TransaccionRepository` las consultas paginadas filtrables, con todos los filtros aplicados en la base de datos, el orden `fecha DESC, id DESC`, la lista cronológica y la primera fecha.
+- [x] T006 Agregar a `AuditoriaMercadoRepository` una consulta de solo lectura por ids de operación (`findByOperacionIdIn(Collection<Long>)`) que recupere las auditorías de una página en una sola consulta; mantenerlo append-only, sin `update` ni `delete`, y agregar `AuditoriaMercado.getOperacion()` junto con los accesores necesarios.
+- [x] T007 Implementar el parser tipado de `despues.saldoUsuario`, el factory `OperacionResponse.from(Transaccion, BigDecimal saldoPosterior)` y el record de dominio `OperacionHistorial(Transaccion, saldoPosterior)`; mantener `from(ResultadoOperacion)` y tratar auditoría ausente como error interno (`IllegalStateException`, 500). El saldo se resuelve en el service, no en el paquete `dto`.
+- [x] T008 Crear `AccesoPortfolioDenegadoException`, mapearla a `403` en `GlobalExceptionHandler` y agregar tests unitarios del handler.
+- [x] T009 Verificar con `EXPLAIN` las consultas contra PostgreSQL; no se pudo ejecutar al no estar disponible PostgreSQL y no se creó V26.
 
 ## Phase 3 - User Story 1: Consultar portfolio actual
 
@@ -45,8 +45,8 @@
 
 ## Phase 5 - User Story 3: Consultar historial
 
-- [ ] T020 Implementar `PortfolioService.historial` con filtros opcionales AND, paginación, orden determinista y resultado de dominio.
-- [ ] T021 Mapear a `TransaccionesPageResponse` reutilizando `OperacionResponse`; obtener los saldos posteriores de todas las operaciones de la página mediante una única consulta a `AuditoriaMercadoRepository`.
+- [ ] T020 Implementar `PortfolioService.historial` con filtros opcionales AND, paginación, orden `fecha DESC, id DESC` (pasado en el `Pageable`) y resultado de dominio: con una única consulta `findByOperacionIdIn` sobre los ids de la página, arma cada `OperacionHistorial` con el saldo de `AuditoriaSaldoParser.parsear(auditoria.getDespues())`.
+- [ ] T021 Mapear `HistorialTransaccionesResultado` a `TransaccionesPageResponse` con `OperacionResponse.from(transaccion, saldoPosterior)`; el controller no consulta repositorios.
 - [ ] T022 Completar `GET /api/usuarios/{usuarioId}/transacciones` con validación de `page`, `size`, tipo y `@Positive jugadorId` (incluyendo `400` para valores no numéricos), devolviendo `200` vacío para jugador positivo inexistente.
 - [ ] T023 [P] Agregar tests unitarios de filtros combinados, página vacía, orden por fecha/id, saldo posterior desde JSONB y auditoría faltante.
 - [ ] T024 Agregar test de integración con Testcontainers que verifique la consulta por ids de auditoría y no exponga operaciones de otro usuario.

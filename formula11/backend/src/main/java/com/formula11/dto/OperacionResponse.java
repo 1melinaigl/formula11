@@ -19,7 +19,10 @@ public record OperacionResponse(
         Integer version
 ) {
     public static OperacionResponse from(ResultadoOperacion resultado) {
-        Transaccion transaccion = resultado.transaccion();
+        return from(resultado.transaccion(), resultado.saldoPosterior());
+    }
+
+    public static OperacionResponse from(Transaccion transaccion, BigDecimal saldoPosterior) {
         return new OperacionResponse(
                 transaccion.getId(),
                 transaccion.getTipo().name(),
@@ -27,7 +30,7 @@ public record OperacionResponse(
                 transaccion.getCantidad(),
                 transaccion.getPrecioUnitario(),
                 transaccion.getTotal(),
-                resultado.saldoPosterior().setScale(4, java.math.RoundingMode.HALF_UP),
+                saldoPosterior.setScale(4, java.math.RoundingMode.HALF_UP),
                 "superusuario",
                 transaccion.getFecha(),
                 transaccion.getEstrategia(),

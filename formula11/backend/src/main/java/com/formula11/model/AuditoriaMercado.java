@@ -22,6 +22,7 @@ public class AuditoriaMercado {
         this.antes = antes; this.despues = despues; this.timestamp = timestamp;
     }
     public Long getId() { return id; }
+    public Transaccion getOperacion() { return operacion; }
     public String getAntes() { return antes; }
     public String getDespues() { return despues; }
 }

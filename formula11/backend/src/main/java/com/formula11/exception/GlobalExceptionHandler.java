@@ -43,6 +43,11 @@ public class GlobalExceptionHandler {
         return responder(HttpStatus.FORBIDDEN, exception.getMessage(), request);
     }
 
+    @ExceptionHandler(AccesoPortfolioDenegadoException.class)
+    public ResponseEntity<ErrorResponse> accesoPortfolio(AccesoPortfolioDenegadoException exception, HttpServletRequest request) {
+        return responder(HttpStatus.FORBIDDEN, exception.getMessage(), request);
+    }
+
     @ExceptionHandler(RecursoNoEncontradoException.class)
     public ResponseEntity<ErrorResponse> noEncontrado(RecursoNoEncontradoException exception, HttpServletRequest request) {
         return responder(HttpStatus.NOT_FOUND, exception.getMessage(), request);
