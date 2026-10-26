@@ -8,7 +8,6 @@ import java.time.LocalDate;
 public interface CotizacionVigentePort {
     CotizacionVigente vigente(Jugador jugador, Instant fecha);
 
-    // estrategia, version y fechaCotizacion son null mientras se opera al precio inicial (sin recálculo).
     record CotizacionVigente(BigDecimal precio, String estrategia, Integer version, LocalDate fechaCotizacion) {
         public CotizacionVigente {
             if (precio == null || precio.signum() <= 0) {

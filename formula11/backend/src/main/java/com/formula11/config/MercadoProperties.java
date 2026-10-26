@@ -23,7 +23,7 @@ public class MercadoProperties {
             "demo3@formula11.com",
             "demo4@formula11.com"));
     private LocalDate demoFechaInicio = LocalDate.of(2026, 8, 1);
-    // Solo la usa la demo del perfil local; se configura en application-local.yml, nunca en el código.
+    // solo la usa la demo del perfil local se configura en application-local.yml
     private String demoPassword;
 
     public BigDecimal getSaldoInicial() { return saldoInicial; }

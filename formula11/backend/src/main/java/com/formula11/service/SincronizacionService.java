@@ -52,8 +52,6 @@ public class SincronizacionService {
         int omitidos = 0;
         int exitosas = 0;
         Usuario superusuario = usuarioRepository.findByRol(Rol.SUPERUSUARIO).orElse(null);
-        // Los LEGACY con transacciones se conservan: sus operaciones y tenencias son historial.
-        // Sin transacciones, la única tenencia posible es la del superusuario, que se borra antes por la FK.
         for (Jugador jugador : jugadorRepository.findAllByOrigen("LEGACY")) {
             if (!transaccionRepository.existsByJugadorId(jugador.getId())) {
                 if (superusuario != null) {
