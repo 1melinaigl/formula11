@@ -9,7 +9,7 @@ import java.time.Instant;
 @Component
 public class CotizacionFijaAdapter implements CotizacionVigentePort {
     @Override
-    public Cotizacion vigente(Jugador jugador, Instant fecha) {
-        return new Cotizacion(new BigDecimal("1.0000"), null, null, null);
+    public CotizacionVigente vigente(Jugador jugador, Instant fecha) {
+        return new CotizacionVigente(new BigDecimal("1.0000"), null, null, null);
     }
 }

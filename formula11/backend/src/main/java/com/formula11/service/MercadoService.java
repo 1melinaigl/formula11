@@ -52,7 +52,7 @@ public class MercadoService {
         Usuario superusuario = usuarioRepository.findByRol(Rol.SUPERUSUARIO)
                 .orElseThrow(() -> new RecursoNoEncontradoException("El superusuario no existe"));
         Instant fecha = Instant.now(clock);
-        CotizacionVigentePort.Cotizacion cotizacion = cotizacionPort.vigente(jugador, fecha);
+        CotizacionVigentePort.CotizacionVigente cotizacion = cotizacionPort.vigente(jugador, fecha);
         BigDecimal total = cotizacion.precio().multiply(BigDecimal.valueOf(cantidad)).setScale(4, java.math.RoundingMode.HALF_UP);
 
         Cuenta cuenta = cuentaRepository.findByUsuarioIdForUpdate(usuarioId)
@@ -89,7 +89,7 @@ public class MercadoService {
         Usuario superusuario = usuarioRepository.findByRol(Rol.SUPERUSUARIO)
                 .orElseThrow(() -> new RecursoNoEncontradoException("El superusuario no existe"));
         Instant fecha = Instant.now(clock);
-        CotizacionVigentePort.Cotizacion cotizacion = cotizacionPort.vigente(jugador, fecha);
+        CotizacionVigentePort.CotizacionVigente cotizacion = cotizacionPort.vigente(jugador, fecha);
         BigDecimal total = cotizacion.precio().multiply(BigDecimal.valueOf(cantidad))
                 .setScale(4, java.math.RoundingMode.HALF_UP);
 
@@ -126,7 +126,7 @@ public class MercadoService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("El superusuario no existe"));
         Tenencia stock = tenenciaRepository.findByUsuarioIdAndJugadorId(superusuario.getId(), jugadorId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("La tenencia del mercado no existe"));
-        CotizacionVigentePort.Cotizacion cotizacion = cotizacionPort.vigente(jugador, Instant.now(clock));
+        CotizacionVigentePort.CotizacionVigente cotizacion = cotizacionPort.vigente(jugador, Instant.now(clock));
         return new MercadoJugadorResultado(
                 jugador.getId(),
                 100,

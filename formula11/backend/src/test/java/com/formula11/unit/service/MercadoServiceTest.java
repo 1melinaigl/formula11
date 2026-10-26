@@ -54,7 +54,7 @@ class MercadoServiceTest {
         when(cuentas.findByUsuarioIdForUpdate(1L)).thenReturn(Optional.of(cuenta));
         when(tenencias.findByUsuarioIdAndJugadorIdForUpdate(2L, 3L)).thenReturn(Optional.of(stock));
         when(tenencias.findByUsuarioIdAndJugadorIdForUpdate(1L, 3L)).thenReturn(Optional.empty());
-        when(cotizaciones.vigente(jugador, ahora)).thenReturn(new CotizacionVigentePort.Cotizacion(BigDecimal.ONE, null, null, null));
+        when(cotizaciones.vigente(jugador, ahora)).thenReturn(new CotizacionVigentePort.CotizacionVigente(BigDecimal.ONE, null, null, null));
         when(transacciones.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
     }
 
