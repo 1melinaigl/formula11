@@ -22,6 +22,13 @@ según las operaciones marcadas con `x-feature: 009-portfolio-historial` en
 - Q: ¿Qué valores toman `desde` y `hasta` si no se envían? → A: Son opcionales en el contrato. `hasta` es la fecha del `Clock`; `desde` es la fecha de la primera transacción del usuario, o `hasta` si no tiene transacciones.
 - Q: ¿Qué zona horaria se usa para convertir `Transaccion.fecha` (`TIMESTAMPTZ`) a fecha calendario en la evolución? → A: UTC.
 - Q: ¿Qué ocurre si el filtro `jugadorId` del historial no existe? → A: Se responde `200` con una página vacía; el filtro no valida la existencia del jugador.
+- Q: ¿Qué ocurre si `jugadorId` es cero, negativo o no numérico? → A: Se responde `400`; el controller valida el parámetro con `@Positive` (los valores no numéricos también fallan la conversión HTTP).
+- Q: ¿Pueden ser negativas `ganancia` y `gananciaPorcentaje`? → A: Sí. Se conserva el signo negativo y se mantiene la precisión de FR-006a; no se agrega un esquema nuevo al contrato.
+- Q: ¿Cómo se construye una operación del historial y su saldo posterior? → A: `AuditoriaMercado` expone `getOperacion()` y `OperacionResponse` agrega `from(Transaccion, BigDecimal saldoPosterior)`, manteniendo el `from(ResultadoOperacion)` existente.
+- Q: ¿Qué estrategia se usa para la evolución? → A: La estrategia activa al momento de la consulta, tanto para fechas como para precios; no se usa una estrategia registrada en cada transacción.
+- Q: ¿Cómo se consultan tenencias y transacciones? → A: `TenenciaRepository` devuelve las tenencias del usuario ordenadas por `jugador.id`; las consultas de transacciones aplican todos los filtros en la base de datos, nunca en memoria.
+- Q: ¿Qué fecha se informa en la valuación? → A: `fechaValuacion` es `LocalDate.now(clock)` en UTC.
+- Q: ¿Cómo se identifican los usuarios de demo? → A: Son cuatro emails fijos configurables mediante `mercado.demo.usuarios` en `application-local.yml`, con valores por defecto `demo1@formula11.com` a `demo4@formula11.com`. La idempotencia se decide por la existencia de esos emails.
 
 ## User Scenarios & Testing
 
@@ -137,10 +144,10 @@ operaciones del usuario autenticado.
   ser la suma de `cantidad * precioActual`.
 - **FR-005**: La valuación actual MUST obtener `precioActual` mediante
   `CotizacionVigentePort` para cada jugador y usar una única fecha de valuación tomada
-  del `Clock` inyectable.
+  del `Clock` inyectable, calculada como `LocalDate.now(clock)` en UTC.
 - **FR-006**: `ganancia` MUST ser `valorTenencias - invertido`; cuando `invertido` sea
   positivo, `gananciaPorcentaje` MUST ser `ganancia / invertido * 100`, y en otro caso
-  MUST ser cero. Lo mismo aplica a cada posición.
+  MUST ser cero. Lo mismo aplica a cada posición. Ambos valores pueden ser negativos.
 - **FR-006a**: Los montos (`saldo`, `invertido`, `valorTenencias`, `ganancia`, precios y
   valores) MUST usar `BigDecimal` con 4 decimales y los porcentajes 2 decimales, siempre
   con redondeo `HALF_UP`.
@@ -152,7 +159,9 @@ operaciones del usuario autenticado.
   fecha menor o igual a ese día (una compra suma cantidad y recalcula el precio promedio
   ponderado; una venta resta cantidad sin cambiarlo). `invertido` es la suma de
   `cantidad * precioPromedio` y `valor` la suma de `cantidad * precio` con el precio de
-  `CotizacionHistoricaPort` a esa fecha, de la estrategia activa.
+  `CotizacionHistoricaPort` a esa fecha. Las fechas y precios corresponden a la
+  estrategia activa al momento de la consulta, no a una estrategia registrada en la
+  transacción.
 - **FR-008a**: `desde` y `hasta` son opcionales: `hasta` por defecto es la fecha del
   `Clock` y `desde` la de la primera transacción del usuario (o `hasta` si no tiene).
 - **FR-009**: La evolución MUST obtener fechas y precios solo mediante
@@ -178,10 +187,15 @@ operaciones del usuario autenticado.
 - **FR-010**: El sistema MUST exponer
   `GET /api/usuarios/{usuarioId}/transacciones` con `page`, `size`, `tipo` y
   `jugadorId`, devolviendo `TransaccionesPageResponse` con `OperacionResponse`.
+- **FR-010a**: `jugadorId` MUST validarse con `@Positive` en el controller. Los valores
+  menores o iguales a cero y los valores no numéricos MUST producir `400`; un
+  `jugadorId` positivo inexistente MUST producir `200` con una página vacía.
 - **FR-011**: Las transacciones MUST ordenarse por fecha descendente y, ante empate,
   por identificador descendente para que la paginación sea determinista.
 - **FR-012**: Los filtros MUST combinarse (AND) y aplicarse en la consulta del usuario
-  autenticado, no sobre resultados de otro usuario.
+  autenticado, no sobre resultados de otro usuario. Las consultas de transacciones
+  MUST filtrar y paginar en la base de datos, nunca en memoria. Las tenencias MUST
+  listarse por `jugador.id` ascendente.
 - **FR-013**: Solo el propio usuario MUST acceder a su portfolio, evolución e historial.
   Un identificador diferente al del JWT MUST producir `403` antes de verificar si ese
   usuario existe. El superusuario MUST recibir `403` en los tres endpoints, porque no
@@ -193,7 +207,11 @@ operaciones del usuario autenticado.
 - **FR-016**: En el perfil `local`, al levantar la aplicación, un inicializador
   (`ApplicationRunner` activo solo en `local`, que corre después de
   `SuperusuarioInitializer`) MUST cargar de forma idempotente cuatro usuarios de demo
-  que compran cinco jugadores al inicio del campeonato. Las compras MUST hacerse con
+  identificados por los emails de `mercado.demo.usuarios` en `application-local.yml`
+  (por defecto `demo1@formula11.com`, `demo2@formula11.com`,
+  `demo3@formula11.com` y `demo4@formula11.com`), que compran cinco jugadores al
+  inicio del campeonato. La existencia de esos emails determina la idempotencia.
+  Las compras MUST hacerse con
   las reglas de `MercadoService` (validaciones, transacción y auditoría) y con un
   `Clock` fijo en la fecha de inicio del campeonato, configurable en
   `application-local.yml`. Si los usuarios de demo ya existen, no se carga nada. No MUST
