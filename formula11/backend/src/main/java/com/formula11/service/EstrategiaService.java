@@ -36,7 +36,7 @@ public class EstrategiaService {
                 .orElseThrow(() -> new NoSuchElementException("La estrategia no existe"));
         validar(request);
         Estrategia nueva = new Estrategia(codigo, actual.getNombre(), actual.getVersion() + 1,
-                request.pesos(), request.parametros(), false, Instant.now(clock));
+                request.pesos(), request.parametros(), false, clock.instant());
         return toResponse(repository.save(nueva));
     }
 

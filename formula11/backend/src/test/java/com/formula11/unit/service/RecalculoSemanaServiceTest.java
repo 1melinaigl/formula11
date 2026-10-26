@@ -30,15 +30,18 @@ class RecalculoSemanaServiceTest {
         when(jugadores.findAll()).thenReturn(List.of(jugador));
         when(metricas.findByFechaPartidoBetween(any(), any())).thenReturn(List.of());
         when(estrategias.findAll()).thenReturn(List.of(estrategia));
-        when(cotizaciones.findPrevious(1L, estrategia.getCodigo(), LocalDate.of(2026, 1, 4)))
+        when(cotizaciones.findByFechaLessThanOrderByFechaDesc(LocalDate.of(2026, 1, 4)))
                 .thenReturn(List.of(cotizacion(jugador, new BigDecimal("1.2345"), LocalDate.of(2025, 12, 28))));
 
         new RecalculoSemanaService(jugadores, metricas, estrategias, cotizaciones)
                 .procesar(LocalDate.of(2026, 1, 4));
 
         verify(cotizaciones).deleteByFecha(LocalDate.of(2026, 1, 4));
-        verify(cotizaciones).save(argThat(c -> c.getPrecio().compareTo(new BigDecimal("1.2345")) == 0
-                && c.getScore().compareTo(BigDecimal.ZERO) == 0));
+        verify(cotizaciones).saveAll(argThat(cotizaciones -> {
+            Cotizacion cotizacion = cotizaciones.iterator().next();
+            return cotizacion.getPrecio().compareTo(new BigDecimal("1.2345")) == 0
+                    && cotizacion.getScore().compareTo(BigDecimal.ZERO) == 0;
+        }));
     }
 
     @Test
@@ -52,17 +55,21 @@ class RecalculoSemanaServiceTest {
         when(metricas.findByFechaPartidoBetween(any(), any()))
                 .thenReturn(List.of(metricaPrimero, metricaSegundo));
         when(estrategias.findAll()).thenReturn(List.of(estrategia));
-        when(cotizaciones.findPrevious(anyLong(), eq(estrategia.getCodigo()), eq(LocalDate.of(2026, 1, 4))))
+        when(cotizaciones.findByFechaLessThanOrderByFechaDesc(LocalDate.of(2026, 1, 4)))
                 .thenReturn(List.of());
 
         new RecalculoSemanaService(jugadores, metricas, estrategias, cotizaciones)
                 .procesar(LocalDate.of(2026, 1, 4));
 
-        verify(cotizaciones, times(2)).save(any(Cotizacion.class));
-        verify(cotizaciones).save(argThat(c -> c.getJugador().getId().equals(1L)
-                && c.getPrecio().compareTo(new BigDecimal("1.1000")) == 0));
-        verify(cotizaciones).save(argThat(c -> c.getJugador().getId().equals(2L)
-                && c.getPrecio().compareTo(new BigDecimal("0.9000")) == 0));
+        verify(cotizaciones).saveAll(argThat(cotizaciones -> {
+            List<Cotizacion> nuevas = new ArrayList<>();
+            cotizaciones.forEach(nuevas::add);
+            return nuevas.size() == 2
+                    && nuevas.stream().anyMatch(c -> c.getJugador().getId().equals(1L)
+                    && c.getPrecio().compareTo(new BigDecimal("1.1000")) == 0)
+                    && nuevas.stream().anyMatch(c -> c.getJugador().getId().equals(2L)
+                    && c.getPrecio().compareTo(new BigDecimal("0.9000")) == 0);
+        }));
     }
 
     @Test

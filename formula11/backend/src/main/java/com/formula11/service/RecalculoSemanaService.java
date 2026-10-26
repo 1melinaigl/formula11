@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class RecalculoSemanaService {
@@ -52,8 +53,14 @@ public class RecalculoSemanaService {
                 .forEach(id -> log.info("Fila de métrica excluida por falta de minutos: jugadorId={}", id));
 
         cotizaciones.deleteByFecha(domingo);
+        Map<String, BigDecimal> preciosAnteriores = cotizaciones.findByFechaLessThanOrderByFechaDesc(domingo).stream()
+                .collect(Collectors.toMap(
+                        c -> clave(c.getJugador().getId(), c.getEstrategia()),
+                        Cotizacion::getPrecio,
+                        (primero, ignorado) -> primero));
         int sinMetricas = 0;
         int cotizados = 0;
+        List<Cotizacion> nuevasCotizaciones = new ArrayList<>();
         for (Jugador jugador : jugadores.findAll()) {
             List<MetricaPartidoInput> datos = porJugador.getOrDefault(jugador.getId(), List.of());
             if (datos.isEmpty()) sinMetricas++;
@@ -62,16 +69,20 @@ public class RecalculoSemanaService {
                 ResultadoValuacion resultado = resultados.get(estrategia.getCodigo());
                 BigDecimal score = BigDecimal.valueOf(resultado.scores()
                         .getOrDefault(jugador.getId(), 0d));
-                BigDecimal anterior = cotizaciones.findPrevious(jugador.getId(), estrategia.getCodigo(), domingo)
-                        .stream().findFirst().map(Cotizacion::getPrecio).orElse(null);
+                BigDecimal anterior = preciosAnteriores.get(clave(jugador.getId(), estrategia.getCodigo()));
                 ParametrosPrecio precio = precioParametros(estrategia);
                 PrecioCalculado calculado = CalculadoraPrecio.calcular(anterior, score, precio, jugo);
-                cotizaciones.save(new Cotizacion(jugador, domingo, calculado.precio(), score,
+                nuevasCotizaciones.add(new Cotizacion(jugador, domingo, calculado.precio(), score,
                         estrategia.getCodigo(), estrategia.getVersion(), estrategia.getPesos()));
                 cotizados++;
             }
         }
+        cotizaciones.saveAll(nuevasCotizaciones);
         return new SemanaResultado(cotizados, sinMetricas);
+    }
+
+    private String clave(Long jugadorId, String estrategia) {
+        return jugadorId + ":" + estrategia;
     }
 
     private MetricaPartidoInput entrada(MetricaPartido m) {

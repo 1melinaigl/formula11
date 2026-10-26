@@ -130,17 +130,17 @@ description: "Task list for weekly player valuation strategies and quotations"
 
 ### Tests for API and security
 
-- [ ] T052 [P] Crear `EstrategiaE2ETest` con MockMvc/`@SpringBootTest` para `200`, `401`, `403`, `404` y respuestas de administración.
-- [ ] T053 [P] Crear `CotizacionE2ETest` con MockMvc/`@SpringBootTest` para `200`, `400` por rango inválido, `401`, `403` y `409`.
-- [ ] T054 [P] Verificar con `@WithMockUser(roles = "SUPERUSUARIO")` y `@WithMockUser(roles = "USUARIO")` las reglas de autorización, sin modificar tests existentes.
-- [ ] T055 [P] Verificar que `ErrorResponse`, `correlationId`, esquemas y códigos coincidan con `specs/005-contratos-entrega2/contracts/openapi.yaml`.
+- [x] T052 [P] Crear `EstrategiaE2ETest` con MockMvc/`@SpringBootTest` para `200`, `401`, `403`, `404` y respuestas de administración.
+- [x] T053 [P] Crear `CotizacionE2ETest` con MockMvc/`@SpringBootTest` para `200`, `400` por rango inválido, `401`, `403` y `409`.
+- [x] T054 [P] Verificar con `@WithMockUser(roles = "SUPERUSUARIO")` y `@WithMockUser(roles = "USUARIO")` las reglas de autorización, sin modificar tests existentes.
+- [x] T055 [P] Verificar que `ErrorResponse`, `correlationId`, esquemas y códigos coincidan con `specs/005-contratos-entrega2/contracts/openapi.yaml`.
 
 ### Implementation and verification
 
-- [ ] T056 Actualizar configuración `application.yml` con `app.cotizacion.cron`, zona/fecha fija del `Clock` y propiedades necesarias, sin secretos.
-- [ ] T057 Revisar que el filtro JWT no se modifique para inventar roles de la feature 007; documentar la integración de authorities pendiente donde corresponda.
-- [ ] T058 Ejecutar `mvn test` desde `backend`, incluyendo Testcontainers cuando estén disponibles, y corregir solo regresiones causadas por esta feature.
-- [ ] T059 Verificar consultas batch/no-N+1, índices, unicidad, invalidación de caché, logs estructurados y ausencia de llamadas directas a `LocalDate.now()`/`Instant.now()` en Services.
-- [ ] T060 Ejecutar `git diff --check` y revisar que los cambios de implementación se limiten al backend necesario y no incluyan frontend ni dependencias nuevas.
+- [x] T056 Actualizar configuración `application.yml` con `app.cotizacion.cron`, zona/fecha fija del `Clock` y propiedades necesarias, sin secretos.
+- [x] T057 Revisar que el filtro JWT no se modifique para inventar roles de la feature 007; documentar la integración de authorities pendiente donde corresponda.
+- [x] T058 Ejecutar `mvn test` desde `backend`, incluyendo Testcontainers cuando estén disponibles, y corregir solo regresiones causadas por esta feature.
+- [x] T059 Verificar consultas batch/no-N+1, índices, unicidad, invalidación de caché, logs estructurados y ausencia de llamadas directas a `LocalDate.now()`/`Instant.now()` en Services.
+- [x] T060 Ejecutar `git diff --check` y revisar que los cambios de implementación se limiten al backend necesario y no incluyan frontend ni dependencias nuevas.
 
 **Final checkpoint**: El backend compila, las migraciones ejecutan, los tests unitarios/integración/E2E pasan y el contrato de la Entrega 2 queda respetado.

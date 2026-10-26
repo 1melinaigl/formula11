@@ -16,6 +16,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.time.Instant;
+import java.util.UUID;
+import org.slf4j.MDC;
 
 @Configuration
 @EnableMethodSecurity
@@ -32,7 +34,15 @@ public class SecurityConfig {
                 .exceptionHandling(errors -> errors.authenticationEntryPoint((request, response, exception) -> {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
-                    response.getWriter().write(objectMapper.writeValueAsString(new ErrorResponse("La autenticación es requerida", Instant.now(), request.getHeader("X-Correlation-Id"))));
+                    String correlationId = MDC.get("correlationId");
+                    if (correlationId == null || correlationId.isBlank()) {
+                        correlationId = request.getHeader("X-Correlation-Id");
+                    }
+                    if (correlationId == null || correlationId.isBlank()) {
+                        correlationId = UUID.randomUUID().toString();
+                    }
+                    response.getWriter().write(objectMapper.writeValueAsString(
+                            new ErrorResponse("La autenticación es requerida", Instant.now(), correlationId)));
                 }))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
