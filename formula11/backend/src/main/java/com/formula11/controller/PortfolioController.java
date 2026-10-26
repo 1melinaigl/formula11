@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.validation.annotation.Validated;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @RestController
@@ -36,12 +35,10 @@ public class PortfolioController {
     @Operation(summary = "Consulta el portfolio actual",
             description = "Devuelve el saldo, las tenencias y la valuación actual del usuario.")
     @SecurityRequirement(name = "bearerAuth")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Portfolio obtenido correctamente"),
-            @ApiResponse(responseCode = "401", description = "Autenticación requerida"),
-            @ApiResponse(responseCode = "403", description = "El portfolio es de otro usuario, o quien lo pide es el superusuario"),
-            @ApiResponse(responseCode = "404", description = "Usuario o cuenta inexistente")
-    })
+    @ApiResponse(responseCode = "200", description = "Portfolio obtenido correctamente")
+    @ApiResponse(responseCode = "401", description = "Autenticación requerida")
+    @ApiResponse(responseCode = "403", description = "El portfolio es de otro usuario, o quien lo pide es el superusuario")
+    @ApiResponse(responseCode = "404", description = "Usuario o cuenta inexistente")
     public PortfolioResponse portfolio(@PathVariable Long usuarioId, Authentication authentication) {
         Long solicitanteId = usuarioService.obtenerIdPorEmail(authentication.getName());
         return PortfolioResponse.from(portfolioService.portfolio(solicitanteId, usuarioId));
@@ -51,13 +48,11 @@ public class PortfolioController {
     @Operation(summary = "Consulta la evolución del portfolio",
             description = "Devuelve un punto por cada fecha de cotización del intervalo solicitado.")
     @SecurityRequirement(name = "bearerAuth")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Evolución obtenida correctamente"),
-            @ApiResponse(responseCode = "400", description = "Fechas o parámetros inválidos"),
-            @ApiResponse(responseCode = "401", description = "Autenticación requerida"),
-            @ApiResponse(responseCode = "403", description = "La evolución es de otro usuario, o quien la pide es el superusuario"),
-            @ApiResponse(responseCode = "404", description = "Usuario o cuenta inexistente")
-    })
+    @ApiResponse(responseCode = "200", description = "Evolución obtenida correctamente")
+    @ApiResponse(responseCode = "400", description = "Fechas o parámetros inválidos")
+    @ApiResponse(responseCode = "401", description = "Autenticación requerida")
+    @ApiResponse(responseCode = "403", description = "La evolución es de otro usuario, o quien la pide es el superusuario")
+    @ApiResponse(responseCode = "404", description = "Usuario o cuenta inexistente")
     public EvolucionPortfolioResponse evolucion(@PathVariable Long usuarioId,
                                                 @org.springframework.web.bind.annotation.RequestParam(required = false) LocalDate desde,
                                                 @org.springframework.web.bind.annotation.RequestParam(required = false) LocalDate hasta,
@@ -74,13 +69,11 @@ public class PortfolioController {
     @Operation(summary = "Consulta el historial de operaciones",
             description = "Devuelve las operaciones del usuario paginadas, de la más nueva a la más vieja.")
     @SecurityRequirement(name = "bearerAuth")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Historial obtenido correctamente"),
-            @ApiResponse(responseCode = "400", description = "Filtros o parámetros de paginación inválidos"),
-            @ApiResponse(responseCode = "401", description = "Autenticación requerida"),
-            @ApiResponse(responseCode = "403", description = "El historial es de otro usuario, o quien lo pide es el superusuario"),
-            @ApiResponse(responseCode = "404", description = "Usuario inexistente")
-    })
+    @ApiResponse(responseCode = "200", description = "Historial obtenido correctamente")
+    @ApiResponse(responseCode = "400", description = "Filtros o parámetros de paginación inválidos")
+    @ApiResponse(responseCode = "401", description = "Autenticación requerida")
+    @ApiResponse(responseCode = "403", description = "El historial es de otro usuario, o quien lo pide es el superusuario")
+    @ApiResponse(responseCode = "404", description = "Usuario inexistente")
     public TransaccionesPageResponse historial(
             @PathVariable Long usuarioId,
             @org.springframework.web.bind.annotation.RequestParam(defaultValue = "0")

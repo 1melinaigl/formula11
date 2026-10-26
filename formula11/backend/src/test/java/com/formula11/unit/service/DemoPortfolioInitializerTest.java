@@ -15,7 +15,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.DefaultApplicationArguments;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.context.annotation.Profile;
 
@@ -49,6 +48,7 @@ class DemoPortfolioInitializerTest {
         properties = new MercadoProperties();
         properties.setDemoUsuarios(emails);
         properties.setDemoFechaInicio(LocalDate.of(2026, 8, 1));
+        properties.setDemoPassword("clave-de-prueba");
         initializer = new DemoPortfolioInitializer(
                 usuarios, jugadores, usuarioService, mercadoService, properties);
     }

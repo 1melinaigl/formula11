@@ -148,9 +148,9 @@ class PortfolioServiceTest {
 
     @Test
     void rechazaIntervaloInvertidoYAccesoAjenoAntesDeConsultar() {
-        assertThrows(IllegalArgumentException.class, () -> service.evolucion(
-                1L, 1L, java.time.LocalDate.of(2026, 10, 26),
-                java.time.LocalDate.of(2026, 10, 25)));
+        java.time.LocalDate desde = java.time.LocalDate.of(2026, 10, 26);
+        java.time.LocalDate hasta = java.time.LocalDate.of(2026, 10, 25);
+        assertThrows(IllegalArgumentException.class, () -> service.evolucion(1L, 1L, desde, hasta));
         assertThrows(com.formula11.exception.AccesoPortfolioDenegadoException.class,
                 () -> service.evolucion(9L, 1L, null, null));
         verifyNoInteractions(transacciones, cotizacionesHistoricas);

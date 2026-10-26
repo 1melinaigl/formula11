@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 @Profile("local")
 @Order(2)
 public class DemoPortfolioInitializer implements ApplicationRunner {
-    private static final String PASSWORD = "DemoFormula11!";
     // Tokens que compra cada usuario de demo de cada jugador; distintos para que los portfolios se diferencien.
     private static final int[] CANTIDADES = {10, 8, 5, 3};
     private final UsuarioRepository usuarioRepository;
@@ -53,6 +52,10 @@ public class DemoPortfolioInitializer implements ApplicationRunner {
         if (emails.size() != CANTIDADES.length) {
             throw new IllegalStateException("mercado.demo.usuarios debe contener exactamente cuatro emails");
         }
+        String password = properties.getDemoPassword();
+        if (password == null || password.isBlank()) {
+            throw new IllegalStateException("Falta mercado.demo-password en application-local.yml");
+        }
         String primerEmail = normalizar(emails.get(0));
         if (usuarioRepository.existsByEmail(primerEmail)) {
             return;
@@ -66,7 +69,7 @@ public class DemoPortfolioInitializer implements ApplicationRunner {
         for (int indiceUsuario = 0; indiceUsuario < emails.size(); indiceUsuario++) {
             String email = normalizar(emails.get(indiceUsuario));
             usuarioService.registrar(new RegistroUsuarioRequest(
-                    "Demo " + (indiceUsuario + 1), email, PASSWORD));
+                    "Demo " + (indiceUsuario + 1), email, password));
             Long usuarioId = usuarioRepository.findByEmail(email)
                     .orElseThrow(() -> new IllegalStateException(
                             "No se pudo recuperar el usuario demo " + email))

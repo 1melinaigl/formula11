@@ -23,6 +23,8 @@ public class MercadoProperties {
             "demo3@formula11.com",
             "demo4@formula11.com"));
     private LocalDate demoFechaInicio = LocalDate.of(2026, 8, 1);
+    // Solo la usa la demo del perfil local; se configura en application-local.yml, nunca en el código.
+    private String demoPassword;
 
     public BigDecimal getSaldoInicial() { return saldoInicial; }
     public void setSaldoInicial(BigDecimal saldoInicial) { this.saldoInicial = saldoInicial; }
@@ -32,6 +34,8 @@ public class MercadoProperties {
     public void setSuperusuarioPassword(String superusuarioPassword) { this.superusuarioPassword = superusuarioPassword; }
     public List<String> getDemoUsuarios() { return List.copyOf(demoUsuarios); }
     public void setDemoUsuarios(List<String> demoUsuarios) { this.demoUsuarios = new ArrayList<>(demoUsuarios); }
+    public String getDemoPassword() { return demoPassword; }
+    public void setDemoPassword(String demoPassword) { this.demoPassword = demoPassword; }
     public LocalDate getDemoFechaInicio() { return demoFechaInicio; }
     public void setDemoFechaInicio(LocalDate demoFechaInicio) { this.demoFechaInicio = demoFechaInicio; }
 }

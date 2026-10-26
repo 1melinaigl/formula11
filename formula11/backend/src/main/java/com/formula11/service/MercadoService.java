@@ -43,11 +43,17 @@ public class MercadoService {
 
     @Transactional
     public ResultadoOperacion comprar(Long usuarioId, Long jugadorId, int cantidad) {
-        return comprar(usuarioId, jugadorId, cantidad, clock);
+        return ejecutarCompra(usuarioId, jugadorId, cantidad, clock);
     }
 
+    // Variante con reloj explícito: la usa la demo del perfil local para comprar "al inicio del campeonato".
     @Transactional
     public ResultadoOperacion comprar(Long usuarioId, Long jugadorId, int cantidad, Clock reloj) {
+        return ejecutarCompra(usuarioId, jugadorId, cantidad, reloj);
+    }
+
+    // Núcleo de la compra; corre dentro de la transacción del método público que lo llama.
+    private ResultadoOperacion ejecutarCompra(Long usuarioId, Long jugadorId, int cantidad, Clock reloj) {
         if (cantidad < 1 || cantidad > 100) throw new IllegalArgumentException("La cantidad debe estar entre 1 y 100");
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("El usuario no existe"));
