@@ -43,6 +43,11 @@ public class MercadoService {
 
     @Transactional
     public ResultadoOperacion comprar(Long usuarioId, Long jugadorId, int cantidad) {
+        return comprar(usuarioId, jugadorId, cantidad, clock);
+    }
+
+    @Transactional
+    public ResultadoOperacion comprar(Long usuarioId, Long jugadorId, int cantidad, Clock reloj) {
         if (cantidad < 1 || cantidad > 100) throw new IllegalArgumentException("La cantidad debe estar entre 1 y 100");
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("El usuario no existe"));
@@ -51,7 +56,7 @@ public class MercadoService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("El jugador no existe"));
         Usuario superusuario = usuarioRepository.findByRol(Rol.SUPERUSUARIO)
                 .orElseThrow(() -> new RecursoNoEncontradoException("El superusuario no existe"));
-        Instant fecha = Instant.now(clock);
+        Instant fecha = Instant.now(reloj);
         CotizacionVigentePort.CotizacionVigente cotizacion = cotizacionPort.vigente(jugador, fecha);
         BigDecimal total = cotizacion.precio().multiply(BigDecimal.valueOf(cantidad)).setScale(4, java.math.RoundingMode.HALF_UP);
 

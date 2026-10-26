@@ -54,10 +54,10 @@
 
 ## Phase 6 - Demo local
 
-- [ ] T026 Agregar `mercado.demo.usuarios` con los cuatro emails por defecto y `mercado.demo.fecha-inicio` a `application-local.yml`, junto con su configuración tipada sin activar la demo en otros perfiles.
-- [ ] T027 Agregar `MercadoService.comprar(usuarioId, jugadorId, cantidad, Clock)` delegando al mismo núcleo transaccional y validaciones.
-- [ ] T028 Implementar `DemoPortfolioInitializer` con `@Profile("local")` y `@Order` posterior a `SuperusuarioInitializer`, creando los cuatro usuarios configurados por email y comprando cinco jugadores con un `Clock.fixed` configurable; decidir la idempotencia por la existencia de esos emails.
-- [ ] T029 [P] Agregar tests de idempotencia: primer arranque crea exactamente los cuatro usuarios configurados y sus operaciones; segundo arranque no duplica datos al encontrar esos emails y otros perfiles no ejecutan la carga.
+- [x] T026 Agregar `mercado.demo.usuarios` con los cuatro emails por defecto y `mercado.demo.fecha-inicio` a `application-local.yml`, junto con su configuración tipada sin activar la demo en otros perfiles.
+- [x] T027 Agregar `MercadoService.comprar(usuarioId, jugadorId, cantidad, Clock)` delegando al mismo núcleo transaccional y validaciones.
+- [x] T028 Implementar `DemoPortfolioInitializer` con `@Profile("local")` y `@Order` posterior a `SuperusuarioInitializer`, creando los cuatro usuarios configurados por email y comprando cinco jugadores con un `Clock.fixed` configurable; decidir la idempotencia por la existencia de esos emails.
+- [x] T029 [P] Agregar tests de idempotencia: primer arranque crea exactamente los cuatro usuarios configurados y sus operaciones; segundo arranque no duplica datos al encontrar esos emails y otros perfiles no ejecutan la carga.
 
 ## Phase 7 - Integration and Polish
 
