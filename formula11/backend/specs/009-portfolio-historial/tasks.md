@@ -29,11 +29,11 @@
 
 ## Phase 3 - User Story 1: Consultar portfolio actual
 
-- [ ] T010 Implementar `PortfolioService.portfolio` con autorización, cuenta, tenencias positivas, `CotizacionVigentePort`, `Clock`, cálculos, redondeo y resultados de dominio.
-- [ ] T011 Crear `PortfolioResponse` y `PosicionPortfolioResponse` y mapear el resultado usando `JugadorResponse`.
-- [ ] T012 Crear `PortfolioController` para `GET /api/usuarios/{usuarioId}/portfolio`; resolver el id mediante `usuarioService.obtenerIdPorEmail` y mantenerlo sin lógica de negocio.
-- [ ] T013 [P] Agregar tests unitarios de portfolio con cantidades cero, ganancias negativas, invertido cero, cotizaciones faltantes, redondeo y `Clock.fixed`.
-- [ ] T014 Agregar test E2E MockMvc de portfolio para `200`, `401`, `403` y `404`.
+- [x] T010 Implementar `PortfolioService.portfolio` con autorización, cuenta, tenencias positivas, `CotizacionVigentePort`, `Clock`, cálculos, redondeo y resultados de dominio.
+- [x] T011 Crear `PortfolioResponse` y `PosicionPortfolioResponse` y mapear el resultado usando `JugadorResponse`.
+- [x] T012 Crear `PortfolioController` para `GET /api/usuarios/{usuarioId}/portfolio`; resolver el id mediante `usuarioService.obtenerIdPorEmail` y mantenerlo sin lógica de negocio.
+- [x] T013 [P] Agregar tests unitarios de portfolio con cantidades cero, ganancias negativas, invertido cero, cotizaciones faltantes, redondeo y `Clock.fixed`.
+- [x] T014 Agregar test E2E MockMvc de portfolio para `200`, `401`, `403` y `404`.
 
 ## Phase 4 - User Story 2: Consultar evolución
 
