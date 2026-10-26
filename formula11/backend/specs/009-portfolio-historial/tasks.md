@@ -61,9 +61,9 @@
 
 ## Phase 7 - Integration and Polish
 
-- [ ] T030 [P] Verificar Swagger/OpenAPI y ejemplos de los tres endpoints contra el contrato existente, sin modificar `openapi.yaml`, códigos HTTP ni esquema `Error`.
-- [ ] T031 Ejecutar la suite focalizada de unit, integración y E2E; corregir regresiones sin eliminar tests existentes.
-- [ ] T032 Verificar compilación, perfil `local`, arranques repetidos e idempotencia de demo; ejecutar `git diff --check`.
+- [x] T030 [P] Verificar Swagger/OpenAPI y ejemplos de los tres endpoints contra el contrato existente, sin modificar `openapi.yaml`, códigos HTTP ni esquema `Error`.
+- [x] T031 Ejecutar la suite focalizada de unit, integración y E2E; corregir regresiones sin eliminar tests existentes.
+- [x] T032 Verificar compilación, perfil `local`, arranques repetidos e idempotencia de demo; ejecutar `git diff --check`.
 
 ## Dependencies
 
