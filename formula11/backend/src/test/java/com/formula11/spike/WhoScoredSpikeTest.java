@@ -2,20 +2,17 @@ package com.formula11.spike;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
-import com.microsoft.playwright.Route;
-import com.microsoft.playwright.options.ResourceType;
 import com.microsoft.playwright.options.WaitUntilState;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Set;
+import java.util.List;
 
 class WhoScoredSpikeTest {
     private static final String URL =
@@ -23,28 +20,23 @@ class WhoScoredSpikeTest {
     private static final String USER_AGENT =
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                     + "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
-    private static final Set<String> AD_DOMAINS = Set.of(
-            "doubleclick.net",
-            "googlesyndication.com",
-            "googleadservices.com",
-            "adservice.google.com",
-            "adsrvr.org",
-            "criteo.com",
-            "facebook.net");
 
     @Test
     void inspeccionaMatchCentreData() throws Exception {
         try (Playwright playwright = Playwright.create();
-             Browser browser = playwright.chromium().launch(
-                     new BrowserType.LaunchOptions()
-                             .setChannel("chrome")
-                             .setHeadless(false))) {
-            BrowserContext context = browser.newContext(new Browser.NewContextOptions()
+             BrowserContext context = playwright.chromium().launchPersistentContext(
+                     Path.of("target/whoscored-perfil"),
+                     new BrowserType.LaunchPersistentContextOptions()
+                    .setChannel("chrome")
+                    .setHeadless(false)
+                    .setIgnoreDefaultArgs(List.of("--enable-automation"))
+                    .setArgs(List.of("--disable-blink-features=AutomationControlled"))
                     .setUserAgent(USER_AGENT)
                     .setLocale("es-AR")
-                    .setViewportSize(1366, 768));
+                    .setViewportSize(1366, 768))) {
+            context.addInitScript(
+                    "Object.defineProperty(navigator, 'webdriver', { get: () => undefined });");
             Page page = context.newPage();
-            page.route("**/*", WhoScoredSpikeTest::bloquearRecursos);
             try {
                 page.navigate(URL, new Page.NavigateOptions()
                         .setWaitUntil(WaitUntilState.COMMIT)
@@ -70,21 +62,9 @@ class WhoScoredSpikeTest {
                         .setFullPage(true));
                 Files.writeString(Path.of("target/whoscored.html"), page.content(), StandardCharsets.UTF_8);
                 System.out.println("Título: " + page.title());
-                page.waitForTimeout(10_000);
+                page.waitForTimeout(60_000);
             }
-            context.close();
         }
-    }
-
-    private static void bloquearRecursos(Route route) {
-        ResourceType tipo = route.request().resourceType();
-        String url = route.request().url().toLowerCase();
-        boolean recursoPesado = tipo == ResourceType.IMAGE
-                || tipo == ResourceType.FONT
-                || tipo == ResourceType.MEDIA;
-        boolean publicidad = AD_DOMAINS.stream().anyMatch(url::contains);
-        if (recursoPesado || publicidad) route.abort();
-        else route.resume();
     }
 
     private static void imprimirEquipo(JsonNode data, String equipo) {
