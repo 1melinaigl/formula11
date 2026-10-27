@@ -34,6 +34,40 @@ No implementa:
 - La interfaz de usuario.
 - Scraping iniciado por una solicitud de un usuario del mercado.
 
+## Clarifications
+
+Las siguientes decisiones cierran ambigüedades detectadas durante la
+clarificación de la especificación:
+
+- El listado de partidos usa el endpoint de calendario de WhoScored
+  `https://www.whoscored.com/tournaments/{stageId}/data/?d={yyyyMM}&isAggregate=false`.
+  La respuesta contiene `tournaments[].matches[]`; solo se procesan partidos con
+  `elapsed` igual a `FT`.
+- Los `stageId` de la temporada 2026/27 son configurables en
+  `app.whoscored.ligas`, con estos valores por defecto: Premier League `25544`,
+  La Liga `25662`, Bundesliga `25666`, Serie A `25518` y Ligue 1 `25554`.
+- La carga incremental consulta el mes actual y el anterior. La carga histórica
+  consulta todos los meses desde `app.whoscored.inicio-temporada`, cuyo valor
+  por defecto es `2026-08-01`.
+- El listado se obtiene desde la página de Playwright mediante `page.evaluate`
+  y `fetch`, para reutilizar las cookies del navegador. La descarga del listado
+  y la descarga de los datos de cada partido son dos métodos del mismo
+  `WhoScoredPort`.
+- `desde` es inclusiva. El `startTime` sin zona de WhoScored se interpreta en
+  `app.whoscored.zona-fuente` (por defecto `Europe/London`) y luego se convierte
+  a `ClockConfig.ZONA_NEGOCIO` para filtrar y persistir la fecha del partido.
+  El `Clock` de la aplicación continúa siendo UTC.
+- Las migraciones nuevas de esta feature se limitan a V13–V19. Nunca se editan
+  V1–V3 ni V10–V12. Las columnas nuevas en tablas existentes son nullable o
+  tienen valor por defecto para conservar compatibilidad con los datos ya
+  aplicados y con las features 006, 007 y 009.
+- Un nombre normalizado ambiguo para el mismo equipo nunca se resuelve por
+  posición ni por otra heurística: se registra como pendiente.
+- Solo puede existir una carga a la vez. Una segunda solicitud manual responde
+  `409`, aunque use otro rango. El job semanal tampoco inicia otra carga:
+  registra el conflicto y recalcula con las métricas persistidas. Al reiniciar
+  la aplicación, toda ejecución `EN_CURSO` pasa a `FALLIDA`.
+
 ## User Scenarios & Testing
 
 ### User Story 1 - Descargar y parsear partidos (Priority: P1)
@@ -86,6 +120,8 @@ rango, sin acceder a Internet.
 1. **Given** una liga y un rango de fechas, **When** se solicita el listado,
    **Then** devuelve únicamente partidos jugados dentro del rango, con
    identificador, liga, fecha y equipos.
+   El adapter consulta el calendario mensual de WhoScored usando el `stageId`
+   configurado y conserva únicamente partidos con `elapsed = FT`.
 2. **Given** un partido postergado o sin estadísticas, **When** se arma la
    lista procesable, **Then** se omite sin detener las otras ligas.
 3. **Given** una sincronización sin fecha `desde`, **When** se ejecuta,
@@ -93,6 +129,9 @@ rango, sin acceder a Internet.
 4. **Given** una sincronización con `desde`, **When** se ejecuta, **Then** se
    consideran todos los partidos desde esa fecha, incluyendo el backfill de la
    temporada actual.
+   La fecha es inclusiva; una sincronización incremental consulta el mes actual
+   y el anterior, mientras una histórica consulta todos los meses desde
+   `app.whoscored.inicio-temporada`.
 
 ### User Story 3 - Vincular jugadores al catálogo (Priority: P1)
 
@@ -146,7 +185,8 @@ consultar sus estados y verificar autorización, conflicto concurrente,
    fechas, `correlationId` y resumen por liga con partidos cargados,
    omitidos, jugadores vinculados, pendientes y error opcional.
 4. **Given** una carga en curso, **When** se solicita otra, **Then** responde
-   `409` con el esquema `Error`.
+   `409` con el esquema `Error`, sin reutilizar ni fusionar la ejecución
+   existente.
 5. **Given** un `USUARIO`, **When** intenta iniciar, consultar o listar una
    carga, **Then** recibe `403` con `ErrorSoloSuperusuario`.
 6. **Given** una solicitud sin JWT, **When** accede a cualquiera de las tres
@@ -176,6 +216,8 @@ recálculo con datos locales.
 1. **Given** el job semanal, **When** llama a `ActualizacionMetricasPort`,
    **Then** se carga desde la última carga exitosa y se reutiliza el mismo
    service que usa la operación manual.
+   Si hay una carga en curso, no inicia otra, registra el conflicto y recalcula
+   con las métricas ya persistidas.
 2. **Given** una falla de WhoScored, **When** corre el job, **Then** se registra
    el error con `correlationId` y el sistema conserva disponibles las métricas
    ya persistidas.
@@ -281,7 +323,9 @@ Todas las respuestas de error usan el esquema `Error`. El cliente puede enviar
   separado del parser y MUST permitir sustituir la descarga por páginas
   guardadas.
 - **FR-002**: El sistema MUST listar partidos jugados de las cinco ligas en un
-  rango de fechas y MUST excluir partidos postergados o sin estadísticas.
+  rango de fechas mediante el endpoint mensual de calendario de WhoScored,
+  usando `stageId` configurable, y MUST conservar únicamente partidos con
+  `elapsed = FT`.
 - **FR-003**: El sistema MUST abrir la página `/Matches/{id}/Live` con
   Playwright para Java y MUST leer mediante JavaScript los dos objetos
   `require.config.params.args.matchCentreData` y
@@ -333,10 +377,12 @@ Todas las respuestas de error usan el esquema `Error`. El cliente puede enviar
 - **FR-022**: Si WhoScored no está disponible, el sistema MUST continuar
   funcionando con las métricas ya persistidas y MUST registrar el fallo.
 - **FR-023**: Todo service que use fecha u hora MUST recibir `Clock`; el reloj
-  debe ser UTC y las fechas de partido deben convertirse con
-  `ClockConfig.ZONA_NEGOCIO`.
-- **FR-024**: Las migraciones de esta feature MUST estar en V13 a V19; V10 a
-  V12 pertenecen a la feature 006 y no deben modificarse.
+  debe ser UTC. `startTime` debe interpretarse en la zona configurable
+  `app.whoscored.zona-fuente` (por defecto `Europe/London`) y la fecha de
+  partido debe convertirse con `ClockConfig.ZONA_NEGOCIO`. `desde` es inclusiva.
+- **FR-024**: Las migraciones de esta feature MUST estar en V13 a V19; V1 a V3
+  y V10 a V12 pertenecen a otras features y no deben modificarse. Toda columna
+  nueva en una tabla existente MUST ser nullable o tener un valor por defecto.
 - **FR-025**: La única dependencia nueva permitida MUST ser Playwright para
   Java.
 - **FR-026**: Los tests MUST ser offline, no abrir navegador ni acceder a red,
@@ -346,6 +392,11 @@ Todas las respuestas de error usan el esquema `Error`. El cliente puede enviar
   dispararse un scrape por una solicitud del mercado.
 - **FR-028**: El sistema MUST respetar los esquemas, códigos de respuesta,
   paginación y reglas de rol definidos por el contrato de la Entrega 2.
+- **FR-029**: El sistema MUST permitir una sola carga simultánea. Una segunda
+  solicitud manual MUST responder `409`; el job semanal MUST omitir el inicio,
+  registrarlo y recalcular con datos locales si ya hay una carga en curso.
+- **FR-030**: Al iniciar la aplicación, toda ejecución persistida en estado
+  `EN_CURSO` MUST pasar a `FALLIDA`.
 
 ## Data Model and Migrations
 
@@ -361,7 +412,9 @@ Todas las respuestas de error usan el esquema `Error`. El cliente puede enviar
   resumen por liga para responder el contrato.
 - Las migraciones Flyway de la feature deben cubrir el rango reservado V13 a
   V19, separando las evoluciones de partidos, métricas, pendientes, ejecuciones,
-  índices y restricciones necesarias sin alterar V10 a V12.
+  índices y restricciones necesarias sin alterar V1 a V3 ni V10 a V12. Toda
+  columna agregada a una tabla existente debe ser nullable o tener un valor por
+  defecto.
 
 ## Non-Functional Requirements
 
@@ -449,9 +502,10 @@ Todas las respuestas de error usan el esquema `Error`. El cliente puede enviar
 - WhoScored puede requerir un perfil persistente y una sesión de Chrome
   existente; la configuración de infraestructura debe permitirlo sin guardar
   credenciales en el repositorio.
-- El listado de partidos puede cambiar de endpoint o estrategia de navegación;
-  la forma concreta se definirá en el plan, pero el puerto y el resultado
-  funcional deben permanecer estables.
+- El calendario mensual de WhoScored es accesible desde la página de
+  Playwright mediante `fetch` con las cookies de esa página.
+- Los `stageId` y la zona horaria de la fuente son configuración, no constantes
+  de dominio, para permitir nuevas temporadas y cambios de fuente.
 - Los endpoints del contrato son de administración y no constituyen una API de
   scraping para usuarios del mercado.
 
