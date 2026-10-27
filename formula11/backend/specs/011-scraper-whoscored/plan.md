@@ -60,10 +60,13 @@ parseadores JSON ni frameworks adicionales.
   modifica. Crear DTOs nuevos para los endpoints de métricas:
   `SincronizacionMetricasRequest`, `EjecucionMetricasResponse` y
   `PendientesPageResponse` con `PendienteVinculacion`.
-- Las interfaces, DTOs y tests de las features 004, 006, 007 y 009 quedan
-  fuera de los cambios de esta feature. En particular, no se modifica
-  `ActualizacionMetricasPort`, `SincronizacionResponse` ni ningún test
-  existente de esas features.
+- Regla de compatibilidad con las features 004, 006, 007 y 009: se permite
+  agregar métodos de consulta nuevos en `JugadorRepository` y
+  `MetricaPartidoRepository`, el campo nullable `whoscoredId` en `Jugador`, la
+  relación nullable en `MetricaPartido` y quitar `@Component` a
+  `NoOpActualizacionMetricasAdapter`. Está prohibido cambiar o borrar firmas,
+  métodos, campos o comportamiento existentes que usen esas features. No se
+  modifican sus DTOs ni tests existentes.
 - [GlobalExceptionHandler.java](../../src/main/java/com/formula11/exception/GlobalExceptionHandler.java)
   ya traduce `IllegalStateException` a `409`, `AccessDeniedException` a `403`,
   validación a `400` y `NoSuchElementException` a `404`; reutilizar esos
@@ -229,6 +232,11 @@ El lock de carga debe ser en memoria y proteger también el job semanal. La
 persistencia de la ejecución evita perder el estado operativo. Un componente
 de startup (`@EventListener(ApplicationReadyEvent)`) debe cambiar
 `EN_CURSO` a `FALLIDA` antes de aceptar nuevas cargas.
+
+La orquestación contra `WhoScoredPort` se implementa y prueba con el adapter de
+archivos; no depende del adapter Playwright ni del parser de calendario para
+ser integrada. T021 se verifica manualmente con red y navegador; T022 es una
+clase pura y se valida offline mediante T023.
 
 ### Pure parser and player linking
 
@@ -416,9 +424,9 @@ actualización y llamando a `RecalculoService`.
   `MetricaPartidoRepository.java`: consultas de vinculación e idempotencia.
 - `src/main/java/com/formula11/service/ActualizacionMetricasPort.java`: no
   modificar; se documenta como contrato estable `void actualizar()`.
-- `src/main/java/com/formula11/service/CotizacionScheduler.java`: solo si es
-  imprescindible para integración, sin cambiar su contrato ni su flujo de
-  recálculo local; preferir no modificarlo.
+- `src/main/java/com/formula11/service/CotizacionScheduler.java`: queda
+  intocable; la integración debe realizarse sin cambiar su contrato ni su
+  flujo de recálculo local.
 - `src/main/java/com/formula11/service/NoOpActualizacionMetricasAdapter.java`:
   conservarlo y quitar únicamente `@Component`, porque
   `CotizacionSchedulerTest` lo instancia directamente.
@@ -429,8 +437,9 @@ actualización y llamando a `RecalculoService`.
 - `src/main/resources/application.yml`: defaults de `app.whoscored`.
 - `src/test/resources/application-test.yml`: modo `archivos`, carpeta fixture
   y valores deterministas.
-- No modificar interfaces, DTOs ni tests de las features 004, 006, 007 y 009.
-  Los nuevos tests de 011 deben usar sus propios DTOs, adapters y fixtures.
+- Las clases existentes de 004, 006, 007 y 009 solo pueden recibir las
+  ampliaciones compatibles indicadas arriba. Sus DTOs, tests, firmas, métodos,
+  campos y comportamiento existente quedan protegidos.
 
 ### Files not to modify
 

@@ -9,8 +9,13 @@
 - Ejecutar los comandos desde `formula11/backend`.
 - No modificar V1–V3 ni V10–V12.
 - Crear únicamente migraciones nuevas V13–V17; V18 y V19 quedan libres.
-- No modificar interfaces, DTOs ni tests de las features 004, 006, 007 y
-  009.
+- En las clases existentes de las features 004, 006, 007 y 009 se permite
+  agregar únicamente métodos de consulta nuevos en `JugadorRepository` y
+  `MetricaPartidoRepository`, el campo nullable `whoscoredId` en `Jugador`, la
+  relación nullable en `MetricaPartido` y quitar `@Component` a
+  `NoOpActualizacionMetricasAdapter`. Está prohibido cambiar o borrar firmas,
+  métodos, campos o comportamiento existentes que usen esas features.
+- No modificar DTOs ni tests existentes de las features 004, 006, 007 y 009.
 - `ActualizacionMetricasPort` permanece exactamente como `void actualizar()`.
 - `SincronizacionResponse` permanece sin cambios; los endpoints de métricas usan
   DTOs nuevos.
@@ -30,9 +35,14 @@ T009 -> T013 -> T014 -> T015
 T012 + T015 -> T016 -> T017 -> T018
 T011 + T015 -> T019 -> T020 -> T021
 T018 + T021 -> T022 -> T023
-T023 -> T024 -> T025
+T004 -> T024
+T009 + T012 + T019 + T020 + T023 + T024 -> T025
+T015 + T017 + T020 + T023 + T025 -> T026
+T020 + T026 -> T028
 ```
 
+La orquestación depende del puerto, del adapter de archivos y de los parsers
+offline, pero no depende de T021 ni T022: Playwright se verifica manualmente.
 Las tareas de documentación y verificación final pueden ejecutarse en paralelo
 cuando sus dependencias estén satisfechas.
 
@@ -49,9 +59,33 @@ cuando sus dependencias estén satisfechas.
 - [ ] **T002 - Fijar el límite de archivos de la feature**
   - Documentar en esta tarea la lista de archivos nuevos/modificados
     permitidos según el plan; no crear un archivo adicional.
-  - Marcar explícitamente como intocables:
-    `ActualizacionMetricasPort.java`, `SincronizacionResponse.java`,
-    interfaces/DTOs/tests de 004, 006, 007 y 009, y migraciones V1–V3/V10–V12.
+  - Archivos nuevos permitidos:
+    `adapter/WhoScoredPort.java`,
+    `adapter/WhoScoredPlaywrightAdapter.java`,
+    `adapter/WhoScoredArchivoAdapter.java`,
+    `adapter/WhoScoredException.java`,
+    `adapter/CalendarioWhoScoredParser.java`,
+    `config/WhoScoredProperties.java`, `config/AsyncConfig.java`,
+    `controller/MetricasController.java`, los DTOs nuevos de métricas,
+    las entidades y repositories nuevos de 011, parser/normalizador puros,
+    services de carga/vinculación, migraciones V13–V17 y tests nuevos.
+  - Archivos existentes permitidos, solo para ampliaciones compatibles:
+    `model/Jugador.java`, `model/MetricaPartido.java`,
+    `persistence/JugadorRepository.java`,
+    `persistence/MetricaPartidoRepository.java`,
+    `service/NoOpActualizacionMetricasAdapter.java`,
+    `exception/GlobalExceptionHandler.java`,
+    `resources/application.yml` y `test/resources/application-test.yml`.
+  - En esas clases existentes solo se permiten métodos de consulta nuevos,
+    `whoscoredId` nullable, la relación nullable con
+    `PartidoExterno`, quitar `@Component` del NoOp y configuración de la
+    feature. Está prohibido cambiar o borrar firmas, métodos, campos o
+    comportamiento existente.
+  - Archivos intocables:
+    `service/ActualizacionMetricasPort.java`,
+    `dto/SincronizacionResponse.java`, `service/CotizacionScheduler.java`,
+    todas las interfaces/DTOs/tests existentes de 004, 006, 007 y 009, y
+    migraciones V1–V3 y V10–V12.
   - **Depends on**: T001.
 
 ## Phase 1 - Dependency, configuration and persistence
@@ -268,7 +302,7 @@ cuando sus dependencias estén satisfechas.
   - Marcar ejecuciones `EN_CURSO` como `FALLIDA` en startup.
   - Lanzar la carga manual con `@Async`; mantener estados y resumen aquí,
     no en `ActualizacionMetricasPort`.
-  - **Depends on**: T009, T012, T019, T024.
+  - **Depends on**: T009, T012, T019, T020, T023, T024.
 
 - [ ] **T026 - Crear transacción aislada por partido**
   - Implementar `CargaPartidoService` en componente separado.
@@ -279,7 +313,7 @@ cuando sus dependencias estén satisfechas.
   - Confirmar `partido_externo` y actualizar contadores dentro de esa
     transacción de persistencia.
   - Aislar el error de un partido sin borrar partidos ya confirmados.
-  - **Depends on**: T015, T017, T025.
+  - **Depends on**: T015, T017, T020, T023, T025.
 
 - [ ] **T027 - Implementar adapter real de `ActualizacionMetricasPort`**
   - Crear la implementación con el método único `void actualizar()`.
@@ -303,7 +337,7 @@ cuando sus dependencias estén satisfechas.
   - Ejecutar dos veces y verificar que no haya solicitudes/filas duplicadas.
   - Simular error posterior y verificar conservación de commits previos.
   - Limpiar referencias primero y borrar solo los jugadores creados por ID.
-  - **Depends on**: T026, T027.
+  - **Depends on**: T020, T026.
 
 ## Phase 5 - Contract endpoints
 
