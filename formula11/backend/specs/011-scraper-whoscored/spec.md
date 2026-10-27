@@ -53,11 +53,16 @@ clarificación de la especificación:
   y `fetch`, para reutilizar las cookies del navegador. La descarga del listado
   y la descarga de los datos de cada partido son dos métodos del mismo
   `WhoScoredPort`.
+- En modo archivos, `app.whoscored.carpeta-paginas` contiene una subcarpeta por
+  liga nombrada exactamente como el enum `Liga` (por ejemplo, `LA_LIGA`). El
+  adapter toma la liga de esa subcarpeta y la fecha del `startTime` de
+  `matchCentreData`.
 - `desde` es inclusiva. El `startTime` sin zona de WhoScored se interpreta en
   `app.whoscored.zona-fuente` (por defecto `Europe/London`) y luego se convierte
   a `ClockConfig.ZONA_NEGOCIO` para filtrar y persistir la fecha del partido.
   El `Clock` de la aplicación continúa siendo UTC.
-- Las migraciones nuevas de esta feature se limitan a V13–V19. Nunca se editan
+- Las migraciones nuevas de esta feature se limitan a V13–V17; V18 y V19 quedan
+  libres. Nunca se editan
   V1–V3 ni V10–V12. Las columnas nuevas en tablas existentes son nullable o
   tienen valor por defecto para conservar compatibilidad con los datos ya
   aplicados y con las features 006, 007 y 009.
@@ -80,8 +85,9 @@ cotizaciones a partir del rendimiento real.
 datos que consume la feature 006.
 
 **Independent Test**: Ejecutar el parser sin red ni navegador con
-`src/test/resources/whoscored/partido-1994169.json`, que contiene ambos objetos
-JSON, y verificar las métricas esperadas del partido Málaga 1-1 Espanyol.
+`src/test/resources/whoscored/LA_LIGA/partido-1994169.json`, que contiene ambos
+objetos JSON, y verificar las métricas esperadas del partido Málaga 1-1
+Espanyol.
 
 **Acceptance Scenarios**:
 
@@ -350,7 +356,10 @@ Todas las respuestas de error usan el esquema `Error`. El cliente puede enviar
 - **FR-011**: Los jugadores no vinculados MUST persistirse como pendientes y
   MUST not detener la carga de partidos restantes.
 - **FR-012**: El sistema MUST implementar `ActualizacionMetricasPort` de la
-  feature 006 y MUST reemplazar `NoOpActualizacionMetricasAdapter`.
+  feature 006 sin modificar su método `void actualizar()`. La implementación
+  real debe reemplazar al NoOp como bean productivo, pero la clase
+  `NoOpActualizacionMetricasAdapter` se conserva sin `@Component` para los
+  tests existentes.
 - **FR-013**: El job semanal MUST llamar a `ActualizacionMetricasPort` y luego
   al mismo método de service que usa el recálculo manual; el scheduler no debe
   contener lógica de negocio.
@@ -380,8 +389,8 @@ Todas las respuestas de error usan el esquema `Error`. El cliente puede enviar
   debe ser UTC. `startTime` debe interpretarse en la zona configurable
   `app.whoscored.zona-fuente` (por defecto `Europe/London`) y la fecha de
   partido debe convertirse con `ClockConfig.ZONA_NEGOCIO`. `desde` es inclusiva.
-- **FR-024**: Las migraciones de esta feature MUST estar en V13 a V19; V1 a V3
-  y V10 a V12 pertenecen a otras features y no deben modificarse. Toda columna
+- **FR-024**: Las migraciones de esta feature MUST estar en V13 a V17; V18 y
+  V19 quedan libres. V1 a V3 y V10 a V12 pertenecen a otras features y no deben modificarse. Toda columna
   nueva en una tabla existente MUST ser nullable o tener un valor por defecto.
 - **FR-025**: La única dependencia nueva permitida MUST ser Playwright para
   Java.
@@ -410,9 +419,9 @@ Todas las respuestas de error usan el esquema `Error`. El cliente puede enviar
   estado de carga y error opcional para habilitar idempotencia y reanudación.
 - **Ejecución de sincronización**: registra estado, fechas, `correlationId` y
   resumen por liga para responder el contrato.
-- Las migraciones Flyway de la feature deben cubrir el rango reservado V13 a
-  V19, separando las evoluciones de partidos, métricas, pendientes, ejecuciones,
-  índices y restricciones necesarias sin alterar V1 a V3 ni V10 a V12. Toda
+- Las migraciones Flyway de la feature deben cubrir V13 a V17, separando
+  partidos, métricas, pendientes y ejecuciones con su resumen por liga, sin
+  crear migraciones de relleno. V18 y V19 quedan libres. No alterar V1 a V3 ni V10 a V12. Toda
   columna agregada a una tabla existente debe ser nullable o tener un valor por
   defecto.
 

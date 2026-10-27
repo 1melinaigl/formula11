@@ -2,7 +2,7 @@
 
 **Feature**: `011-scraper-whoscored`  
 **Fuente**: prueba descartable de la rama `spike-whoscored` y fixture local
-`src/test/resources/whoscored/partido-1994169.json`.  
+`src/test/resources/whoscored/LA_LIGA/partido-1994169.json`.
 **Estado**: hallazgos verificados; no contiene mediciones de una carga
 productiva.
 
@@ -192,4 +192,3 @@ navegando.
 Descartado: requiere abrir muchas más páginas y repite navegación para datos que
 WhoScored entrega juntos en la página del partido. El diseño scrapea por
 partido y procesa los jugadores de ambos equipos en una sola carga.
-

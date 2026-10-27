@@ -13,7 +13,7 @@ y reutilizable por el scheduler a través de `ActualizacionMetricasPort`.
 
 La solución conservará la compatibilidad con las migraciones V1–V3 y V10–V12,
 con las entidades y los cálculos de la feature 006 y con los tests existentes.
-Las migraciones nuevas serán únicamente V13–V19. Los tests automáticos no
+Las migraciones nuevas serán únicamente V13–V17; V18 y V19 quedan libres. Los tests automáticos no
 abrirán navegador ni usarán red: el parser y el adapter de archivos usarán el
 fixture local.
 
@@ -69,10 +69,11 @@ parseadores JSON ni frameworks adicionales.
   validación a `400` y `NoSuchElementException` a `404`; reutilizar esos
   patrones y agregar excepciones específicas solo si mejoran el mensaje.
 - [application-test.yml](../../src/test/resources/application-test.yml) debe
-  fijar `app.whoscored.modo=archivos`, carpeta de fixture y valores seguros,
+  fijar `app.whoscored.modo=archivos`, carpeta de fixture con subcarpetas por
+  enum `Liga` y valores seguros,
   para que el contexto de test nunca cree el adapter de Playwright.
 - Spring Flyway está configurado con `out-of-order` en tests porque el
-  repositorio ya contiene V20+. V13–V19 deben ser compatibles con esa
+  repositorio ya contiene V20+. V13–V17 deben ser compatibles con esa
   instalación y no modificar migraciones aplicadas.
 
 ## Constitution Check
@@ -92,7 +93,8 @@ parseadores JSON ni frameworks adicionales.
 - [x] **Calidad**: parser unitario offline, integración con Testcontainers y
       controller/E2E con MockMvc; no se modifican ni eliminan tests existentes.
 - [x] **Compatibilidad de datos**: V1–V3 y V10–V12 son inmutables; columnas
-      nuevas nullable/default y migraciones nuevas V13–V19.
+      nuevas nullable/default y migraciones nuevas V13–V17; V18 y V19 quedan
+      libres.
 
 ## Architecture and Design
 
@@ -185,10 +187,13 @@ Definir records simples para que el puerto no exponga tipos de Playwright:
 `WhoScoredArchivoAdapter`:
 
 - Activarse con `app.whoscored.modo=archivos`.
+- Leer `app.whoscored.carpeta-paginas/{LIGA}/`, donde `{LIGA}` es exactamente
+  el nombre del enum `Liga`, por ejemplo `LA_LIGA`.
 - Leer `.json` con las dos claves del fixture y `.html` extrayendo ambos
   objetos desde el contenido guardado.
-- Resolver el archivo del partido por `idExterno`; fallar explícitamente si no
-  existe o si falta una clave.
+- Tomar la liga de la subcarpeta y la fecha del `startTime` de
+  `matchCentreData`; resolver el archivo por `idExterno` y fallar
+  explícitamente si no existe o si falta una clave.
 - No crear Playwright, contexto, página ni realizar red.
 
 Usar `@ConditionalOnProperty` para que solo exista un adapter activo. El puerto
@@ -272,7 +277,7 @@ Usar entidades JPA con secuencias y `allocationSize = 50` para tablas de
 muchas filas. No llamar `deleteAll` indiscriminadamente en tests ni en la
 aplicación.
 
-Migraciones propuestas, todas nuevas y en orden V13–V19:
+Migraciones propuestas, todas nuevas y en orden V13–V17:
 
 - **V13** `partido_externo`: `id`, `fuente`, `id_externo`, `liga`, `fecha`,
   equipos, `cargado_en`, estado/error opcionales; unique `(fuente,id_externo)`.
@@ -281,17 +286,15 @@ Migraciones propuestas, todas nuevas y en orden V13–V19:
 - **V15** `ALTER TABLE metrica_partido`: `partido_externo_id` nullable y
   `whoscored_id` nullable si el modelo necesita conservar el valor histórico;
   foreign key e índice sin modificar la unique existente de 006.
-- **V16** `ejecucion_metricas`: id, estado, inicio, fin nullable,
-  correlation_id, error y datos de resumen por liga en columnas compatibles
-  con PostgreSQL (preferir tabla hija para el resumen si se requiere consultar
-  cada liga).
-- **V17** `ejecucion_metrica_liga`: ejecución, liga, estado, cargados,
+- **V16** `ejecucion_metricas` y su resumen por liga: id, estado, inicio, fin
+  nullable, correlation_id, error y tabla hija con liga, estado, cargados,
   omitidos, vinculados, pendientes y error nullable.
-- **V18** `pendiente_vinculacion`: whoscored_id, nombre, equipo, liga,
-  detectado_en, último error y estado/resuelto nullable; índice para listar
-  pendientes y deduplicación del pendiente activo.
-- **V19** constraints/índices finales y cualquier columna nullable/default
-  necesaria para compatibilidad; no modificar V1–V3 ni V10–V12.
+- **V17** `pendiente_vinculacion`: whoscored_id, nombre, equipo, liga,
+  detectado_en, último error y estado/resuelto nullable; índices para listar
+  pendientes y deduplicar el pendiente activo.
+
+V18 y V19 quedan libres; no crear migraciones de relleno. No modificar V1–V3
+ni V10–V12.
 
 Revisar antes de implementar si el nombre real de la tabla y los tipos de
 `Liga`/fechas requieren adaptar SQL. Mantener la unique actual
@@ -314,13 +317,16 @@ por `partido_externo` y `partido_externo_id` nullable sin romper datos de 006.
 8. Clasificar la ejecución como `COMPLETADA`, `PARCIAL` o `FALLIDA` sin
    deshacer los partidos confirmados.
 
-`CargaPartidoService` (`@Transactional`):
+`CargaPartidoService`:
 
-- volver a verificar idempotencia dentro de la transacción;
-- obtener datos crudos, parsear, vincular y persistir pendientes;
-- insertar o confirmar `partido_externo`;
-- guardar las métricas vinculadas en batch;
-- actualizar contadores y dejar el error asociado al partido si falla.
+- obtener datos crudos, parsear y resolver vinculaciones fuera de la
+  transacción;
+- delegar a un componente/método transaccional únicamente la verificación de
+  idempotencia y el guardado de métricas, pendientes y `partido_externo`;
+- guardar las métricas vinculadas en batch y actualizar contadores dentro de la
+  transacción de persistencia;
+- dejar el error asociado al partido si falla fuera o dentro de esa operación,
+  sin borrar partidos anteriores.
 
 La inserción de un partido completo debe ser atómica. Un error de un partido
 no debe borrar partidos anteriores. Si el parser no produce jugadores jugados,
@@ -358,12 +364,11 @@ Crear `ActualizacionMetricasAdapter` como implementación de
   que solo invoca la variante incremental sincrónica del mismo service.
 
 No modificar los tests de 006 que instancian
-`NoOpActualizacionMetricasAdapter`. Para evitar dos beans en producción, la
-implementación real será el bean activo y el NoOp conservará compatibilidad
-de instanciación de tests, pero dejará de registrarse como implementación
-componente en el contexto productivo (o quedará condicionado a un perfil
-explícito). No tocar el comportamiento de `CotizacionScheduler`: debe seguir
-capturando la falla de actualización y llamando a `RecalculoService`.
+`NoOpActualizacionMetricasAdapter`. No borrar esa clase: conservará su API y
+se quitará únicamente `@Component`, para que la implementación real sea el
+único bean productivo de `ActualizacionMetricasPort`. No tocar el
+comportamiento de `CotizacionScheduler`: debe seguir capturando la falla de
+actualización y llamando a `RecalculoService`.
 
 ### Error handling and observability
 
@@ -386,6 +391,7 @@ capturando la falla de actualización y llamando a `RecalculoService`.
 - `src/main/java/com/formula11/adapter/WhoScoredPort.java`
 - `src/main/java/com/formula11/adapter/WhoScoredPlaywrightAdapter.java`
 - `src/main/java/com/formula11/adapter/WhoScoredArchivoAdapter.java`
+- `src/main/java/com/formula11/adapter/CalendarioWhoScoredParser.java`
 - `src/main/java/com/formula11/adapter/WhoScoredException.java`
 - `src/main/java/com/formula11/config/WhoScoredProperties.java`
 - `src/main/java/com/formula11/config/AsyncConfig.java`
@@ -395,7 +401,7 @@ capturando la falla de actualización y llamando a `RecalculoService`.
   `EjecucionMetricaLiga`, `PendienteVinculacion`.
 - Parser puro, records de salida y normalizador.
 - Repositories y services de carga/vinculación.
-- Migraciones `V13__...sql` a `V19__...sql`.
+- Migraciones `V13__...sql` a `V17__...sql`.
 - Tests unitarios, integración y E2E/MockMvc.
 - `specs/011-scraper-whoscored/research.md`
 - `specs/011-scraper-whoscored/quickstart.md`
@@ -414,8 +420,8 @@ capturando la falla de actualización y llamando a `RecalculoService`.
   imprescindible para integración, sin cambiar su contrato ni su flujo de
   recálculo local; preferir no modificarlo.
 - `src/main/java/com/formula11/service/NoOpActualizacionMetricasAdapter.java`:
-  conservar su API para los tests existentes y retirar únicamente su registro
-  como bean productivo, si fuera necesario para evitar ambigüedad.
+  conservarlo y quitar únicamente `@Component`, porque
+  `CotizacionSchedulerTest` lo instancia directamente.
 - `src/main/java/com/formula11/dto/SincronizacionResponse.java`: no modificar;
   pertenece a la sincronización de Football-Data.
 - `src/main/java/com/formula11/exception/GlobalExceptionHandler.java`:
@@ -442,7 +448,7 @@ capturando la falla de actualización y llamando a `RecalculoService`.
 
 1. Agregar Playwright al `pom.xml`.
 2. Crear propiedades y defaults de producción/test.
-3. Crear migraciones V13–V19 y entidades/repositories.
+3. Crear migraciones V13–V17 y entidades/repositories.
 4. Verificar `mvn test-compile` y validación Flyway con Testcontainers.
 
 ### Phase 2 - Pure parser and linking
@@ -485,7 +491,8 @@ capturando la falla de actualización y llamando a `RecalculoService`.
 
 ### Unit tests without Spring or network
 
-- `MatchCentreParserTest`: fixture `partido-1994169.json`; verificar
+- `MatchCentreParserTest` en `src/test/java/com/formula11/unit/`: fixture
+  `whoscored/LA_LIGA/partido-1994169.json`; verificar
   Alfonso Herrero, Carlos Puga, Ángel Fortuño, goles, asistencias y nueve
   amarillas.
 - `NormalizadorNombreTest`: tildes, mayúsculas, espacios y nombres vacíos.
@@ -493,7 +500,8 @@ capturando la falla de actualización y llamando a `RecalculoService`.
   candidato.
 - `CalendarioWhoScoredParserTest`: un partido `FT`, uno no terminado y una
   respuesta con varios meses/equipos.
-- `WhoScoredArchivoAdapterTest`: JSON fixture y extracción desde HTML.
+- `WhoScoredArchivoAdapterTest` en `src/test/java/com/formula11/unit/`: JSON
+  fixture y extracción desde HTML.
 - `WhoScoredPropertiesTest`: defaults, modo inválido, stage IDs y zona.
 
 No usar `WhoScoredPlaywrightAdapter` en tests automáticos. La verificación de
@@ -516,7 +524,7 @@ documenta y ejecuta manualmente según `quickstart.md`.
 
 ### Controller/E2E tests
 
-Con MockMvc y usuarios de prueba:
+En `src/test/java/com/formula11/integration/`, con MockMvc y usuarios de prueba:
 
 - `SUPERUSUARIO`: `POST` devuelve `202`, consulta devuelve `200`, pendientes
   devuelve `200`.
@@ -571,7 +579,7 @@ explícitamente y conservar la validación offline.
   archivos reproducible.
 - **Diferencias de nombres/equipos**: normalización documentada, contención de
   equipos y pendientes ante ambigüedad.
-- **Migraciones fuera de orden**: SQL nullable/default, V13–V19 sin tocar
+- **Migraciones fuera de orden**: SQL nullable/default, V13–V17 sin tocar
   migraciones aplicadas y prueba con el perfil actual de Flyway.
 - **Carga concurrente/reinicio**: lock de un solo proceso, estado persistido y
   transición de `EN_CURSO` a `FALLIDA` al arrancar.
