@@ -48,7 +48,7 @@ cuando sus dependencias estén satisfechas.
 
 ## Phase 0 - Baseline and compatibility guardrails
 
-- [ ] **T001 - Registrar baseline de compilación y tests**
+- [x] **T001 - Registrar baseline de compilación y tests**
   - Ejecutar `mvn test-compile` y los tests focalizados existentes de las
     features 004, 006, 007 y 009.
   - Registrar cualquier fallo preexistente sin modificar esos tests.
@@ -56,7 +56,7 @@ cuando sus dependencias estén satisfechas.
     y que `SincronizacionResponse` pertenece a Football-Data.
   - **Depends on**: ninguna.
 
-- [ ] **T002 - Fijar el límite de archivos de la feature**
+- [x] **T002 - Fijar el límite de archivos de la feature**
   - Documentar en esta tarea la lista de archivos nuevos/modificados
     permitidos según el plan; no crear un archivo adicional.
   - Archivos nuevos permitidos:
@@ -90,7 +90,7 @@ cuando sus dependencias estén satisfechas.
 
 ## Phase 1 - Dependency, configuration and persistence
 
-- [ ] **T003 - Agregar dependencia de Playwright**
+- [x] **T003 - Agregar dependencia de Playwright**
   - Agregar únicamente `com.microsoft.playwright:playwright` al `pom.xml`
     con una propiedad de versión.
   - No agregar otro cliente HTTP ni parser JSON.
@@ -98,7 +98,7 @@ cuando sus dependencias estén satisfechas.
     descartable de red.
   - **Depends on**: T002.
 
-- [ ] **T004 - Crear configuración de WhoScored**
+- [x] **T004 - Crear configuración de WhoScored**
   - Crear `WhoScoredProperties` con `@ConfigurationProperties("app.whoscored")`.
   - Implementar `modo`, mapa de ligas/stage IDs, `inicioTemporada`,
     `zonaFuente`, `perfilDir`, `headless`, `pausa`, `timeout`, `reintentos` y
@@ -109,34 +109,34 @@ cuando sus dependencias estén satisfechas.
     dependientes de una máquina.
   - **Depends on**: T003.
 
-- [ ] **T005 - Configurar modo de tests offline**
+- [x] **T005 - Configurar modo de tests offline**
   - Actualizar `application-test.yml` con `app.whoscored.modo=archivos` y la
     carpeta del fixture.
   - Asegurar que el contexto de test no cree el adapter de Playwright.
   - **Depends on**: T004.
 
-- [ ] **T006 - Crear migración de partidos externos**
+- [x] **T006 - Crear migración de partidos externos**
   - Crear `V13__crear_partidos_externos.sql` con fuente, id externo, liga,
     fecha, equipos, fecha de carga, estado/error y unique
     `(fuente, id_externo)`.
   - Usar tipos compatibles con PostgreSQL y columnas opcionales nullable/default.
   - **Depends on**: T003.
 
-- [ ] **T007 - Crear migración de identificador WhoScored**
+- [x] **T007 - Crear migración de identificador WhoScored**
   - Crear `V14__agregar_whoscored_id_jugadores.sql`.
   - Agregar `jugadores.whoscored_id` nullable y unique parcial para valores no
     nulos.
   - No modificar V3 ni reutilizar `external_id`.
   - **Depends on**: T006.
 
-- [ ] **T008 - Crear migración de relación de métricas**
+- [x] **T008 - Crear migración de relación de métricas**
   - Crear `V15__relacionar_metricas_con_partido_externo.sql`.
   - Agregar a `metrica_partido` una referencia nullable a
     `partido_externo`, más índices/identificador externo opcional.
   - Conservar la unique existente de V10 `(jugador_id, fecha_partido)`.
   - **Depends on**: T007.
 
-- [ ] **T009 - Crear migraciones de ejecuciones y pendientes**
+- [x] **T009 - Crear migraciones de ejecuciones y pendientes**
   - Crear V16 para `ejecucion_metricas` y su resumen por liga en la misma
     migración, usando una tabla hija si se necesita consultar cada liga.
   - Crear V17 para `pendiente_vinculacion`.
@@ -147,7 +147,7 @@ cuando sus dependencias estén satisfechas.
     o tengan default.
   - **Depends on**: T008.
 
-- [ ] **T010 - Crear entidades y secuencias JPA**
+- [x] **T010 - Crear entidades y secuencias JPA**
   - Crear entidades para partido externo, ejecución, resumen por liga y
     pendiente.
   - Usar `GenerationType.SEQUENCE` con `allocationSize=50` en entidades con
@@ -158,7 +158,7 @@ cuando sus dependencias estén satisfechas.
   - No cambiar constructores ni comportamiento requerido por features previas.
   - **Depends on**: T009.
 
-- [ ] **T011 - Crear repositories**
+- [x] **T011 - Crear repositories**
   - Crear repositories para partidos externos, ejecuciones, resúmenes y
     pendientes.
   - Agregar consultas de existencia por `(fuente, idExterno)`, búsqueda por
@@ -171,6 +171,8 @@ cuando sus dependencias estén satisfechas.
   - Levantar el contexto con Testcontainers y Flyway `out-of-order`.
   - Verificar migraciones V13–V17 sobre el esquema que ya contiene V20+.
   - Ejecutar los tests baseline de T001.
+  - **Pendiente de CI**: los tests de integración/Testcontainers no se ejecutan
+    localmente por la instrucción de esta implementación.
   - **Depends on**: T011.
 
 ## Phase 2 - Pure parser and player linking
