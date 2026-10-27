@@ -3,7 +3,9 @@ package com.formula11.config;
 import com.formula11.model.Liga;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.AssertTrue;
+import org.hibernate.validator.constraints.time.DurationMin;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
@@ -19,7 +21,7 @@ public class WhoScoredProperties {
     @NotBlank
     private String modo = "automatico";
     @NotNull
-    private Map<Liga, Long> ligas = new EnumMap<>(Map.of(
+    private Map<Liga, @Positive Long> ligas = new EnumMap<>(Map.of(
             Liga.PREMIER_LEAGUE, 25544L,
             Liga.BUNDESLIGA, 25666L,
             Liga.LA_LIGA, 25662L,
@@ -33,19 +35,20 @@ public class WhoScoredProperties {
     private String perfilDir = "target/whoscored-perfil";
     private boolean headless;
     @NotNull
-    @Positive
+    @DurationMin(millis = 1)
     private Duration pausa = Duration.ofSeconds(3);
     @NotNull
-    @Positive
+    @DurationMin(millis = 1)
     private Duration timeout = Duration.ofSeconds(90);
+    @Positive
     private int reintentos = 3;
     @NotBlank
     private String carpetaPaginas = "target/whoscored-paginas";
 
     public String getModo() { return modo; }
     public void setModo(String modo) { this.modo = modo; }
-    public Map<Liga, Long> getLigas() { return ligas; }
-    public void setLigas(Map<Liga, Long> ligas) { this.ligas = ligas; }
+    public Map<Liga, @Positive Long> getLigas() { return ligas; }
+    public void setLigas(Map<Liga, @Positive Long> ligas) { this.ligas = ligas; }
     public LocalDate getInicioTemporada() { return inicioTemporada; }
     public void setInicioTemporada(LocalDate inicioTemporada) { this.inicioTemporada = inicioTemporada; }
     public String getZonaFuente() { return zonaFuente; }
