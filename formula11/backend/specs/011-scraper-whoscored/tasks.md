@@ -233,14 +233,14 @@ cuando sus dependencias estén satisfechas.
 
 ## Phase 3 - WhoScored adapters
 
-- [ ] **T019 - Crear `WhoScoredPort`**
+- [x] **T019 - Crear `WhoScoredPort`**
   - Definir exactamente dos operaciones:
     listar partidos de una liga/mes y obtener datos crudos de un partido.
   - Usar records propios del dominio/adaptador.
   - Mantener separado el listado de la descarga de datos del partido.
   - **Depends on**: T004.
 
-- [ ] **T020 - Implementar `WhoScoredArchivoAdapter`**
+- [x] **T020 - Implementar `WhoScoredArchivoAdapter`**
   - Activar con `@ConditionalOnProperty` cuando `modo=archivos`.
   - Leer desde una subcarpeta cuyo nombre sea exactamente el enum `Liga`
     (por ejemplo, `LA_LIGA`).
@@ -252,7 +252,7 @@ cuando sus dependencias estén satisfechas.
   - Crear test del fixture JSON y de extracción HTML.
   - **Depends on**: T019, T015.
 
-- [ ] **T021 - Implementar `WhoScoredPlaywrightAdapter`**
+- [x] **T021 - Implementar `WhoScoredPlaywrightAdapter`**
   - Activar solo con `modo=automatico`.
   - Crear un único contexto persistente por carga con Chrome real,
     `--disable-blink-features=AutomationControlled`, sin
@@ -265,7 +265,7 @@ cuando sus dependencias estén satisfechas.
   - Implementar pausa configurable y errores explícitos por partido.
   - **Depends on**: T019, T004.
 
-- [ ] **T022 - Implementar listado mensual de calendario**
+- [x] **T022 - Implementar listado mensual de calendario**
   - Desde una página WhoScored, ejecutar `fetch` vía `page.evaluate` contra
     `/tournaments/{stageId}/data/?d={yyyyMM}&isAggregate=false`.
   - Delegar el parseo de `tournaments[].matches[]` a una clase pura separada,
@@ -277,7 +277,7 @@ cuando sus dependencias estén satisfechas.
   - Convertir `startTime` desde `zonaFuente` a la zona de negocio.
   - **Depends on**: T021.
 
-- [ ] **T023 - Probar parsers de adapters offline**
+- [x] **T023 - Probar parsers de adapters offline**
   - Crear el test de la clase pura de calendario en
     `src/test/java/com/formula11/unit/`, con un JSON pequeño: un partido `FT`
     y otro no terminado.
