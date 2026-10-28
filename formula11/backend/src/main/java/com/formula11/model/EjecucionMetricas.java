@@ -34,4 +34,10 @@ public class EjecucionMetricas {
     public Instant getFin() { return fin; }
     public String getCorrelationId() { return correlationId; }
     public String getError() { return error; }
+    public void completar(String estado, Instant fin) { this.estado = estado; this.fin = fin; }
+    public void fallar(Instant fin, String error) {
+        this.estado = "FALLIDA";
+        this.fin = fin;
+        this.error = error;
+    }
 }

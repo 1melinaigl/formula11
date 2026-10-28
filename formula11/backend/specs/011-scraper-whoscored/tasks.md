@@ -289,13 +289,13 @@ cuando sus dependencias estén satisfechas.
 
 ## Phase 4 - Orchestration, transactions and execution state
 
-- [ ] **T024 - Crear configuración async y MDC**
+- [x] **T024 - Crear configuración async y MDC**
   - Crear executor de un solo hilo con `@EnableAsync`.
   - Crear `TaskDecorator` que copie/restaure el MDC y `correlationId`.
   - Definir límites de cola y nombres de hilos configurables o documentados.
   - **Depends on**: T004.
 
-- [ ] **T025 - Crear `CargaMetricasService`**
+- [x] **T025 - Crear `CargaMetricasService`**
   - Implementar lock en memoria para una sola carga simultánea.
   - Calcular rango incremental mes actual/anterior o rango histórico desde
     `inicioTemporada`, con `desde` inclusiva.
@@ -306,7 +306,7 @@ cuando sus dependencias estén satisfechas.
     no en `ActualizacionMetricasPort`.
   - **Depends on**: T009, T012, T019, T020, T023, T024.
 
-- [ ] **T026 - Crear transacción aislada por partido**
+- [x] **T026 - Crear transacción aislada por partido**
   - Implementar `CargaPartidoService` en componente separado.
   - Descargar los datos crudos, parsear y resolver las vinculaciones fuera de
     la transacción.
@@ -317,7 +317,7 @@ cuando sus dependencias estén satisfechas.
   - Aislar el error de un partido sin borrar partidos ya confirmados.
   - **Depends on**: T015, T017, T020, T023, T025.
 
-- [ ] **T027 - Implementar adapter real de `ActualizacionMetricasPort`**
+- [x] **T027 - Implementar adapter real de `ActualizacionMetricasPort`**
   - Crear la implementación con el método único `void actualizar()`.
   - Delegar solo en la variante incremental sincrónica de
     `CargaMetricasService`.
@@ -333,7 +333,7 @@ cuando sus dependencias estén satisfechas.
     con la implementación real.
   - **Depends on**: T025, T026.
 
-- [ ] **T028 - Probar idempotencia y reanudación**
+- [x] **T028 - Probar idempotencia y reanudación**
   - Crear el test en `src/test/java/com/formula11/integration/`, usando el
     adapter de archivos y jugadores propios de Málaga y Espanyol.
   - Ejecutar dos veces y verificar que no haya solicitudes/filas duplicadas.
@@ -343,7 +343,7 @@ cuando sus dependencias estén satisfechas.
 
 ## Phase 5 - Contract endpoints
 
-- [ ] **T029 - Crear DTOs nuevos de métricas**
+- [x] **T029 - Crear DTOs nuevos de métricas**
   - Crear records `SincronizacionMetricasRequest`,
     `EjecucionMetricasResponse`, resumen por liga,
     `PendienteVinculacion` y `PendientesPageResponse`.
@@ -351,7 +351,7 @@ cuando sus dependencias estén satisfechas.
   - No modificar `SincronizacionResponse`.
   - **Depends on**: T009, T025.
 
-- [ ] **T030 - Implementar `MetricasController`**
+- [x] **T030 - Implementar `MetricasController`**
   - Crear `POST /api/metricas/sincronizacion` con respuesta `202`.
   - Crear `GET /api/metricas/sincronizacion/{ejecucionId}`.
   - Crear `GET /api/metricas/pendientes` con `page` y `size`.
@@ -360,7 +360,7 @@ cuando sus dependencias estén satisfechas.
     `SUPERUSUARIO`.
   - **Depends on**: T029.
 
-- [ ] **T031 - Implementar errores contractuales**
+- [x] **T031 - Implementar errores contractuales**
   - Validar `desde` y tamaños de página como `400`.
   - Mapear lock ocupado a `409`.
   - Mapear ejecución inexistente a `404`.
@@ -369,7 +369,7 @@ cuando sus dependencias estén satisfechas.
   - Mantener `ErrorResponse` y correlationId.
   - **Depends on**: T030.
 
-- [ ] **T032 - Probar endpoints y autorización**
+- [x] **T032 - Probar endpoints y autorización**
   - Crear tests MockMvc en `src/test/java/com/formula11/integration/` para
     `202`, `200`, `400`, `401`, `403`, `404` y `409`.
   - Cubrir `SUPERUSUARIO`, `USUARIO` y solicitud sin autenticación.

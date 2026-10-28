@@ -43,4 +43,9 @@ public class EjecucionMetricaLiga {
     public int getPartidosFallidos() { return partidosFallidos; }
     public int getJugadoresVinculados() { return jugadoresVinculados; }
     public int getPendientes() { return pendientes; }
+    public void sumarEncontrados() { partidosEncontrados++; }
+    public void sumarCargados() { partidosCargados++; }
+    public void sumarFallidos() { partidosFallidos++; }
+    public void sumarVinculados() { jugadoresVinculados++; }
+    public void sumarPendientes() { pendientes++; }
 }
