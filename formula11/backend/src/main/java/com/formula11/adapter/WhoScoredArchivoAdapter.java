@@ -82,9 +82,7 @@ public class WhoScoredArchivoAdapter implements WhoScoredPort {
             return new DatosPartidoWhoScored(partidoId, liga, start, data, types);
         } catch (IllegalArgumentException exception) {
             throw exception;
-        } catch (IOException exception) {
-            throw new IllegalStateException("No se pudo leer " + path, exception);
-        } catch (RuntimeException exception) {
+        } catch (IOException | RuntimeException exception) {
             throw new IllegalStateException("No se pudo leer " + path, exception);
         }
     }

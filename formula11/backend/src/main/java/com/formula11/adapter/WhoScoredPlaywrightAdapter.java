@@ -86,7 +86,7 @@ public class WhoScoredPlaywrightAdapter implements WhoScoredPort, AutoCloseable 
     private void navegar(Page page, String url) {
         page.navigate(url, new Page.NavigateOptions()
                 .setWaitUntil(WaitUntilState.COMMIT)
-                .setTimeout((double) properties.getTimeout().toMillis()));
+                .setTimeout(Long.valueOf(properties.getTimeout().toMillis()).doubleValue()));
     }
 
     private String evaluarConReintentos(Page page, String expression) {
@@ -98,7 +98,7 @@ public class WhoScoredPlaywrightAdapter implements WhoScoredPort, AutoCloseable 
             } catch (PlaywrightException exception) {
                 last = exception;
             }
-            page.waitForTimeout((double) properties.getPausa().toMillis());
+            page.waitForTimeout(Long.valueOf(properties.getPausa().toMillis()).doubleValue());
         }
         throw new IllegalStateException("WhoScored no entregó los datos JavaScript", last);
     }
