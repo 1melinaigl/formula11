@@ -12,7 +12,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Parsea la respuesta de /tournaments/{stageId}/data/?d={yyyyMM}&isAggregate=false.
+ * Formato verificado en una respuesta real: tournaments[].matches[] con id, startTime (sin zona,
+ * en hora de la fuente), homeTeamName, awayTeamName y elapsed ("FT" cuando el partido terminó).
+ */
 public final class CalendarioWhoScoredParser {
+    private static final String START_TIME = "startTime";
     private final ObjectMapper objectMapper;
 
     public CalendarioWhoScoredParser(ObjectMapper objectMapper) {
@@ -21,44 +27,39 @@ public final class CalendarioWhoScoredParser {
 
     public List<PartidoWhoScoredResumen> parse(String json, Liga liga,
                                                 ZoneId zonaFuente, ZoneId zonaNegocio) {
-        try {
-            JsonNode root = objectMapper.readTree(json);
-            List<PartidoWhoScoredResumen> result = new ArrayList<>();
-            for (JsonNode tournament : root.path("tournaments")) {
-                for (JsonNode match : tournament.path("matches")) {
-                    String startTime = text(match, "startTime");
-                    ZonedDateTime fecha = LocalDateTime.parse(startTime)
-                            .atZone(zonaFuente).withZoneSameInstant(zonaNegocio);
-                    JsonNode status = match.path("status");
-                    String elapsed = status.isTextual() ? status.asText()
-                            : firstText(status, "name", "displayName", "type");
-                    result.add(new PartidoWhoScoredResumen(match.path("id").asLong(), fecha,
-                            teamName(match, "homeTeam"), teamName(match, "awayTeam"),
-                            elapsed, liga));
-                }
+        JsonNode root = leer(json);
+        List<PartidoWhoScoredResumen> result = new ArrayList<>();
+        for (JsonNode tournament : root.path("tournaments")) {
+            for (JsonNode match : tournament.path("matches")) {
+                result.add(partido(match, liga, zonaFuente, zonaNegocio));
             }
-            return List.copyOf(result);
-        } catch (IOException | RuntimeException exception) {
+        }
+        return List.copyOf(result);
+    }
+
+    private JsonNode leer(String json) {
+        try {
+            return objectMapper.readTree(json);
+        } catch (IOException exception) {
             throw new IllegalArgumentException("Respuesta de calendario WhoScored inválida", exception);
         }
     }
 
-    private static String teamName(JsonNode match, String key) {
-        JsonNode team = match.path(key);
-        return team.isTextual() ? team.asText() : text(team, "name");
+    private static PartidoWhoScoredResumen partido(JsonNode match, Liga liga,
+                                                   ZoneId zonaFuente, ZoneId zonaNegocio) {
+        long id = match.path("id").asLong(-1);
+        if (id <= 0) throw new IllegalArgumentException("Partido de calendario sin id");
+        ZonedDateTime fecha = LocalDateTime.parse(texto(match, START_TIME))
+                .atZone(zonaFuente).withZoneSameInstant(zonaNegocio);
+        return new PartidoWhoScoredResumen(id, fecha, texto(match, "homeTeamName"),
+                texto(match, "awayTeamName"), match.path("elapsed").asText(""), liga);
     }
 
-    private static String text(JsonNode node, String key) {
+    private static String texto(JsonNode node, String key) {
         String value = node.path(key).asText(null);
-        if (value == null || value.isBlank()) throw new IllegalArgumentException("Falta " + key);
-        return value;
-    }
-
-    private static String firstText(JsonNode node, String... keys) {
-        for (String key : keys) {
-            String value = node.path(key).asText(null);
-            if (value != null && !value.isBlank()) return value;
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("Partido de calendario sin " + key);
         }
-        return "";
+        return value;
     }
 }

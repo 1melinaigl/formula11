@@ -48,4 +48,6 @@ public class EjecucionMetricaLiga {
     public void sumarFallidos() { partidosFallidos++; }
     public void sumarVinculados() { jugadoresVinculados++; }
     public void sumarPendientes() { pendientes++; }
+    public void sumarVinculados(int cantidad) { jugadoresVinculados += cantidad; }
+    public void sumarPendientes(int cantidad) { pendientes += cantidad; }
 }

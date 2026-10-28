@@ -5,10 +5,8 @@ import com.formula11.dto.EjecucionMetricasResponse;
 import com.formula11.dto.PendientesPageResponse;
 import com.formula11.model.EjecucionMetricas;
 import com.formula11.persistence.EjecucionMetricaLigaRepository;
-import com.formula11.persistence.PendienteVinculacionRepository;
 import com.formula11.service.CargaMetricasService;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -46,7 +44,7 @@ class MetricasControllerTest {
         when(service.response(any(), anyList())).thenReturn(
                 new EjecucionMetricasResponse(7L, "COMPLETADA", ejecucion.getInicio(),
                         null, List.of(), "corr"));
-        when(service.pendientes(any(), any())).thenReturn(new PendientesPageResponse(List.of(), 0, 20, 0, 0));
+        when(service.pendientes(any())).thenReturn(new PendientesPageResponse(List.of(), 0, 20, 0, 0));
         MockMvc mvc = mvc(service);
 
         mvc.perform(get("/api/metricas/sincronizacion/7"))
@@ -59,8 +57,7 @@ class MetricasControllerTest {
 
     private static MockMvc mvc(CargaMetricasService service) {
         return MockMvcBuilders.standaloneSetup(new MetricasController(service,
-                mock(EjecucionMetricaLigaRepository.class),
-                mock(PendienteVinculacionRepository.class))).build();
+                mock(EjecucionMetricaLigaRepository.class))).build();
     }
 
     private static final class EjecucionMetricasRepositoryFixture {

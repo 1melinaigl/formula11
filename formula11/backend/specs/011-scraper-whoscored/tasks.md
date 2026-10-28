@@ -241,7 +241,7 @@ cuando sus dependencias estén satisfechas.
   - **Depends on**: T004.
 
 - [x] **T020 - Implementar `WhoScoredArchivoAdapter`**
-  - Activar con `@ConditionalOnProperty` cuando `modo=archivos`.
+  - Instanciar desde `WhoScoredConfig` cuando `modo=archivos` (ver T032b).
   - Leer desde una subcarpeta cuyo nombre sea exactamente el enum `Liga`
     (por ejemplo, `LA_LIGA`).
   - Leer JSON con `matchCentreData` y `matchCentreEventTypeJson`.
@@ -253,7 +253,7 @@ cuando sus dependencias estén satisfechas.
   - **Depends on**: T019, T015.
 
 - [x] **T021 - Implementar `WhoScoredPlaywrightAdapter`**
-  - Activar solo con `modo=automatico`.
+  - Instanciar desde `WhoScoredConfig` con `modo=automatico` (ver T032b).
   - Crear un único contexto persistente por carga con Chrome real,
     `--disable-blink-features=AutomationControlled`, sin
     `--enable-automation` y `navigator.webdriver` indefinido.
@@ -376,6 +376,53 @@ cuando sus dependencias estén satisfechas.
   - Verificar campos, estados, resumen por liga, pendientes y correlationId.
   - No modificar tests existentes de 004, 006, 007 ni 009.
   - **Depends on**: T031.
+
+## Phase 5b - Correcciones de revisión (SonarCloud y código)
+
+Correcciones posteriores a la primera versión de las fases 4 y 5, detectadas
+por SonarCloud y por revisión del código contra los hallazgos del spike.
+
+- [x] **T032a - Separar la transacción de persistencia en otro bean**
+  - Crear `GuardadoPartidoService` con `yaCargado` (solo lectura) y
+    `guardar` (`@Transactional`): idempotencia, `partido_externo`,
+    vinculación, métricas y pendientes.
+  - `CargaPartidoService` parsea fuera de la transacción y delega: evita la
+    auto-invocación de `@Transactional`, que no abría transacción.
+  - No duplicar pendientes: registrar solo si no existe uno sin resolver para
+    la misma fuente y `whoscoredId`.
+  - **Depends on**: T026.
+
+- [x] **T032b - Un único bean de `WhoScoredPort`**
+  - Crear `WhoScoredConfig` que devuelve el adapter de archivos o el de
+    Playwright según `modo`; quitar las anotaciones de Spring de ambos
+    adapters (Sonar: "Multiple beans").
+  - Agregar `finalizarCarga()` al port (default vacío): el adapter Playwright
+    cierra el navegador y el de archivos descarta su índice.
+  - **Depends on**: T020, T021.
+
+- [x] **T032c - Alinear adapters con el formato real del spike**
+  - Calendario: campos `homeTeamName`, `awayTeamName`, `elapsed`, `id` y
+    `startTime`; mes en formato `yyyyMM`; error explícito si falta un campo.
+  - HTML: extraer `matchId`, `matchCentreData` y `matchCentreEventTypeJson`
+    con `:` o `=`, respetando llaves dentro de strings.
+  - Modo archivos: `listarPartidos` arma el listado desde las páginas
+    guardadas (`{LIGA}/*.json|*.html`) filtrando por mes; archivos inválidos
+    se ignoran con warning.
+  - Playwright: sondear la lectura de datos hasta `timeoutMs` y aplicar
+    `pausaMs` entre partidos.
+  - **Depends on**: T020, T021, T022.
+
+- [x] **T032d - Robustez de la orquestación**
+  - La carga incremental del scheduler es sincrónica y empieza el primer día
+    del mes anterior (zona de negocio), nunca antes de `inicioTemporada`.
+  - No volver a descargar partidos ya cargados ni no terminados (`FT`).
+  - Un fallo al listar una liga o al cargar un partido no corta la carga:
+    suma fallidos y la ejecución queda `PARCIAL`; el estado por liga solo
+    toma los valores del contrato.
+  - Liberar el lock si falla el arranque de la carga asincrónica.
+  - Tests unitarios con mocks y test de integración que ejecuta la carga real
+    del fixture dos veces (idempotencia).
+  - **Depends on**: T025, T026, T028.
 
 ## Phase 6 - Documentation, manual verification and final validation
 

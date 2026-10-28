@@ -7,20 +7,20 @@ import com.microsoft.playwright.options.WaitUntilState;
 import com.formula11.config.ClockConfig;
 import com.formula11.config.WhoScoredProperties;
 import com.formula11.model.Liga;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.YearMonth;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-@Component
-@ConditionalOnProperty(name = "app.whoscored.modo", havingValue = "automatico", matchIfMissing = true)
 public class WhoScoredPlaywrightAdapter implements WhoScoredPort, AutoCloseable {
     private static final String BASE_URL = "https://www.whoscored.com";
+    /** El calendario de WhoScored pide el mes como yyyyMM (por ejemplo, 202610). */
+    private static final DateTimeFormatter FORMATO_MES = DateTimeFormatter.ofPattern("yyyyMM");
+    private static final double INTERVALO_SONDEO_MS = 1000;
     private final WhoScoredProperties properties;
     private final ObjectMapper objectMapper;
     private Playwright playwright;
@@ -53,7 +53,7 @@ public class WhoScoredPlaywrightAdapter implements WhoScoredPort, AutoCloseable 
         try {
             navegar(page, BASE_URL);
             String url = "/tournaments/" + properties.getLigas().get(liga)
-                    + "/data/?d=" + mes + "&isAggregate=false";
+                    + "/data/?d=" + mes.format(FORMATO_MES) + "&isAggregate=false";
             String json = evaluarConReintentos(page,
                     "() => fetch('" + url + "').then(response => response.text())");
             return new CalendarioWhoScoredParser(objectMapper).parse(json, liga,
@@ -77,6 +77,8 @@ public class WhoScoredPlaywrightAdapter implements WhoScoredPort, AutoCloseable 
             ZonedDateTime start = LocalDateTime.parse(parsed.path("startTime").asText())
                     .atZone(ZoneId.of(properties.getZonaFuente()))
                     .withZoneSameInstant(ClockConfig.ZONA_NEGOCIO);
+            // Pausa entre partidos para no saturar a WhoScored.
+            page.waitForTimeout(properties.getPausaMs());
             return new DatosPartidoWhoScored(partidoId, null, start, data, types);
         } finally {
             page.close();
@@ -89,16 +91,22 @@ public class WhoScoredPlaywrightAdapter implements WhoScoredPort, AutoCloseable 
                 .setTimeout(properties.getTimeoutMs()));
     }
 
+    /**
+     * Sondea la página hasta que la expresión devuelva datos o se agote app.whoscored.timeout-ms.
+     * La página de WhoScored sigue navegando después de cargar, así que los errores intermedios se ignoran.
+     */
     private String evaluarConReintentos(Page page, String expression) {
+        int intentos = Math.max(properties.getReintentos(),
+                (int) Math.ceil(properties.getTimeoutMs() / INTERVALO_SONDEO_MS));
         RuntimeException last = null;
-        for (int intento = 0; intento < properties.getReintentos(); intento++) {
+        for (int intento = 0; intento < intentos; intento++) {
             try {
                 Object value = page.evaluate(expression);
                 if (value instanceof String text && !text.isBlank() && !"null".equals(text)) return text;
             } catch (PlaywrightException exception) {
                 last = exception;
             }
-            page.waitForTimeout(properties.getPausaMs());
+            page.waitForTimeout(INTERVALO_SONDEO_MS);
         }
         throw new IllegalStateException("WhoScored no entregó los datos JavaScript", last);
     }
@@ -109,6 +117,11 @@ public class WhoScoredPlaywrightAdapter implements WhoScoredPort, AutoCloseable 
         } catch (Exception exception) {
             throw new IllegalStateException("JSON de WhoScored inválido", exception);
         }
+    }
+
+    @Override
+    public void finalizarCarga() {
+        close();
     }
 
     @Override

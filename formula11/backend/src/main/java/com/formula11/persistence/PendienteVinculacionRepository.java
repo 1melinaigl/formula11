@@ -9,4 +9,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface PendienteVinculacionRepository extends JpaRepository<PendienteVinculacion, Long> {
     Page<PendienteVinculacion> findByResueltoFalse(Pageable pageable);
     Page<PendienteVinculacion> findByLigaAndResueltoFalse(Liga liga, Pageable pageable);
+    boolean existsByFuenteAndWhoscoredIdAndResueltoFalse(String fuente, String whoscoredId);
 }

@@ -498,6 +498,20 @@ actualización y llamando a `RecalculoService`.
 5. Agregar controller/E2E con `@WithMockUser` para roles y estados.
 6. Ejecutar build, tests focalizados y luego la suite completa.
 
+### Ajustes de diseño tras la revisión (Phase 5b)
+
+- La persistencia de un partido vive en `GuardadoPartidoService`, un bean
+  distinto de `CargaPartidoService`, para que `@Transactional` aplique
+  (sin auto-invocación).
+- `WhoScoredConfig` crea el único bean de `WhoScoredPort` según `modo`; los
+  adapters no llevan anotaciones de Spring. El port suma `finalizarCarga()`
+  para liberar el navegador o el índice al terminar cada carga.
+- El modo archivos también lista partidos, a partir de las páginas guardadas.
+- El scheduler usa la carga incremental sincrónica (mes anterior y actual);
+  la carga manual sigue siendo asincrónica.
+- Los errores por liga y por partido se aíslan y dejan la ejecución
+  `PARCIAL`; los partidos ya cargados o no terminados no se descargan.
+
 ## Testing Strategy
 
 ### Unit tests without Spring or network

@@ -3,7 +3,6 @@ package com.formula11.controller;
 import com.formula11.dto.*;
 import com.formula11.model.EjecucionMetricas;
 import com.formula11.persistence.EjecucionMetricaLigaRepository;
-import com.formula11.persistence.PendienteVinculacionRepository;
 import com.formula11.service.CargaMetricasService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -23,14 +22,10 @@ import org.springframework.validation.annotation.Validated;
 public class MetricasController {
     private final CargaMetricasService service;
     private final EjecucionMetricaLigaRepository ligaRepository;
-    private final PendienteVinculacionRepository pendienteRepository;
 
-    public MetricasController(CargaMetricasService service,
-                               EjecucionMetricaLigaRepository ligaRepository,
-                               PendienteVinculacionRepository pendienteRepository) {
+    public MetricasController(CargaMetricasService service, EjecucionMetricaLigaRepository ligaRepository) {
         this.service = service;
         this.ligaRepository = ligaRepository;
-        this.pendienteRepository = pendienteRepository;
     }
 
     @PostMapping("/sincronizacion")
@@ -54,6 +49,6 @@ public class MetricasController {
     public PendientesPageResponse pendientes(
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
-        return service.pendientes(PageRequest.of(page, size), pendienteRepository);
+        return service.pendientes(PageRequest.of(page, size));
     }
 }
