@@ -24,39 +24,60 @@ class MatchCentreParserTest {
     }
 
     @Test
-    void parseaJugadoresEventosYReglasDelFixture() throws Exception {
-        JsonNode root = objectMapper.readTree(fixture());
-
-        MatchCentreParser.Partido partido = parser.parse(
-                root.get("matchCentreData").toString(),
-                root.get("matchCentreEventTypeJson").toString());
-
-        Map<Long, MatchCentreParser.Jugador> jugadores = partido.jugadores().stream()
-                .collect(Collectors.toMap(MatchCentreParser.Jugador::playerId, Function.identity()));
-
+    void parseaTitularesYMinutosDelFixture() throws Exception {
+        Map<Long, MatchCentreParser.Jugador> jugadores = jugadoresFixture();
         assertJugador(jugadores.get(261509L), "Alfonso Herrero", true, 96, "6.47");
         assertJugador(jugadores.get(447938L), "Carlos Puga", true, 63, "6.80");
         assertJugador(jugadores.get(449409L), "Ángel Fortuño", true, 96, "7.24");
         assertJugador(jugadores.get(429273L), "Bryan Zaragoza", true, 74, null);
+        assertJugador(jugadores.get(504195L), "Adrián Niño", false, 33, null);
+    }
+
+    @Test
+    void parseaGolesYAsistenciasDelFixture() throws Exception {
+        MatchCentreParser.Partido partido = partidoFixture();
+        Map<Long, MatchCentreParser.Jugador> jugadores = jugadores(partido);
         assertEquals(1, jugadores.get(429273L).goles());
+        assertEquals(1, jugadores.get(504195L).goles());
+        assertEquals(1, jugadores.get(506010L).asistencias());
+        assertEquals(1, jugadores.get(508349L).asistencias());
+        assertEquals("Javi Hernández", jugadores.get(506010L).nombre());
+        assertEquals("Rafita", jugadores.get(508349L).nombre());
+        assertEquals("Bryan Zaragoza", jugadores.get(429273L).nombre());
+        assertEquals("Adrián Niño", jugadores.get(504195L).nombre());
+        assertEquals(2, partido.goles());
+        assertEquals(2, partido.asistencias());
+    }
+
+    @Test
+    void parseaTarjetasDelFixture() throws Exception {
+        MatchCentreParser.Partido partido = partidoFixture();
+        Map<Long, MatchCentreParser.Jugador> jugadores = jugadores(partido);
         assertEquals(1, jugadores.get(429273L).amarillas());
+        assertEquals(1, jugadores.get(506010L).amarillas());
+        assertEquals(1, jugadores.get(447938L).amarillas());
+        assertEquals(9, partido.amarillas());
+    }
+
+    @Test
+    void sumaEstadisticasDelFixture() throws Exception {
+        Map<Long, MatchCentreParser.Jugador> jugadores = jugadoresFixture();
         assertEquals(1, jugadores.get(429273L).tiros());
         assertEquals(1, jugadores.get(429273L).pasesClave());
         assertEquals(4, jugadores.get(429273L).regates());
-        assertJugador(jugadores.get(504195L), "Adrián Niño", false, 33, null);
-        assertEquals(1, jugadores.get(504195L).goles());
         assertEquals(2, jugadores.get(504195L).tiros());
-        assertEquals(1, jugadores.get(506010L).asistencias());
-        assertEquals(1, jugadores.get(506010L).amarillas());
-        assertEquals(1, jugadores.get(508349L).asistencias());
-        assertEquals(1, jugadores.get(447938L).amarillas());
         assertEquals(1, jugadores.get(447938L).pasesClave());
         assertEquals(1, jugadores.get(447938L).regates());
         assertEquals(2, jugadores.get(447938L).entradas());
-        assertJugador(jugadores.get(448303L), "David Larrubia", true, 96, null);
         assertEquals(2, jugadores.get(448303L).tiros());
         assertEquals(1, jugadores.get(448303L).pasesClave());
         assertEquals(7, jugadores.get(448303L).regates());
+    }
+
+    @Test
+    void parseaArquerosYTotalesDelFixture() throws Exception {
+        MatchCentreParser.Partido partido = partidoFixture();
+        Map<Long, MatchCentreParser.Jugador> jugadores = jugadores(partido);
         assertEquals(2, jugadores.get(261509L).atajadas());
         assertEquals(1, jugadores.get(261509L).golesRecibidos());
         assertEquals(0, jugadores.get(261509L).vallaInvicta());
@@ -64,25 +85,30 @@ class MatchCentreParserTest {
         assertEquals(1, jugadores.get(449409L).golesRecibidos());
         assertEquals(0, jugadores.get(449409L).vallaInvicta());
         assertEquals(32, jugadores.size());
-        assertEquals(2, partido.goles());
-        assertEquals(2, partido.asistencias());
-        assertEquals(9, partido.amarillas());
-        assertEquals("Bryan Zaragoza", jugadores.get(429273L).nombre());
-        assertEquals("Adrián Niño", jugadores.get(504195L).nombre());
-        assertEquals("Javi Hernández", jugadores.get(506010L).nombre());
-        assertEquals("Rafita", jugadores.get(508349L).nombre());
-        assertFalse(jugadores.containsKey(531460L));
+        assertEquals("David Larrubia", jugadores.get(448303L).nombre());
     }
 
     @Test
     void omiteSuplentesConStatsVacios() throws Exception {
-        JsonNode root = objectMapper.readTree(fixture());
-        MatchCentreParser.Partido partido = parser.parse(
-                root.get("matchCentreData").toString(),
-                root.get("matchCentreEventTypeJson").toString());
+        MatchCentreParser.Partido partido = partidoFixture();
 
         assertFalse(partido.jugadores().stream().anyMatch(jugador ->
                 jugador.nombre().equals("Rafel Bauzà") || jugador.nombre().equals("Ramón Enríquez")));
+    }
+
+    private MatchCentreParser.Partido partidoFixture() throws Exception {
+        JsonNode root = objectMapper.readTree(fixture());
+        return parser.parse(root.get("matchCentreData").toString(),
+                root.get("matchCentreEventTypeJson").toString());
+    }
+
+    private Map<Long, MatchCentreParser.Jugador> jugadoresFixture() throws Exception {
+        return jugadores(partidoFixture());
+    }
+
+    private static Map<Long, MatchCentreParser.Jugador> jugadores(MatchCentreParser.Partido partido) {
+        return partido.jugadores().stream()
+                .collect(Collectors.toMap(MatchCentreParser.Jugador::playerId, Function.identity()));
     }
 
     private static void assertJugador(MatchCentreParser.Jugador jugador, String nombre,

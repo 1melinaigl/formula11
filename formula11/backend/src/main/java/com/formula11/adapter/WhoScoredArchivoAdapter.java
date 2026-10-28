@@ -80,8 +80,11 @@ public class WhoScoredArchivoAdapter implements WhoScoredPort {
                     .atZone(ZoneId.of(properties.getZonaFuente()))
                     .withZoneSameInstant(ClockConfig.ZONA_NEGOCIO);
             return new DatosPartidoWhoScored(partidoId, liga, start, data, types);
-        } catch (IOException | RuntimeException exception) {
-            if (exception instanceof IllegalArgumentException) throw (IllegalArgumentException) exception;
+        } catch (IllegalArgumentException exception) {
+            throw exception;
+        } catch (IOException exception) {
+            throw new IllegalStateException("No se pudo leer " + path, exception);
+        } catch (RuntimeException exception) {
             throw new IllegalStateException("No se pudo leer " + path, exception);
         }
     }

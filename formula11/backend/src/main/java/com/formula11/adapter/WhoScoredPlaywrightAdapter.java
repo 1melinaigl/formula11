@@ -16,7 +16,6 @@ import java.time.ZoneId;
 import java.time.YearMonth;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Objects;
 
 @Component
 @ConditionalOnProperty(name = "app.whoscored.modo", havingValue = "automatico", matchIfMissing = true)
@@ -87,7 +86,7 @@ public class WhoScoredPlaywrightAdapter implements WhoScoredPort, AutoCloseable 
     private void navegar(Page page, String url) {
         page.navigate(url, new Page.NavigateOptions()
                 .setWaitUntil(WaitUntilState.COMMIT)
-                .setTimeout(properties.getTimeout().toMillis()));
+                .setTimeout((double) properties.getTimeout().toMillis()));
     }
 
     private String evaluarConReintentos(Page page, String expression) {
@@ -99,7 +98,7 @@ public class WhoScoredPlaywrightAdapter implements WhoScoredPort, AutoCloseable 
             } catch (PlaywrightException exception) {
                 last = exception;
             }
-            page.waitForTimeout(properties.getPausa().toMillis());
+            page.waitForTimeout((double) properties.getPausa().toMillis());
         }
         throw new IllegalStateException("WhoScored no entregó los datos JavaScript", last);
     }
