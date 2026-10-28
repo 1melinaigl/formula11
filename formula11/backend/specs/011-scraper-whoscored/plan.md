@@ -30,7 +30,9 @@ con secuencias `allocationSize = 50`.
 
 **External data**: Playwright para Java con Chrome persistente. El endpoint de
 calendario se consulta desde una página WhoScored mediante `page.evaluate` +
-`fetch` para conservar las cookies:
+`fetch` para conservar las cookies. `WhoScoredProperties` expone `pausaMs` y
+`timeoutMs` como `double` en milisegundos, validados como positivos, porque
+Playwright recibe esos valores directamente:
 
 ```text
 https://www.whoscored.com/tournaments/{stageId}/data/?d={yyyyMM}&isAggregate=false
@@ -473,7 +475,7 @@ actualización y llamando a `RecalculoService`.
 1. Implementar adapter de archivos y extracción HTML.
 2. Implementar adapter Playwright con contexto único por carga.
 3. Implementar calendario mensual por `page.evaluate` + `fetch`.
-4. Agregar reintentos, timeout, pausa y cierre seguro.
+4. Agregar reintentos, `timeoutMs`, `pausaMs` y cierre seguro.
 5. Documentar instalación de browsers, configuración y verificación manual en
    `quickstart.md`; no automatizar estas pruebas de red.
 

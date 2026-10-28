@@ -24,6 +24,15 @@ La prueba descartable funcionó utilizando:
 Esto justifica que el adapter automático use Chrome real, perfil persistente y
 una única sesión de navegador reutilizada durante una carga.
 
+El timeout y la pausa del adapter se configuran como `timeoutMs` y `pausaMs`,
+valores `double` positivos en milisegundos, para pasarlos directamente a la
+API de Playwright sin conversiones implícitas.
+
+El archivo `WhoScoredPlaywrightAdapter.java` está excluido de la métrica de
+cobertura de SonarCloud porque requiere Chrome, red y una verificación manual
+según [quickstart.md](quickstart.md); los demás componentes de la feature se
+cubren con tests unitarios offline.
+
 ## 2. Dónde están los datos
 
 El HTML devuelto por `page.content()` no contiene de forma confiable

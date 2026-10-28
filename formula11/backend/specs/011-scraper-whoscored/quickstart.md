@@ -37,8 +37,8 @@ app:
     zona-fuente: Europe/London
     perfil-dir: C:/ruta/segura/whoscored-perfil
     headless: false
-    pausa: 3s
-    timeout: 90s
+    pausa-ms: 3000
+    timeout-ms: 90000
     reintentos: 30
     carpeta-paginas: C:/ruta/opcional/whoscored
 ```
@@ -174,4 +174,3 @@ Registrar para la verificación:
 No guardar cookies, credenciales, tokens ni el contenido del perfil persistente
 en el repositorio. La medición del porcentaje de vinculación se realiza recién
 en la primera carga real y se documenta en `research.md`.
-

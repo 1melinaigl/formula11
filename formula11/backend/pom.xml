@@ -25,7 +25,7 @@
         <sonar.projectKey>1melinaigl_formula11</sonar.projectKey>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-        <sonar.coverage.exclusions>**/dto/**,**/model/**,**/config/**,**/persistence/**,**/Formula11Application.java,**/adapter/External*.java</sonar.coverage.exclusions>
+        <sonar.coverage.exclusions>**/dto/**,**/model/**,**/config/**,**/persistence/**,**/Formula11Application.java,**/adapter/External*.java,**/adapter/WhoScoredPlaywrightAdapter.java</sonar.coverage.exclusions>
     </properties>
 
     <dependencies>

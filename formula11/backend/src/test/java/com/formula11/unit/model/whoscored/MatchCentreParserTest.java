@@ -156,6 +156,29 @@ class MatchCentreParserTest {
         assertEquals(0, jugadores.get(2L).vallaInvicta());
     }
 
+    @Test
+    void rechazaJsonDeMatchCentreInvalido() {
+        assertThrows(IllegalArgumentException.class, () -> parser.parse("{", "{}"));
+    }
+
+    @Test
+    void noCuentaGolEnPropiaPuertaComoGol() {
+        String data = """
+                {
+                  "expandedMaxMinute": 90, "events": [
+                    {"type":{"displayName":"Goal"},"playerId":1,"teamId":"2",
+                     "expandedMinute":10,"qualifiers":[{"type":{"displayName":"OwnGoal"}}]}
+                  ],
+                  "home":{"teamId":1,"name":"Local","players":[]},
+                  "away":{"teamId":2,"name":"Visitante","players":[]}
+                }
+                """;
+
+        MatchCentreParser.Partido partido = parser.parse(data, "{\"assist\":92}");
+
+        assertEquals(0, partido.goles());
+    }
+
     private static InputStream fixture() {
         InputStream stream = MatchCentreParserTest.class.getResourceAsStream(
                 "/whoscored/LA_LIGA/partido-1994169.json");

@@ -54,8 +54,8 @@ app:
     zona-fuente: ${APP_WHOSCORED_ZONA_FUENTE:Europe/London}
     perfil-dir: ${APP_WHOSCORED_PERFIL_DIR:target/whoscored-perfil}
     headless: ${APP_WHOSCORED_HEADLESS:false}
-    pausa: ${APP_WHOSCORED_PAUSA:3s}
-    timeout: ${APP_WHOSCORED_TIMEOUT:90s}
+    pausa-ms: ${APP_WHOSCORED_PAUSA_MS:3000}
+    timeout-ms: ${APP_WHOSCORED_TIMEOUT_MS:90000}
     reintentos: ${APP_WHOSCORED_REINTENTOS:3}
     carpeta-paginas: ${APP_WHOSCORED_CARPETA_PAGINAS:target/whoscored-paginas}
 # Fuera de los perfiles local y test, SUPERUSUARIO_EMAIL y SUPERUSUARIO_PASSWORD son obligatorias:

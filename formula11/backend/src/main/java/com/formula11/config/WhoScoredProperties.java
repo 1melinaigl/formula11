@@ -5,11 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.AssertTrue;
-import org.hibernate.validator.constraints.time.DurationMin;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.EnumMap;
@@ -34,12 +32,10 @@ public class WhoScoredProperties {
     @NotBlank
     private String perfilDir = "target/whoscored-perfil";
     private boolean headless;
-    @NotNull
-    @DurationMin(millis = 1)
-    private Duration pausa = Duration.ofSeconds(3);
-    @NotNull
-    @DurationMin(millis = 1)
-    private Duration timeout = Duration.ofSeconds(90);
+    @Positive
+    private double pausaMs = 3000;
+    @Positive
+    private double timeoutMs = 90000;
     @Positive
     private int reintentos = 3;
     @NotBlank
@@ -57,10 +53,10 @@ public class WhoScoredProperties {
     public void setPerfilDir(String perfilDir) { this.perfilDir = perfilDir; }
     public boolean isHeadless() { return headless; }
     public void setHeadless(boolean headless) { this.headless = headless; }
-    public Duration getPausa() { return pausa; }
-    public void setPausa(Duration pausa) { this.pausa = pausa; }
-    public Duration getTimeout() { return timeout; }
-    public void setTimeout(Duration timeout) { this.timeout = timeout; }
+    public double getPausaMs() { return pausaMs; }
+    public void setPausaMs(double pausaMs) { this.pausaMs = pausaMs; }
+    public double getTimeoutMs() { return timeoutMs; }
+    public void setTimeoutMs(double timeoutMs) { this.timeoutMs = timeoutMs; }
     public int getReintentos() { return reintentos; }
     public void setReintentos(int reintentos) { this.reintentos = reintentos; }
     public String getCarpetaPaginas() { return carpetaPaginas; }
@@ -88,12 +84,6 @@ public class WhoScoredProperties {
                     Long stageId = ligas.get(liga);
                     return stageId != null && stageId > 0;
                 });
-    }
-
-    @AssertTrue(message = "app.whoscored.pausa y timeout deben ser positivos")
-    public boolean areDurationsPositive() {
-        return pausa != null && !pausa.isNegative() && !pausa.isZero()
-                && timeout != null && !timeout.isNegative() && !timeout.isZero();
     }
 
     @AssertTrue(message = "app.whoscored.reintentos debe ser positivo")

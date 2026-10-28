@@ -37,4 +37,21 @@ class WhoScoredHtmlParserTest {
 
         assertTrue(error.getMessage().contains("matchCentreData"));
     }
+
+    @Test
+    void fallaCuandoElObjetoEstaIncompleto() {
+        assertThrows(IllegalArgumentException.class, () ->
+                WhoScoredHtmlParser.extraer(
+                        "require.config.params.args.matchCentreData = {\"incompleto\": true"));
+    }
+
+    @Test
+    void fallaCuandoElSegundoObjetoEsInvalido() {
+        String html = """
+                require.config.params.args.matchCentreData = {};
+                require.config.params.args.matchCentreEventTypeJson = { "texto": };
+                """;
+
+        assertThrows(IllegalArgumentException.class, () -> WhoScoredHtmlParser.extraer(html));
+    }
 }

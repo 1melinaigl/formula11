@@ -101,7 +101,7 @@ cuando sus dependencias estén satisfechas.
 - [x] **T004 - Crear configuración de WhoScored**
   - Crear `WhoScoredProperties` con `@ConfigurationProperties("app.whoscored")`.
   - Implementar `modo`, mapa de ligas/stage IDs, `inicioTemporada`,
-    `zonaFuente`, `perfilDir`, `headless`, `pausa`, `timeout`, `reintentos` y
+    `zonaFuente`, `perfilDir`, `headless`, `pausaMs`, `timeoutMs`, `reintentos` y
     `carpetaPaginas`.
   - Validar `automatico`/`archivos`, zona horaria, duraciones positivas y
     stage IDs completos.

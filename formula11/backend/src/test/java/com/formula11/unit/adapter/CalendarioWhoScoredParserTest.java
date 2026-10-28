@@ -33,4 +33,41 @@ class CalendarioWhoScoredParserTest {
         assertEquals("2026-10-09T16:00-03:00", partidos.get(0).startTime().toString());
         assertEquals("NS", partidos.get(1).elapsed());
     }
+
+    @Test
+    void aceptaStatusTextualYEquiposComoTexto() {
+        String json = """
+                {"tournaments":[{"matches":[
+                  {"id":103,"startTime":"2026-10-09T20:00:00",
+                   "homeTeam":"Local","awayTeam":"Visitante","status":"FT"}
+                ]}]}
+                """;
+
+        var partidos = new CalendarioWhoScoredParser(new ObjectMapper())
+                .parse(json, Liga.SERIE_A, ZoneId.of("UTC"), ZoneId.of("UTC"));
+
+        assertEquals("Local", partidos.get(0).equipoLocal());
+        assertEquals("Visitante", partidos.get(0).equipoVisitante());
+        assertEquals("FT", partidos.get(0).elapsed());
+    }
+
+    @Test
+    void rechazaPartidoSinFecha() {
+        String json = """
+                {"tournaments":[{"matches":[
+                  {"id":104,"homeTeam":{"name":"Local"},"awayTeam":{"name":"Visitante"}}
+                ]}]}
+                """;
+
+        assertThrows(IllegalArgumentException.class, () ->
+                new CalendarioWhoScoredParser(new ObjectMapper()).parse(
+                        json, Liga.SERIE_A, ZoneId.of("UTC"), ZoneId.of("UTC")));
+    }
+
+    @Test
+    void rechazaJsonInvalido() {
+        assertThrows(IllegalArgumentException.class, () ->
+                new CalendarioWhoScoredParser(new ObjectMapper()).parse(
+                        "{", Liga.SERIE_A, ZoneId.of("UTC"), ZoneId.of("UTC")));
+    }
 }
