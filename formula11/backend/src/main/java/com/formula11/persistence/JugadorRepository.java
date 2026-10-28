@@ -14,4 +14,5 @@ public interface JugadorRepository extends JpaRepository<Jugador, Long>, JpaSpec
     List<Jugador> findAllByOrigen(String origen);
     java.util.Optional<Jugador> findByWhoscoredId(String whoscoredId);
     List<Jugador> findByLigaAndNombreIgnoreCase(Liga liga, String nombre);
+    List<Jugador> findByLiga(Liga liga);
 }

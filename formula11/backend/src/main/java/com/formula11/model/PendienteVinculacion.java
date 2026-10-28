@@ -31,6 +31,16 @@ public class PendienteVinculacion {
 
     protected PendienteVinculacion() {}
 
+    public PendienteVinculacion(String fuente, String whoscoredId, String nombre,
+                                String equipo, Liga liga, Instant fechaRegistro) {
+        this.fuente = fuente;
+        this.whoscoredId = whoscoredId;
+        this.nombre = nombre;
+        this.equipo = equipo;
+        this.liga = liga;
+        this.fechaRegistro = fechaRegistro;
+    }
+
     public Long getId() { return id; }
     public String getFuente() { return fuente; }
     public String getWhoscoredId() { return whoscoredId; }

@@ -177,21 +177,21 @@ cuando sus dependencias estén satisfechas.
 
 ## Phase 2 - Pure parser and player linking
 
-- [ ] **T013 - Definir records puros de WhoScored**
+- [x] **T013 - Definir records puros de WhoScored**
   - Crear records de resumen de partido, datos crudos y salida por jugador.
   - No exponer tipos de Playwright, Spring, JPA ni HTTP.
   - Representar equipo, marcador, `expandedMaxMinute`, eventos y métricas
     suficientes para calcular goles recibidos y valla invicta.
   - **Depends on**: T003.
 
-- [ ] **T014 - Implementar normalización de nombres**
+- [x] **T014 - Implementar normalización de nombres**
   - Crear una utilidad pura que elimine diacríticos, use `Locale.ROOT`,
     convierta a minúsculas, recorte y colapse espacios.
   - Cubrir nombres con tildes, mayúsculas, espacios repetidos y entradas
     inválidas.
   - **Depends on**: T013.
 
-- [ ] **T015 - Implementar `MatchCentreParser`**
+- [x] **T015 - Implementar `MatchCentreParser`**
   - Parsear ambos JSON con Jackson sin dependencia de Spring.
   - Omitir suplentes con `stats` vacío.
   - Calcular minutos desde 0 o `subbedInExpandedMinute` hasta salida o
@@ -204,7 +204,7 @@ cuando sus dependencias estén satisfechas.
   - Calcular goles recibidos y valla invicta según las reglas de la spec.
   - **Depends on**: T013, T014.
 
-- [ ] **T016 - Probar el parser con el fixture**
+- [x] **T016 - Probar el parser con el fixture**
   - Crear `MatchCentreParserTest` usando
     `src/test/resources/whoscored/LA_LIGA/partido-1994169.json`.
   - Ubicar el test en `src/test/java/com/formula11/unit/`.
@@ -213,7 +213,7 @@ cuando sus dependencias estén satisfechas.
   - Agregar casos de suplente sin estadísticas, rating final y arqueros.
   - **Depends on**: T015.
 
-- [ ] **T017 - Implementar vinculación al catálogo**
+- [x] **T017 - Implementar vinculación al catálogo**
   - Crear `JugadorVinculacionService` con búsqueda por liga y nombre
     normalizado.
   - Reutilizar `whoscoredId` cuando ya existe.
@@ -224,7 +224,7 @@ cuando sus dependencias estén satisfechas.
   - Persistir `whoscoredId` solo en coincidencias inequívocas.
   - **Depends on**: T010, T014.
 
-- [ ] **T018 - Probar normalización y vinculación**
+- [x] **T018 - Probar normalización y vinculación**
   - Crear tests de candidato único, equipo contenido, homónimo ambiguo y
     ausencia de candidato.
   - Verificar que una vinculación ambigua no modifica jugadores ni asigna un
