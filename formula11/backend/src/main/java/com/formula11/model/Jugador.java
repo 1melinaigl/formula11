@@ -21,6 +21,8 @@ public class Jugador {
     private String externalProvider;
     @Column(name = "external_id", length = 100)
     private String externalId;
+    @Column(name = "whoscored_id", length = 100)
+    private String whoscoredId;
     @Column(nullable = false, length = 20)
     private String origen = "LEGACY";
 
@@ -60,5 +62,10 @@ public class Jugador {
     public String getPosicion() { return posicion; }
     public String getExternalProvider() { return externalProvider; }
     public String getExternalId() { return externalId; }
+    public String getWhoscoredId() { return whoscoredId; }
     public String getOrigen() { return origen; }
+
+    public void asignarWhoscoredId(String whoscoredId) {
+        this.whoscoredId = whoscoredId == null || whoscoredId.isBlank() ? null : whoscoredId.trim();
+    }
 }

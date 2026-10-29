@@ -19,12 +19,13 @@
         <springdoc.version>2.8.13</springdoc.version>
         <testcontainers.version>1.21.3</testcontainers.version>
         <jacoco.version>0.8.12</jacoco.version>
+        <playwright.version>1.52.0</playwright.version>
 
         <sonar.organization>1melinaigl</sonar.organization>
         <sonar.projectKey>1melinaigl_formula11</sonar.projectKey>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-        <sonar.coverage.exclusions>**/dto/**,**/model/**,**/config/**,**/persistence/**,**/Formula11Application.java,**/adapter/External*.java</sonar.coverage.exclusions>
+        <sonar.coverage.exclusions>**/dto/**,**/model/**,**/config/**,**/persistence/**,**/Formula11Application.java,**/adapter/External*.java,**/adapter/WhoScoredPlaywrightAdapter.java</sonar.coverage.exclusions>
     </properties>
 
     <dependencies>
@@ -47,6 +48,11 @@
         <dependency><groupId>org.testcontainers</groupId><artifactId>junit-jupiter</artifactId><version>${testcontainers.version}</version><scope>test</scope></dependency>
         <dependency><groupId>org.testcontainers</groupId><artifactId>postgresql</artifactId><version>${testcontainers.version}</version><scope>test</scope></dependency>
         <dependency><groupId>org.testcontainers</groupId><artifactId>jdbc</artifactId><version>${testcontainers.version}</version><scope>test</scope></dependency>
+        <dependency>
+            <groupId>com.microsoft.playwright</groupId>
+            <artifactId>playwright</artifactId>
+            <version>${playwright.version}</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

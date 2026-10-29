@@ -42,6 +42,22 @@ app:
     cache-ttl: ${FOOTBALL_API_CACHE_TTL:15m}
     cache-maximum-size: ${FOOTBALL_API_CACHE_MAXIMUM_SIZE:500}
     minimum-request-interval: ${FOOTBALL_API_MINIMUM_REQUEST_INTERVAL:0ms}
+  whoscored:
+    modo: ${APP_WHOSCORED_MODO:automatico}
+    ligas:
+      PREMIER_LEAGUE: 25544
+      BUNDESLIGA: 25666
+      LA_LIGA: 25662
+      SERIE_A: 25518
+      LIGUE_1: 25554
+    inicio-temporada: ${APP_WHOSCORED_INICIO_TEMPORADA:2026-08-01}
+    zona-fuente: ${APP_WHOSCORED_ZONA_FUENTE:Europe/London}
+    perfil-dir: ${APP_WHOSCORED_PERFIL_DIR:target/whoscored-perfil}
+    headless: ${APP_WHOSCORED_HEADLESS:false}
+    pausa-ms: ${APP_WHOSCORED_PAUSA_MS:3000}
+    timeout-ms: ${APP_WHOSCORED_TIMEOUT_MS:90000}
+    reintentos: ${APP_WHOSCORED_REINTENTOS:3}
+    carpeta-paginas: ${APP_WHOSCORED_CARPETA_PAGINAS:target/whoscored-paginas}
 # Fuera de los perfiles local y test, SUPERUSUARIO_EMAIL y SUPERUSUARIO_PASSWORD son obligatorias:
 # sin ellas MercadoProperties falla la validación y la aplicación no arranca.
 mercado:

@@ -14,6 +14,9 @@ public class MetricaPartido {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "jugador_id", nullable = false)
     private Jugador jugador;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "partido_externo_id")
+    private PartidoExterno partidoExterno;
     @Column(name = "fecha_partido", nullable = false)
     private LocalDate fechaPartido;
     private String rival;
@@ -82,4 +85,9 @@ public class MetricaPartido {
     public int getVallaInvicta() { return vallaInvicta; }
     public BigDecimal getRating() { return rating; }
     public String getFuente() { return fuente; }
+    public PartidoExterno getPartidoExterno() { return partidoExterno; }
+
+    public void asociarPartidoExterno(PartidoExterno partidoExterno) {
+        this.partidoExterno = partidoExterno;
+    }
 }

@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface MetricaPartidoRepository extends JpaRepository<MetricaPartido, Long> {
     List<MetricaPartido> findByFechaPartidoBetween(LocalDate desde, LocalDate hasta);
+    boolean existsByPartidoExternoId(Long partidoExternoId);
 }
