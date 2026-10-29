@@ -3,8 +3,8 @@
 **Feature**: `011-scraper-whoscored`  
 **Fuente**: prueba descartable de la rama `spike-whoscored` y fixture local
 `src/test/resources/whoscored/LA_LIGA/partido-1994169.json`.
-**Estado**: hallazgos verificados; no contiene mediciones de una carga
-productiva.
+**Estado**: hallazgos verificados; la sección 9 registra la primera carga
+real en modo automático (2026-10-29).
 
 ## 1. Protección anti-bots y configuración del navegador
 
@@ -179,8 +179,8 @@ La decisión de vinculación es:
    y no elegir por posición u otra heurística.
 5. Guardar el `whoscoredId` cuando la vinculación es inequívoca.
 
-El porcentaje de jugadores vinculados se medirá en la primera carga real. No se
-informa aquí ningún porcentaje porque todavía no existe esa medición.
+El porcentaje de jugadores vinculados se midió en la primera carga real; ver
+la sección 9.
 
 ## 8. Alternativas descartadas
 
@@ -201,3 +201,105 @@ navegando.
 Descartado: requiere abrir muchas más páginas y repite navegación para datos que
 WhoScored entrega juntos en la página del partido. El diseño scrapea por
 partido y procesa los jugadores de ambos equipos en una sola carga.
+
+## 9. Primera carga real (verificación manual, 2026-10-29)
+
+Carga hecha en la computadora de la demo siguiendo
+[quickstart.md](quickstart.md). Todos los números salen de
+`GET /api/metricas/sincronizacion/{id}`, del log del backend y de consultas
+directas a la base después de la carga.
+
+### Configuración no sensible
+
+- `modo: automatico`, `headless: false`, perfil persistente propio y fuera del
+  repositorio (pasado por variable de entorno, no commiteado).
+- `stageId`, `inicio-temporada`, `zona-fuente`, `pausa-ms`, `timeout-ms` y
+  `reintentos` con los valores de `application.yml`.
+- Chrome real (`channel: chrome`). En el primer arranque Playwright 1.52.0
+  descargó sus binarios.
+- PostgreSQL local con el catálogo ya sincronizado desde Football-Data
+  (2629 jugadores) y sin métricas previas.
+
+### Ejecuciones
+
+| Ejecución | `correlationId` | `desde` | Inicio (UTC) | Fin (UTC) | Duración | Estado |
+|---:|---|---|---|---|---|---|
+| 1 | `prueba-whoscored-20261029` | 2026-10-20 | 14:04:09 | 14:11:50 | 7 min 41 s | `COMPLETADA` |
+| 2 | `historica-whoscored-20261029` | 2026-08-01 | 14:12:01 | 14:45:06 | 33 min 5 s | `COMPLETADA` |
+
+La duración de la ejecución 1 incluye la descarga inicial de los binarios de
+Playwright.
+
+Resumen por liga. "Omitidos" es `encontrados - cargados`: partidos no
+terminados, anteriores a `desde` o ya cargados. En la ejecución 2 incluye los
+57 partidos de la ejecución 1, que no se volvieron a descargar.
+
+| Ejecución | Liga | Encontrados | Cargados | Omitidos | Fallidos | Vinculados* | Pendientes* |
+|---:|---|---:|---:|---:|---:|---:|---:|
+| 1 | Premier League | 38 | 10 | 28 | 0 | 283 | 20 |
+| 1 | Bundesliga | 34 | 9 | 25 | 0 | 255 | 26 |
+| 1 | La Liga | 36 | 11 | 25 | 0 | 280 | 68 |
+| 1 | Serie A | 43 | 18 | 25 | 0 | 513 | 58 |
+| 1 | Ligue 1 | 31 | 9 | 22 | 0 | 231 | 48 |
+| 2 | Premier League | 88 | 70 | 18 | 0 | 2010 | 148 |
+| 2 | Bundesliga | 70 | 54 | 16 | 0 | 1530 | 168 |
+| 2 | La Liga | 105 | 88 | 17 | 0 | 2233 | 559 |
+| 2 | Serie A | 93 | 70 | 23 | 0 | 1991 | 235 |
+| 2 | Ligue 1 | 76 | 63 | 13 | 0 | 1632 | 341 |
+
+\* Los contadores del resumen cuentan **apariciones** (jugador por partido), no
+jugadores únicos.
+
+No hubo errores por liga ni partidos fallidos. El log no registró `WARN` ni
+`ERROR` durante las cargas. WhoScored no mostró ninguna verificación que
+hubiera que resolver a mano. Chrome llegó a las páginas `/Matches/{id}/Live`, la
+lectura por JavaScript funcionó y el navegador se cerró al terminar.
+
+### Estado de la base después de las dos cargas
+
+| Liga | Partidos | Primer partido | Último partido | Jugadores vinculados (únicos) | Pendientes (únicos) | % vinculados |
+|---|---:|---|---|---:|---:|---:|
+| Premier League | 80 | 2026-08-21 | 2026-10-25 | 411 | 36 | 91,9 % |
+| Bundesliga | 63 | 2026-08-28 | 2026-10-25 | 361 | 40 | 90,0 % |
+| La Liga | 99 | 2026-08-15 | 2026-10-26 | 370 | 110 | 77,1 % |
+| Serie A | 88 | 2026-08-22 | 2026-10-28 | 422 | 64 | 86,8 % |
+| Ligue 1 | 72 | 2026-08-21 | 2026-10-26 | 332 | 86 | 79,4 % |
+| **Total** | **402** | | | **1896** | **336** | **84,9 %** |
+
+- Filas en `metrica_partido`: 10958, de 1896 jugadores distintos.
+- Ningún pendiente quedó también vinculado: los dos conjuntos son disjuntos.
+- % vinculados por jugador único = `vinculados / (vinculados + pendientes)`
+  = 1896 / 2232 = 84,9 %.
+- % por aparición: 10958 / (10958 + 1671) = 86,8 %.
+
+### Causas de los pendientes
+
+`pendiente_vinculacion` no guarda la causa. Se clasificaron los 336 pendientes
+fuera del sistema, comparándolos con `jugadores` mediante la misma
+normalización de `NormalizadorNombre`:
+
+| Causa | Cantidad | Ejemplos (WhoScored → catálogo) |
+|---|---:|---|
+| Ningún jugador del catálogo de esa liga tiene ese nombre, ni completo ni parcial (el equipo sí existe) | 202 | Abdul Fatawu (Ipswich), Charly Alcaraz (Everton) |
+| El mismo jugador figura con otro nombre: nombre abreviado, apellido compuesto o guion contra espacio | 104 | "Kiernan Dewsbury-Hall" → "Kiernan Dewsbury Hall"; "Jaden Philogene" → "Jaden Philogene-Bidace"; "Igor Thiago" → "Thiago"; "Reinildo Mandava" → "Reinildo" |
+| No está en el catálogo y el nombre del equipo tampoco coincide por contención | 26 | Joe Scally (Borussia M.Gladbach), Rômulo (RBL) |
+| Está en el catálogo pero en otra liga: transferencia o catálogo desactualizado | 4 | Cody Drameh (WhoScored: Hull; catálogo: Genoa) |
+| Homónimo ambiguo dentro de la liga | 0 | — |
+
+Por liga, La Liga (110) y Ligue 1 (86) concentran la mayoría de los pendientes.
+Las causas más comunes son jugadores que faltan en el catálogo de Football-Data
+y diferencias de escritura del nombre entre las dos fuentes. Como lo exige la
+regla de vinculación, ningún pendiente se asignó por heurística.
+
+### Recálculo de cotizaciones (006)
+
+`POST /api/cotizaciones/recalcular` (`correlationId`
+`recalculo-post-whoscored-20261029`) respondió `COMPLETADO`:
+`semanasCalculadas=1`, `jugadoresCotizados=5258`, `jugadoresSinMetricas=1355`,
+estrategias `RENDIMIENTO_POSICION` v1 y `CONSISTENCIA` v1. Duró 53 s.
+
+### Respaldo
+
+Después del recálculo se hizo un `pg_dump` de la base a un archivo `.sql`, que
+se guardó fuera del repositorio. No se commitearon cookies, el token, el perfil
+de Chrome ni el dump.

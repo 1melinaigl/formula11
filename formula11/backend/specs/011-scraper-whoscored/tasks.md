@@ -426,7 +426,7 @@ por SonarCloud y por revisión del código contra los hallazgos del spike.
 
 ## Phase 6 - Documentation, manual verification and final validation
 
-- [ ] **T033 - Completar documentación operativa**
+- [x] **T033 - Completar documentación operativa**
   - Mantener `research.md` con hallazgos verificados y sin inventar
     mediciones.
   - Mantener `quickstart.md` con configuración automática, Chrome, login,
@@ -435,14 +435,14 @@ por SonarCloud y por revisión del código contra los hallazgos del spike.
     real.
   - **Depends on**: T021, T030.
 
-- [ ] **T034 - Preparar medición de la primera carga real**
+- [x] **T034 - Preparar medición de la primera carga real**
   - Definir en logs/resumen los totales necesarios: jugadores detectados,
     vinculados, pendientes por causa, partidos por liga, omitidos, tiempos y
     errores.
   - No reportar porcentajes antes de ejecutar una carga real controlada.
   - **Depends on**: T025, T032, T033.
 
-- [ ] **T035 - Verificar instalación automática manualmente**
+- [x] **T035 - Verificar instalación automática manualmente**
   - Seguir [quickstart.md](quickstart.md) con `modo=automatico`.
   - Confirmar Chrome real, perfil persistente, lectura JavaScript y cierre del
     navegador.
@@ -450,7 +450,7 @@ por SonarCloud y por revisión del código contra los hallazgos del spike.
     resultados.
   - **Depends on**: T032, T033.
 
-- [ ] **T036 - Ejecutar validación focalizada**
+- [x] **T036 - Ejecutar validación focalizada**
   - Ejecutar:
     `mvn test-compile`
   - Ejecutar unitarios de parser, normalización, vinculación y adapters de
@@ -458,7 +458,7 @@ por SonarCloud y por revisión del código contra los hallazgos del spike.
   - Ejecutar integración de carga en modo archivos y tests de controller.
   - **Depends on**: T016, T018, T023, T028, T032.
 
-- [ ] **T037 - Ejecutar regresión completa y revisar alcance**
+- [x] **T037 - Ejecutar regresión completa y revisar alcance**
   - Ejecutar `mvn test`.
   - Confirmar que no se modificaron interfaces, DTOs ni tests de 004, 006,
     007 y 009.
