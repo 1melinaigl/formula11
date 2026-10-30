@@ -48,4 +48,11 @@ public interface CotizacionRepository extends JpaRepository<Cotizacion, Long>, J
     @Override
     @EntityGraph(attributePaths = "jugador")
     Page<Cotizacion> findAll(Specification<Cotizacion> spec, Pageable pageable);
+
+    // 010: cotizaciones de una semana para detectar señales y medir aciertos.
+    @EntityGraph(attributePaths = "jugador")
+    List<Cotizacion> findByEstrategiaAndFecha(String estrategia, LocalDate fecha);
+
+    @Query("select c.jugador.id, c.precio from Cotizacion c where c.estrategia = :estrategia and c.fecha = :fecha")
+    List<Object[]> findPreciosByEstrategiaAndFecha(@Param("estrategia") String estrategia, @Param("fecha") LocalDate fecha);
 }

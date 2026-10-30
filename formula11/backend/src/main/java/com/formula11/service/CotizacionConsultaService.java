@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(readOnly = true)
 public class CotizacionConsultaService {
-    static final Set<String> ESTRATEGIAS = Set.of("RENDIMIENTO_POSICION", "CONSISTENCIA");
+    static final Set<String> CODIGOS_ESTRATEGIA = Set.of("RENDIMIENTO_POSICION", "CONSISTENCIA");
     static final Set<String> POSICIONES = Set.of("POR", "DEF", "MED", "DEL");
     static final String MENSAJE_SOLO_SUPERUSUARIO =
             "Solo el superusuario puede consultar una estrategia que no es la activa";
@@ -139,7 +139,7 @@ public class CotizacionConsultaService {
             return activa;
         }
         String codigo = pedida.trim();
-        if (!ESTRATEGIAS.contains(codigo)) {
+        if (!CODIGOS_ESTRATEGIA.contains(codigo)) {
             throw new IllegalArgumentException("La estrategia no es válida");
         }
         if (!superusuario && !codigo.equals(activa)) {
