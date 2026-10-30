@@ -65,6 +65,11 @@ public class GlobalExceptionHandler {
         return responder(HttpStatus.FORBIDDEN, exception.getMessage(), request);
     }
 
+    @ExceptionHandler(SoloSuperusuarioException.class)
+    public ResponseEntity<ErrorResponse> soloSuperusuario(SoloSuperusuarioException exception, HttpServletRequest request) {
+        return responder(HttpStatus.FORBIDDEN, exception.getMessage(), request);
+    }
+
     @ExceptionHandler(AccesoPortfolioDenegadoException.class)
     public ResponseEntity<ErrorResponse> accesoPortfolio(AccesoPortfolioDenegadoException exception, HttpServletRequest request) {
         return responder(HttpStatus.FORBIDDEN, exception.getMessage(), request);
