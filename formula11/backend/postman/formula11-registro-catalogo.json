@@ -3,7 +3,7 @@
     "name": "Formula11 - Registro y catalogo",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-  "variable": [{"key": "baseUrl", "value": "http://localhost:8080"}, {"key": "token", "value": ""}],
+  "variable": [{"key": "baseUrl", "value": "http://localhost:8080"}, {"key": "token", "value": ""}, {"key": "jugadorId", "value": "1"}],
   "item": [
     {
       "name": "Registrar usuario",
@@ -66,6 +66,10 @@
         "body": {"mode": "raw", "raw": "{\"jugadorId\":1,\"cantidad\":1}"},
         "url": {"raw": "{{baseUrl}}/api/ordenes/venta", "host": ["{{baseUrl}}", "api", "ordenes", "venta"], "path": ["api", "ordenes", "venta"]}
       }
-    }
+    },
+    {"name": "Detalle de jugador", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": {"raw": "{{baseUrl}}/api/jugadores/{{jugadorId}}", "host": ["{{baseUrl}}"], "path": ["api", "jugadores", "{{jugadorId}}"]}}},
+    {"name": "Ranking de jugadores", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": {"raw": "{{baseUrl}}/api/jugadores/ranking?liga=La Liga&posicion=DEL&page=0&size=20", "host": ["{{baseUrl}}"], "path": ["api", "jugadores", "ranking"], "query": [{"key": "liga", "value": "La Liga"}, {"key": "posicion", "value": "DEL"}, {"key": "page", "value": "0"}, {"key": "size", "value": "20"}]}}},
+    {"name": "Historial de cotizaciones", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": {"raw": "{{baseUrl}}/api/jugadores/{{jugadorId}}/cotizaciones?desde=2026-08-01&hasta=2026-10-31", "host": ["{{baseUrl}}"], "path": ["api", "jugadores", "{{jugadorId}}", "cotizaciones"], "query": [{"key": "desde", "value": "2026-08-01"}, {"key": "hasta", "value": "2026-10-31"}]}}},
+    {"name": "Cotizacion a una fecha", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": {"raw": "{{baseUrl}}/api/jugadores/{{jugadorId}}/cotizaciones/vigente?fecha=2026-09-17", "host": ["{{baseUrl}}"], "path": ["api", "jugadores", "{{jugadorId}}", "cotizaciones", "vigente"], "query": [{"key": "fecha", "value": "2026-09-17"}]}}}
   ]
 }

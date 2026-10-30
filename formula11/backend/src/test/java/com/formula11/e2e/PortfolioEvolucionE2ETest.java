@@ -11,11 +11,13 @@ import com.formula11.persistence.JugadorRepository;
 import com.formula11.persistence.TransaccionRepository;
 import com.formula11.persistence.UsuarioRepository;
 import com.formula11.security.JwtService;
+import com.formula11.service.CotizacionHistoricaPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -27,7 +29,13 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -54,6 +62,9 @@ class PortfolioEvolucionE2ETest {
     @Autowired TransaccionRepository transacciones;
     @Autowired JwtService jwtService;
     @Autowired JdbcTemplate jdbc;
+    // 008: el port real lee la tabla cotizacion; este test valida la reconstrucción del portfolio,
+    // así que el port se reemplaza por un mock con el comportamiento del adapter provisorio.
+    @MockBean CotizacionHistoricaPort cotizacionHistoricaPort;
 
     @BeforeEach
     void limpiar() {
@@ -67,6 +78,15 @@ class PortfolioEvolucionE2ETest {
 
     @Test
     void evolucionReconstruyeTransaccionesEnUtc() throws Exception {
+        LocalDate lunes = LocalDate.parse("2026-10-26");
+        when(cotizacionHistoricaPort.fechasCotizacion(lunes, lunes)).thenReturn(List.of(lunes));
+        when(cotizacionHistoricaPort.preciosA(anyCollection(), any(LocalDate.class)))
+                .thenAnswer(invocation -> {
+                    java.util.Collection<Long> ids = invocation.getArgument(0);
+                    Map<Long, BigDecimal> precios = new java.util.LinkedHashMap<>();
+                    ids.forEach(id -> precios.put(id, new BigDecimal("1.0000")));
+                    return precios;
+                });
         Usuario usuario = crearUsuario("evolucion-ok@example.com");
         Usuario contraparte = crearUsuario("evolucion-super@example.com");
         Jugador jugador = jugadores.saveAndFlush(
