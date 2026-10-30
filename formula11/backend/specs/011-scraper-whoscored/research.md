@@ -291,15 +291,48 @@ Las causas más comunes son jugadores que faltan en el catálogo de Football-Dat
 y diferencias de escritura del nombre entre las dos fuentes. Como lo exige la
 regla de vinculación, ningún pendiente se asignó por heurística.
 
+### Carga incremental (2026-10-30)
+
+`POST /api/metricas/sincronizacion` sin body, con la misma configuración. La
+carga recorrió el mes anterior y el actual, y salteó los partidos ya cargados.
+
+| Ejecución | `correlationId` | Inicio (UTC) | Fin (UTC) | Duración | Estado |
+|---:|---|---|---|---|---|
+| 52 | `incremental-whoscored-20261030` | 13:33:34 | 13:34:05 | 31 s | `COMPLETADA` |
+
+El salto de id (2 → 52) es el tamaño de bloque de la secuencia de Hibernate al
+reiniciar el backend; no hubo ejecuciones intermedias.
+
+| Liga | Encontrados | Cargados | Omitidos | Fallidos | Vinculados* | Pendientes* |
+|---|---:|---:|---:|---:|---:|---:|
+| Premier League | 68 | 0 | 68 | 0 | 0 | 0 |
+| Bundesliga | 61 | 0 | 61 | 0 | 0 | 0 |
+| La Liga | 74 | 0 | 74 | 0 | 0 | 0 |
+| Serie A | 73 | 2 | 71 | 0 | 55 | 7 |
+| Ligue 1 | 58 | 0 | 58 | 0 | 0 | 0 |
+
+\* Apariciones, igual que en la tabla de ejecuciones.
+
+Después de esta carga la base tiene 404 partidos (Serie A: 90, hasta el
+2026-10-29), 11013 filas en `metrica_partido`, 1896 jugadores vinculados (sin
+cambios: los 55 vinculados de la carga ya lo estaban) y 337 pendientes.
+
 ### Recálculo de cotizaciones (006)
 
-`POST /api/cotizaciones/recalcular` (`correlationId`
-`recalculo-post-whoscored-20261029`) respondió `COMPLETADO`:
-`semanasCalculadas=1`, `jugadoresCotizados=5258`, `jugadoresSinMetricas=1355`,
-estrategias `RENDIMIENTO_POSICION` v1 y `CONSISTENCIA` v1. Duró 53 s.
+`POST /api/cotizaciones/recalcular` con body
+`{"desde": "2026-08-10", "hasta": "2026-10-25"}` (`correlationId`
+`recalculo-temporada-20261030`) respondió `COMPLETADO`:
+
+- `semanasCalculadas=11`: semanas cerradas del 2026-08-16 al 2026-10-25.
+- `jugadoresCotizados=57838`, `jugadoresSinMetricas=19059`.
+- Estrategias `RENDIMIENTO_POSICION` v1 y `CONSISTENCIA` v1.
+- Duró 9 min 15 s.
+
+La tabla `cotizacion` quedó con 57838 filas en 11 fechas. Reemplaza el
+recálculo de la fase 6, que se hizo sin body y calculó una sola semana.
 
 ### Respaldo
 
 Después del recálculo se hizo un `pg_dump` de la base a un archivo `.sql`, que
-se guardó fuera del repositorio. No se commitearon cookies, el token, el perfil
-de Chrome ni el dump.
+se guardó fuera del repositorio y reemplaza el de la fase 6. No se commitearon
+cookies, el token, el perfil de Chrome ni el dump.
