@@ -40,6 +40,7 @@ public class Senal {
     protected Senal() {
     }
 
+    @SuppressWarnings("java:S107") // una señal tiene ocho datos obligatorios; un builder no agrega claridad
     public Senal(Jugador jugador, LocalDate fecha, Tipo tipo, String estrategia, BigDecimal brecha,
                  BigDecimal precio, BigDecimal precioEstimado, Instant creadaEn) {
         this.jugador = Objects.requireNonNull(jugador, "El jugador es obligatorio");

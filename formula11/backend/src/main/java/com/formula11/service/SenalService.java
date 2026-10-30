@@ -39,7 +39,7 @@ import java.util.TreeMap;
 @Service
 public class SenalService implements GeneradorSenalesPort {
     private static final Logger log = LoggerFactory.getLogger(SenalService.class);
-    private static final List<String> ESTRATEGIAS = List.of("RENDIMIENTO_POSICION", "CONSISTENCIA");
+    private static final List<String> CODIGOS_ESTRATEGIA = List.of("RENDIMIENTO_POSICION", "CONSISTENCIA");
     private static final int MAX_SIZE = 100;
     private static final Sort ORDEN = Sort.by(Sort.Order.desc("fecha"), Sort.Order.desc("brecha"), Sort.Order.asc("id"));
 
@@ -170,7 +170,7 @@ public class SenalService implements GeneradorSenalesPort {
     }
 
     private static String otraEstrategia(String activa) {
-        return ESTRATEGIAS.stream().filter(codigo -> !codigo.equals(activa)).findFirst().orElse(activa);
+        return CODIGOS_ESTRATEGIA.stream().filter(codigo -> !codigo.equals(activa)).findFirst().orElse(activa);
     }
 
     private static String clave(Long jugadorId, Senal.Tipo tipo) {

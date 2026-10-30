@@ -67,7 +67,7 @@ public final class DetectorSenales {
                 .collect(Collectors.groupingBy(Candidato::posicion));
         for (Candidato candidato : candidatos) {
             detectarEntreEstrategias(candidato, parametros).ifPresent(entreEstrategias::add);
-            detectarPrecioAtrasado(candidato, porPosicion.get(candidato.posicion()), parametros)
+            detectarPrecioAtrasado(candidato, porPosicion.getOrDefault(candidato.posicion(), List.of()), parametros)
                     .ifPresent(atrasados::add);
         }
         List<Detectada> resultado = new ArrayList<>(recortar(entreEstrategias, parametros.maximoPorTipo()));
@@ -104,7 +104,7 @@ public final class DetectorSenales {
     private static Optional<Detectada> siSuperaUmbral(Candidato candidato, Senal.Tipo tipo,
                                                                 BigDecimal estimado, Parametros parametros) {
         BigDecimal brecha = VariacionCotizacion.porcentaje(candidato.precio(), estimado);
-        if (brecha.compareTo(parametros.umbral()) < 0) {
+        if (brecha == null || brecha.compareTo(parametros.umbral()) < 0) {
             return Optional.empty();
         }
         return Optional.of(new Detectada(candidato.jugadorId(), tipo, brecha,
