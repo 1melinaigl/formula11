@@ -424,6 +424,13 @@ por SonarCloud y por revisión del código contra los hallazgos del spike.
     del fixture dos veces (idempotencia).
   - **Depends on**: T025, T026, T028.
 
+- [x] **T032e - Liga con nombre legible en las respuestas**
+  - `LigaEjecucionResponse` y `PendienteVinculacion` informan la liga con su
+    nombre legible (`La Liga`), como el esquema `Liga` del contrato; antes
+    salía el nombre del enum (`LA_LIGA`).
+  - Test nuevo: `CargaMetricasRespuestaTest`.
+  - **Depends on**: T030.
+
 ## Phase 6 - Documentation, manual verification and final validation
 
 - [x] **T033 - Completar documentación operativa**

@@ -19,9 +19,19 @@ public class EstrategiaService {
         this.repository = repository; this.clock = clock; this.cacheInvalidator = cacheInvalidator;
     }
 
+    /**
+     * Una fila por estrategia: su versión vigente (la más nueva), marcada como activa si ese código es el activo.
+     * La marca se toma por código porque, al crear una versión de la estrategia activa, la fila activa sigue
+     * siendo la anterior.
+     */
     public List<EstrategiaResponse> listar() {
-        return repository.findAll().stream().sorted(Comparator.comparing(Estrategia::getCodigo))
-                .map(this::toResponse).toList();
+        List<Estrategia> todas = repository.findAll();
+        Set<String> activas = new HashSet<>();
+        todas.stream().filter(Estrategia::isActiva).map(Estrategia::getCodigo).forEach(activas::add);
+        return Estrategia.vigentes(todas).stream().sorted(Comparator.comparing(Estrategia::getCodigo))
+                .map(e -> new EstrategiaResponse(e.getCodigo(), e.getNombre(), e.getVersion(),
+                        activas.contains(e.getCodigo()), e.getPesos(), e.getParametros(), e.getCreadaEn()))
+                .toList();
     }
 
     public List<EstrategiaResponse> versiones(String codigo) {

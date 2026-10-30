@@ -244,7 +244,7 @@ public class CargaMetricasService {
         Page<com.formula11.model.PendienteVinculacion> page = pendienteRepository.findByResueltoFalse(pageable);
         List<PendienteVinculacion> content = page.getContent().stream()
                 .map(item -> new PendienteVinculacion(item.getWhoscoredId(), item.getNombre(),
-                        item.getEquipo(), item.getLiga(), item.getFechaRegistro()))
+                        item.getEquipo(), item.getLiga().getNombreLegible(), item.getFechaRegistro()))
                 .toList();
         return new PendientesPageResponse(content, page.getNumber(), page.getSize(),
                 page.getTotalElements(), page.getTotalPages());
@@ -252,7 +252,7 @@ public class CargaMetricasService {
 
     public EjecucionMetricasResponse response(EjecucionMetricas ejecucion, List<EjecucionMetricaLiga> ligas) {
         List<LigaEjecucionResponse> resumenes = ligas.stream()
-                .map(item -> new LigaEjecucionResponse(item.getLiga(), estadoLiga(ejecucion, item),
+                .map(item -> new LigaEjecucionResponse(item.getLiga().getNombreLegible(), estadoLiga(ejecucion, item),
                         item.getPartidosCargados(), item.getPartidosEncontrados() - item.getPartidosCargados(),
                         item.getJugadoresVinculados(), item.getPendientes(), null))
                 .toList();
