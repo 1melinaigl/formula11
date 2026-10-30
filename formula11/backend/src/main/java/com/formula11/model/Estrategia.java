@@ -4,7 +4,14 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import jakarta.persistence.*;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.BinaryOperator;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "estrategia", uniqueConstraints = @UniqueConstraint(name = "ux_estrategia_codigo_version", columnNames = {"codigo", "version"}))
@@ -34,4 +41,16 @@ public class Estrategia {
     public boolean isActiva() { return activa; }
     public Instant getCreadaEn() { return creadaEn; }
     public void activar(boolean activa) { this.activa = activa; }
+
+    /**
+     * Versión vigente de cada estrategia: la de mayor número por código. Cada versión es una fila
+     * distinta, así que un recálculo debe usar solo esta y no todas las filas.
+     */
+    public static List<Estrategia> vigentes(Collection<Estrategia> todas) {
+        return new ArrayList<>(todas.stream().collect(Collectors.toMap(
+                Estrategia::getCodigo,
+                estrategia -> estrategia,
+                BinaryOperator.maxBy(Comparator.comparingInt(Estrategia::getVersion)),
+                LinkedHashMap::new)).values());
+    }
 }

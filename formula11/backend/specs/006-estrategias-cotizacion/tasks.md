@@ -144,3 +144,10 @@ description: "Task list for weekly player valuation strategies and quotations"
 - [x] T060 Ejecutar `git diff --check` y revisar que los cambios de implementación se limiten al backend necesario y no incluyan frontend ni dependencias nuevas.
 
 **Final checkpoint**: El backend compila, las migraciones ejecutan, los tests unitarios/integración/E2E pasan y el contrato de la Entrega 2 queda respetado.
+
+## Phase 7: Corrección posterior - versiones de estrategia en el recálculo
+
+**Purpose**: Cumplir FR-009 cuando existe más de una versión de una estrategia.
+
+- [x] T061 Usar solo la última versión de cada código en el recálculo. `estrategias.findAll()` devuelve una fila por versión: después de `POST /api/estrategias/{codigo}/versiones`, el recálculo guardaba dos cotizaciones por jugador, estrategia y fecha, y fallaba por la restricción `ux_cotizacion_jugador_estrategia_fecha`. Se agrega `Estrategia.vigentes(...)` en el modelo y lo usan `RecalculoSemanaService` y la respuesta de `RecalculoService`.
+- [x] T062 Agregar `EstrategiaVigentesTest` y `RecalculoSemanaVersionesTest` sin modificar tests existentes.

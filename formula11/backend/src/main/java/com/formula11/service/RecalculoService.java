@@ -48,7 +48,7 @@ public class RecalculoService {
             }
             cache.invalidate();
             String correlationId = Optional.ofNullable(org.slf4j.MDC.get("correlationId")).orElse(UUID.randomUUID().toString());
-            List<RecalculoResponse.EstrategiaVersionResponse> versions = estrategias.findAll().stream()
+            List<RecalculoResponse.EstrategiaVersionResponse> versions = Estrategia.vigentes(estrategias.findAll()).stream()
                     .map(e -> new RecalculoResponse.EstrategiaVersionResponse(e.getCodigo(), e.getVersion())).toList();
             return new RecalculoResponse("COMPLETADO", weeks, players, noMetricas, versions, inicio, clock.instant(), correlationId);
         } finally {
