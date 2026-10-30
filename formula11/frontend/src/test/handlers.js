@@ -39,4 +39,32 @@ export const handlers = [
     totalElements: 0,
     totalPages: 0,
   })),
+  // Entrega 2: formas de backend/specs/005-contratos-entrega2/contracts/openapi.yaml.
+  http.get('/api/jugadores/ranking', () => HttpResponse.json({
+    content: [],
+    page: 0,
+    size: 20,
+    totalElements: 0,
+    totalPages: 0,
+    estrategia: 'RENDIMIENTO_POSICION',
+    version: null,
+    fecha: null,
+  })),
+  http.get('/api/estrategias', () => HttpResponse.json([
+    { codigo: 'RENDIMIENTO_POSICION', nombre: 'Rendimiento por posición', version: 1, activa: true, pesos: {}, parametros: {}, creadaEn: '2026-10-01T00:00:00Z' },
+    { codigo: 'CONSISTENCIA', nombre: 'Consistencia', version: 1, activa: false, pesos: {}, parametros: {}, creadaEn: '2026-10-01T00:00:00Z' },
+  ])),
+  http.get('/api/jugadores/:id', ({ params }) => HttpResponse.json({
+    id: Number(params.id),
+    nombre: 'Nicolò Barella',
+    equipo: 'FC Internazionale Milano',
+    liga: 'Serie A',
+    posicion: 'MED',
+    cotizacionActual: null,
+  })),
+  http.get('/api/jugadores/:id/cotizaciones', ({ params, request }) => HttpResponse.json({
+    jugadorId: Number(params.id),
+    estrategia: new URL(request.url).searchParams.get('estrategia') || 'RENDIMIENTO_POSICION',
+    cotizaciones: [],
+  })),
 ]
