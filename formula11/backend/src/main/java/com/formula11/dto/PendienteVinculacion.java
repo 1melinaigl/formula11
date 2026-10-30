@@ -1,8 +1,7 @@
 package com.formula11.dto;
 
-import com.formula11.model.Liga;
-
 import java.time.Instant;
 
+/** Jugador de WhoScored sin vincular. La liga va con su nombre legible, como exige el contrato. */
 public record PendienteVinculacion(String whoscoredId, String nombre, String equipo,
-                                   Liga liga, Instant detectadoEn) {}
+                                   String liga, Instant detectadoEn) {}
