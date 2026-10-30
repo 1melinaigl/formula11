@@ -29,6 +29,11 @@ app:
     fecha-fija: ${APP_CLOCK_FECHA_FIJA:}
   cotizacion:
     cron: ${APP_COTIZACION_CRON:0 0 6 ? * MON}
+  senales:
+    umbral: ${APP_SENALES_UMBRAL:15}
+    ventana-score: ${APP_SENALES_VENTANA_SCORE:0.05}
+    minimo-pares: ${APP_SENALES_MINIMO_PARES:5}
+    maximo-por-tipo: ${APP_SENALES_MAXIMO_POR_TIPO:20}
   jwt:
     expiration: 3600
     secret: change-me-local-secret-key-must-be-at-least-32-bytes

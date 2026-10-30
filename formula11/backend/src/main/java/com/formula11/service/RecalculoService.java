@@ -5,6 +5,8 @@ import com.formula11.config.ClockConfig;
 import com.formula11.model.Estrategia;
 import com.formula11.persistence.EstrategiaRepository;
 import org.slf4j.*;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.*;
 import java.util.*;
@@ -19,12 +21,23 @@ public class RecalculoService {
     private final com.formula11.persistence.CotizacionRepository cotizaciones;
     private final CotizacionCacheInvalidator cache;
     private final AtomicBoolean ejecutando = new AtomicBoolean();
+    /** 010: generadores de señales que se invocan después de cada semana; puede ser null. */
+    private final ObjectProvider<GeneradorSenalesPort> generadoresSenales;
 
     public RecalculoService(Clock clock, RecalculoSemanaService semanas, EstrategiaRepository estrategias,
                             com.formula11.persistence.CotizacionRepository cotizaciones,
                             CotizacionCacheInvalidator cache) {
+        this(clock, semanas, estrategias, cotizaciones, cache, null);
+    }
+
+    @Autowired
+    public RecalculoService(Clock clock, RecalculoSemanaService semanas, EstrategiaRepository estrategias,
+                            com.formula11.persistence.CotizacionRepository cotizaciones,
+                            CotizacionCacheInvalidator cache,
+                            ObjectProvider<GeneradorSenalesPort> generadoresSenales) {
         this.clock = clock; this.semanas = semanas; this.estrategias = estrategias;
         this.cotizaciones = cotizaciones; this.cache = cache;
+        this.generadoresSenales = generadoresSenales;
     }
 
     public RecalculoResponse recalcular(RecalculoRequest request) {
@@ -44,6 +57,7 @@ public class RecalculoService {
             int weeks = 0, players = 0, noMetricas = 0;
             for (LocalDate domingo = domingoDeSemana(desde); !domingo.isAfter(fin); domingo = domingo.plusWeeks(1)) {
                 RecalculoSemanaService.SemanaResultado result = semanas.procesar(domingo);
+                generarSenales(domingo);
                 weeks++; players += result.jugadoresCotizados(); noMetricas += result.jugadoresSinMetricas();
             }
             cache.invalidate();
@@ -54,6 +68,20 @@ public class RecalculoService {
         } finally {
             ejecutando.set(false);
         }
+    }
+
+    /** Las señales son un extra: si fallan, se registra y el recálculo sigue. */
+    private void generarSenales(LocalDate domingo) {
+        if (generadoresSenales == null) {
+            return;
+        }
+        generadoresSenales.orderedStream().forEach(generador -> {
+            try {
+                generador.generar(domingo);
+            } catch (RuntimeException e) {
+                log.warn("No se pudieron generar las señales de la semana {}: {}", domingo, e.getMessage(), e);
+            }
+        });
     }
 
     private LocalDate ultimaSemanaCerrada() {
