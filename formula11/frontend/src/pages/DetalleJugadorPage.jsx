@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import PosicionJugador from '../components/catalogo/PosicionJugador'
 import { posiciones } from '../components/catalogo/posiciones'
 import AvisoError from '../components/comun/AvisoError'
@@ -9,7 +9,9 @@ import GraficoEvolucion from '../components/cotizaciones/GraficoEvolucion'
 import ResumenCotizacion from '../components/cotizaciones/ResumenCotizacion'
 import TablaCotizaciones from '../components/cotizaciones/TablaCotizaciones'
 import { ESTRATEGIAS, resumenPorEstrategia } from '../components/cotizaciones/cotizaciones'
+import PanelOperacion from '../components/mercado/PanelOperacion'
 import { useDetalleJugador } from '../hooks/useDetalleJugador'
+import { useMercado } from '../hooks/useMercado'
 import { useSesion } from '../hooks/useSesion'
 import AccesoDenegadoPage from './AccesoDenegadoPage'
 
@@ -29,23 +31,27 @@ function PanelCotizaciones({ cotizaciones, error, estrategiaActiva, puedeCompara
   )
 }
 
-function DetalleJugador({ id }) {
+function DetalleJugador({ id, operacionInicial, puedeOperar }) {
   const { jugador, cotizaciones, cargando, error, errorCotizaciones, estrategiaActiva, puedeComparar } = useDetalleJugador(id)
+  const mercado = useMercado(id, { habilitado: puedeOperar })
 
   if (cargando) return <EstadoCarga mensaje="Cargando jugador..." />
   if (error) return <AvisoError error={error} />
 
   return (
     <div className="player-detail-layout">
-      <article className="player-card">
-        <div className="player-card-heading"><span>Ficha del jugador</span><PosicionJugador jugador={jugador} /></div>
-        <h2>{jugador.nombre}</h2>
-        <dl className="player-details">
-          <dt>Equipo</dt><dd>{jugador.equipo}</dd>
-          <dt>Liga</dt><dd>{jugador.liga}</dd>
-          <dt>Posición</dt><dd>{jugador.posicionNombre || posiciones[jugador.posicion] || jugador.posicion || 'No informada'}</dd>
-        </dl>
-      </article>
+      <div className="player-detail-side">
+        <article className="player-card">
+          <div className="player-card-heading"><span>Ficha del jugador</span><PosicionJugador jugador={jugador} /></div>
+          <h2>{jugador.nombre}</h2>
+          <dl className="player-details">
+            <dt>Equipo</dt><dd>{jugador.equipo}</dd>
+            <dt>Liga</dt><dd>{jugador.liga}</dd>
+            <dt>Posición</dt><dd>{jugador.posicionNombre || posiciones[jugador.posicion] || jugador.posicion || 'No informada'}</dd>
+          </dl>
+        </article>
+        {puedeOperar && <PanelOperacion mercado={mercado} operacionInicial={operacionInicial} />}
+      </div>
       <section className="player-card quote-panel" aria-labelledby="titulo-cotizaciones">
         <div className="player-card-heading"><span id="titulo-cotizaciones">Evolución de la cotización</span></div>
         <PanelCotizaciones cotizaciones={cotizaciones} error={errorCotizaciones} estrategiaActiva={estrategiaActiva} puedeComparar={puedeComparar} />
@@ -56,6 +62,7 @@ function DetalleJugador({ id }) {
 
 export default function DetalleJugadorPage() {
   const { id } = useParams()
+  const [parametros] = useSearchParams()
   const { usuario } = useSesion()
   const navigate = useNavigate()
 
@@ -71,7 +78,12 @@ export default function DetalleJugadorPage() {
     <section className="screen catalog-screen">
       <div className="catalog-content">
         <div className="catalog-title-row"><div><p className="eyebrow"></p><h1 className="panel-heading">Detalle del jugador</h1></div><button className="btn ghost" type="button" onClick={() => navigate('/catalogo')}>Volver al catálogo</button></div>
-        <DetalleJugador id={id} key={id} />
+        <DetalleJugador
+          id={id}
+          key={id}
+          operacionInicial={parametros.get('operacion')?.toUpperCase()}
+          puedeOperar={usuario.rol !== 'SUPERUSUARIO'}
+        />
       </div>
     </section>
   )
