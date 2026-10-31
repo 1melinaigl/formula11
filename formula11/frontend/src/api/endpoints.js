@@ -10,4 +10,5 @@ export const endpoints = {
   comprar: '/api/ordenes/compra',
   vender: '/api/ordenes/venta',
   portfolio: (usuarioId) => `/api/usuarios/${encodeURIComponent(usuarioId)}/portfolio`,
+  evolucionPortfolio: (usuarioId) => `/api/usuarios/${encodeURIComponent(usuarioId)}/portfolio/evolucion`,
 }

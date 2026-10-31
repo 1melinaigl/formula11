@@ -85,6 +85,10 @@ export function formatearPrecio(precio) {
   return formatoPrecio.format(precio)
 }
 
+export function formatearConSigno(valor) {
+  return `${valor > 0 ? '+' : ''}${formatoPrecio.format(valor)}`
+}
+
 export function formatearVariacion(variacion) {
   return `${formatoPorcentaje.format(variacion * 100)}%`
 }

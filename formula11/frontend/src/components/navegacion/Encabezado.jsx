@@ -8,6 +8,7 @@ const breadcrumbs = {
   '/cuenta-creada': 'Cuenta creada',
   '/catalogo': 'Catálogo de jugadores',
   '/ranking': 'Ranking',
+  '/portfolio': 'Mi portfolio',
 }
 
 function obtenerBreadcrumb(pathname) {

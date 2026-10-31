@@ -25,10 +25,10 @@ describe('menú principal', () => {
     expect(screen.getByRole('tab', { name: 'Ingresar' })).toHaveAttribute('aria-selected', 'true')
   })
 
-  it('muestra las opciones futuras bloqueadas', () => {
+  it('muestra todas las opciones habilitadas', () => {
     renderApp()
 
-    expect(screen.getAllByText('PRÓXIMAMENTE')).toHaveLength(1)
+    expect(screen.queryByText('PRÓXIMAMENTE')).not.toBeInTheDocument()
     expect(screen.getByText('Sin sesión')).toBeInTheDocument()
   })
 })
