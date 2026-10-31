@@ -116,6 +116,7 @@ src/
 ├── api/endpoints.js                          # senales, aciertos
 ├── components/
 │   ├── navegacion/MenuPrincipal.jsx          # ítem "Señales" (solo con sesión)
+│   ├── navegacion/Encabezado.jsx             # título "Señales" para /senales
 │   └── senales/
 │       ├── senales.js                        # normalizar, tipos, formatearPorcentaje, senalesNuevas, registro de vistas
 │       ├── AlertaSenales.jsx                 # alerta global agrupada
@@ -128,7 +129,8 @@ src/
 │   └── useCompraSenal.js                     # POST compra con cantidad 1, estado por señal
 ├── pages/SenalesPage.jsx                     # /senales: lista + panel; acceso denegado sin sesión
 ├── router/AppRouter.jsx                      # ruta /senales
-├── styles/components.css                     # estilos de la alerta y del panel
+├── styles/components.css                     # estilos de la alerta
+├── styles/screens.css                        # estilos de la lista y del panel (cortes en 1024px y 760px)
 └── test/handlers.js                          # handlers por defecto de /api/senales y /api/senales/aciertos
 
 tests/

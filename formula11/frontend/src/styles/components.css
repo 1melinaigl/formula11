@@ -215,3 +215,16 @@
 @media (max-width: 420px) {
   .catalog-toolbar { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* 008: alerta global de señales. El mockup no la tiene: reusa .panel, .btn y los colores de ganancia. */
+.signal-alert { position: fixed; top: 76px; right: 20px; z-index: 20; width: min(360px, calc(100vw - 40px)); padding: 12px 16px 14px; border-left: 6px solid var(--gold); }
+.signal-alert-title { margin: 0 0 8px; color: var(--gold); font: 400 24px var(--disp); letter-spacing: 1px; text-transform: uppercase; }
+.signal-alert-list { display: grid; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; font-size: 14px; }
+.signal-alert-list li { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.signal-alert-list span:not(.quote-change) { color: var(--muted); }
+.signal-alert-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.signal-alert-button { padding: 6px 16px; font-size: 18px; }
+
+@media (max-width: 760px) {
+  .signal-alert { position: static; width: auto; margin: 8px 12px 0; }
+}

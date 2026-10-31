@@ -13,8 +13,9 @@ export default function MenuPrincipal() {
       : { label: 'Ingresar / Crear cuenta', subtitle: 'Acceder a Formula 11', action: 'access' },
     { label: 'Catálogo de jugadores', subtitle: 'Consultar el plantel', action: 'catalog' },
     { label: 'Ranking', subtitle: 'Comparar rendimiento', action: 'ranking' },
+    usuario && { label: 'Señales', subtitle: 'Jugadores subvaluados', action: 'senales' },
     { label: 'Mi portfolio', subtitle: 'Tus tokens, valor y ganancias', action: 'portfolio' },
-  ].filter((item) => !(item.action === 'portfolio' && usuario?.rol === 'SUPERUSUARIO'))
+  ].filter((item) => item && !(item.action === 'portfolio' && usuario?.rol === 'SUPERUSUARIO'))
 
   useEffect(() => {
     itemRefs.current[selected]?.focus()
@@ -29,6 +30,7 @@ export default function MenuPrincipal() {
     if (item.action === 'access') navigate('/ingresar')
     if (item.action === 'catalog') navigate('/catalogo')
     if (item.action === 'ranking') navigate('/ranking')
+    if (item.action === 'senales') navigate('/senales')
     if (item.action === 'portfolio') navigate('/portfolio')
   }
 

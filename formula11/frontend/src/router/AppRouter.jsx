@@ -7,6 +7,7 @@ import CatalogoPage from '../pages/CatalogoPage'
 import HistorialPage from '../pages/HistorialPage'
 import InicioPage from '../pages/InicioPage'
 import RankingPage from '../pages/RankingPage'
+import SenalesPage from '../pages/SenalesPage'
 
 // Carga diferida: estas páginas traen la librería de gráficos y no hace falta en el resto de las pantallas.
 const DetalleJugadorPage = lazy(() => import('../pages/DetalleJugadorPage'))
@@ -24,6 +25,7 @@ export default function AppRouter() {
         <Route element={<RankingPage />} path="/ranking" />
         <Route element={<PortfolioPage />} path="/portfolio" />
         <Route element={<HistorialPage />} path="/operaciones" />
+        <Route element={<SenalesPage />} path="/senales" />
         <Route element={<DetalleJugadorPage />} path="/jugadores/:id" />
         <Route element={<Navigate replace to="/" />} path="*" />
       </Routes>
