@@ -63,7 +63,10 @@ export default function PortfolioPage() {
             <p className="eyebrow">{portfolio.resumen.fechaValuacion && `Valuado al ${formatearFecha(portfolio.resumen.fechaValuacion)}`}</p>
             <h1 className="panel-heading">Mi portfolio</h1>
           </div>
-          <button className="btn ghost" type="button" onClick={() => navigate('/')}>Menú</button>
+          <div className="title-actions">
+            <Link className="btn ghost" to="/operaciones">Historial</Link>
+            <button className="btn ghost" type="button" onClick={() => navigate('/')}>Menú</button>
+          </div>
         </div>
         {esSuperusuario && (
           <div className="empty-state" role="status">

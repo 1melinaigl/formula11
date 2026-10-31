@@ -104,4 +104,5 @@ export const handlers = [
   http.post('/api/ordenes/compra', async ({ request }) => operacionSimulada('COMPRA', await request.json(), 1)),
   http.post('/api/ordenes/venta', async ({ request }) => operacionSimulada('VENTA', await request.json(), 2)),
   http.get('/api/usuarios/:id/portfolio/evolucion', ({ params }) => HttpResponse.json({ usuarioId: Number(params.id), puntos: [] })),
+  http.get('/api/usuarios/:id/transacciones', () => HttpResponse.json({ content: [], page: 0, size: 10, totalElements: 0, totalPages: 0 })),
 ]

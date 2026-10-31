@@ -4,6 +4,7 @@ import EstadoCarga from '../components/comun/EstadoCarga'
 import AccesoPage from '../pages/AccesoPage'
 import CuentaCreadaPage from '../pages/CuentaCreadaPage'
 import CatalogoPage from '../pages/CatalogoPage'
+import HistorialPage from '../pages/HistorialPage'
 import InicioPage from '../pages/InicioPage'
 import RankingPage from '../pages/RankingPage'
 
@@ -22,6 +23,7 @@ export default function AppRouter() {
         <Route element={<CatalogoPage />} path="/catalogo" />
         <Route element={<RankingPage />} path="/ranking" />
         <Route element={<PortfolioPage />} path="/portfolio" />
+        <Route element={<HistorialPage />} path="/operaciones" />
         <Route element={<DetalleJugadorPage />} path="/jugadores/:id" />
         <Route element={<Navigate replace to="/" />} path="*" />
       </Routes>
