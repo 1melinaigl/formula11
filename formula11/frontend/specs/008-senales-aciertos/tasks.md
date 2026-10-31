@@ -175,7 +175,7 @@ Frontend único en `formula11/frontend`: el código va en `src/` y las pruebas, 
 - [X] T031 Validar visualmente contra el mockup, a 1280px, 760px y 375px: paleta, tipografías, paneles, sin scroll horizontal. Si aparece alguna desviación nueva, registrarla en `plan.md` (principio I).
 - [X] T032 Correr `npm test` tres veces seguidas, `npm run lint` y `npm run build`, y anotar los resultados en la descripción del PR.
 - [X] T033 Confirmar que `git diff dev -- formula11/frontend/tests` solo agrega archivos nuevos y que `src/test/handlers.js` solo suma los dos handlers de T002 (sin tests existentes modificados).
-- [ ] T034 Seguir la validación manual de `quickstart.md` contra el backend de la demo, con un usuario de prueba para la compra o restaurando el backup después.
+- [X] T034 Seguir la validación manual de `quickstart.md` contra el backend de la demo, con un usuario de prueba para la compra o restaurando el backup después.
 
 ---
 
