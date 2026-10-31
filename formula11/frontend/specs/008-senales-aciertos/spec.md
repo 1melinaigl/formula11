@@ -37,7 +37,7 @@ Como usuario autenticado, quiero ver la lista de señales con su detalle y compr
 **Acceptance Scenarios**:
 
 1. **Given** el menú principal con sesión, **When** se elige "Señales", **Then** se navega a `/senales`, que muestra por defecto las señales vigentes (las del último recálculo).
-2. **Given** señales, **Then** la tabla muestra, en el orden que manda el backend: jugador con link a su detalle, equipo, liga, posición, tipo ("Entre estrategias" o "Precio atrasado"), brecha (por ejemplo "+18,00 %"), precio, precio estimado y semana ("al dd/mm/aaaa").
+2. **Given** señales, **Then** la tabla muestra, en el orden que manda el backend: jugador con link a su detalle, equipo, liga, posición, tipo ("Entre estrategias" o "Precio atrasado"), brecha (por ejemplo "+18,00%"), precio, precio estimado y semana ("al dd/mm/aaaa").
 3. **Given** la vista "Historial", **When** se elige, **Then** se muestran todas las señales, de la más nueva a la más vieja, y se vuelve a la página 1. "Vigentes" vuelve a las del último recálculo.
 4. **Given** más de una página, **Then** aparece la paginación (20 por página, "Página N de M") y se navega con Anterior/Siguiente conservando la vista elegida. Con una sola página no se muestra.
 5. **Given** un usuario con rol `USUARIO`, **When** pulsa "Comprar 1 token" en una fila, **Then** se compra 1 token de ese jugador al precio vigente, el botón queda deshabilitado mientras la compra está en curso y aparece una confirmación con el jugador, el total pagado y el saldo final, más un link "Ver historial".
@@ -57,7 +57,7 @@ Como usuario autenticado, quiero saber si las señales de semanas anteriores ace
 **Acceptance Scenarios**:
 
 1. **Given** la pantalla de señales, **Then** incluye el panel "Aciertos" con dos indicadores: tasa de acierto (porcentaje de señales cuyo jugador subió más que el mercado la semana siguiente) y diferencia promedio contra el mercado (en puntos porcentuales, con signo).
-2. **Given** semanas medidas, **Then** una tabla muestra por semana, de la más vieja a la más nueva: fecha, cantidad de señales, variación promedio de los señalados, variación promedio del mercado y aciertos ("17 de 23"). Las variaciones positivas se muestran en verde con "+" y las negativas en rojo con "−".
+2. **Given** semanas medidas, **Then** una tabla muestra por semana, de la más vieja a la más nueva: fecha, cantidad de señales, variación promedio de los señalados, variación promedio del mercado y aciertos ("17 de 23"). Las variaciones positivas se muestran en verde con "+" y las negativas en rojo con "-".
 3. **Given** que todavía no hay semanas medidas, **Then** el panel muestra "Todavía no hay semanas para medir: las señales se evalúan una semana después de generarse." y no muestra los indicadores en 0.
 
 ---
