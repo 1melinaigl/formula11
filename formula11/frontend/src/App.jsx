@@ -11,7 +11,7 @@ function App() {
       <div id="app-shell">
         <Encabezado />
         <AlertaSenales />
-        <main className="app-main">
+        <main className="app-main" id="contenido" tabIndex={-1}>
           <AppRouter />
         </main>
       </div>

@@ -142,8 +142,13 @@ describe('pantalla de señales', () => {
     expect(pedidos[1].searchParams.get('page')).toBe('0')
     expect(within(paginacion).getByText('Página 1 de 2')).toBeInTheDocument()
 
-    await user.click(within(paginacion).getByRole('button', { name: 'Siguiente' }))
+    const siguiente = within(paginacion).getByRole('button', { name: 'Siguiente' })
+    siguiente.focus()
+    await user.keyboard('{Enter}')
     expect(await screen.findByText('al 23/08/2026')).toBeInTheDocument()
+    // La paginación no se desmonta al cambiar de página: el foco sigue en el botón.
+    expect(screen.getByRole('button', { name: 'Siguiente' })).toBe(siguiente)
+    expect(siguiente).toHaveFocus()
     expect(pedidos[2].searchParams.get('vigentes')).toBe('false')
     expect(pedidos[2].searchParams.get('page')).toBe('1')
   })

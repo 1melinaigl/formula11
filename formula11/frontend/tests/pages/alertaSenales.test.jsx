@@ -106,6 +106,8 @@ describe('alerta de señales', () => {
 
     expect(screen.queryByRole('status', { name: 'Oportunidades nuevas' })).not.toBeInTheDocument()
     expect(window.location.pathname).toBe('/ranking')
+    // El foco no se pierde en el body: pasa al contenido principal.
+    expect(document.activeElement).toBe(screen.getByRole('main'))
     expect(JSON.parse(window.sessionStorage.getItem('formula11.senales.vistas.11'))).toEqual([1])
   })
 

@@ -62,7 +62,8 @@ export default function SenalesPage() {
         {lista.cargando && <EstadoCarga mensaje="Cargando señales..." />}
         {!lista.cargando && lista.error && <AvisoError error={lista.error} />}
         {!lista.cargando && !lista.error && <ContenidoSenales compra={compra} lista={lista} puedeComprar={puedeComprar} />}
-        {!lista.cargando && !lista.error && lista.totalPages > 1 && (
+        {/* Queda montada mientras carga la página nueva: así el foco no se pierde al pulsar Anterior/Siguiente. */}
+        {!lista.error && lista.totalPages > 1 && (
           <PaginacionCatalogo cambiarPagina={lista.cambiarPagina} etiqueta="Paginación de señales" page={lista.page} totalPages={lista.totalPages} />
         )}
         <PanelAciertos aciertos={aciertos.aciertos} cargando={aciertos.cargando} error={aciertos.error} />

@@ -228,3 +228,5 @@
 @media (max-width: 760px) {
   .signal-alert { position: static; width: auto; margin: 8px 12px 0; }
 }
+/* El contenido principal recibe el foco por código al cerrar la alerta; no necesita contorno. */
+#contenido:focus { outline: none; }
