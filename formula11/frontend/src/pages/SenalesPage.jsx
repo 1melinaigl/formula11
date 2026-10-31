@@ -51,6 +51,7 @@ export default function SenalesPage() {
       <div className="catalog-content">
         <div className="catalog-title-row">
           <div><p className="eyebrow">Jugadores subvaluados</p><h1 className="panel-heading">Señales</h1></div>
+          <button className="btn ghost" type="button" onClick={() => navigate('/')}>Menú</button>
         </div>
         <div className="ranking-filters" role="group" aria-label="Ver señales">
           {VISTAS.map(([vigentes, nombre]) => (

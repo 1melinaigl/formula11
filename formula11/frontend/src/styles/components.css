@@ -15,6 +15,9 @@
   -webkit-background-clip: text;
 }
 
+a.logo { text-decoration: none; }
+a.logo:hover { filter: brightness(1.15); }
+
 .logo strong {
   color: var(--gold);
   -webkit-text-fill-color: var(--gold);

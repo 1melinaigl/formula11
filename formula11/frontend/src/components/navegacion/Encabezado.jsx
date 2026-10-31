@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useSesion } from '../../hooks/useSesion'
 
 const breadcrumbs = {
@@ -24,7 +24,7 @@ export default function Encabezado() {
 
   return (
     <header className="site-header">
-      <div className="logo" aria-label="Formula 11">FORMULA <strong>11</strong></div>
+      <Link className="logo" to="/" aria-label="Formula 11, ir al menú principal">FORMULA <strong>11</strong></Link>
       <div className="breadcrumb">{obtenerBreadcrumb(pathname)}</div>
       <div className={`session-chip ${usuario ? 'active' : ''}`}>
         <span>{usuario ? usuario.nombre : 'Sin sesión'}</span>
