@@ -46,7 +46,10 @@ export default function HistorialPage() {
       <div className="catalog-content">
         <div className="catalog-title-row">
           <div><p className="eyebrow"></p><h1 className="panel-heading">Historial de operaciones</h1></div>
-          <button className="btn ghost" type="button" onClick={() => navigate('/portfolio')}>Mi portfolio</button>
+          <div className="title-actions">
+            <button className="btn ghost" type="button" onClick={() => navigate('/portfolio')}>Mi portfolio</button>
+            <button className="btn ghost" type="button" onClick={() => navigate('/')}>Menú</button>
+          </div>
         </div>
         {esSuperusuario ? (
           <div className="empty-state" role="status">

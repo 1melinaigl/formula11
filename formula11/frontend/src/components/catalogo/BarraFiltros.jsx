@@ -1,16 +1,25 @@
 import { posiciones } from './posiciones'
 import { CAMPOS_ORDEN } from '../../hooks/useCatalogo'
 
+// options: pares [valor que se envía, texto que se ve].
 function Selector({ label, name, value, options, onChange }) {
   return (
     <div className="catalog-filter">
       <label htmlFor={`filtro-${name}`}>{label}</label>
       <select id={`filtro-${name}`} value={value} onChange={(event) => onChange(name, event.target.value)}>
         <option value="">Todas</option>
-        {options.map((option) => <option key={option} value={option}>{option}</option>)}
+        {options.map(([valor, texto]) => <option key={valor} value={valor}>{texto}</option>)}
       </select>
     </div>
   )
+}
+
+// El backend guarda la posición como código (POR, DEF, MED, DEL) y filtra por texto parcial:
+// se envía el código y se muestra el nombre.
+const OPCIONES_POSICION = Object.entries(posiciones)
+
+function textoFiltro(name, value) {
+  return name === 'posicion' ? posiciones[value] || value : value
 }
 
 export default function BarraFiltros({ filtros, opciones, campoOrden, direccionOrden, actualizarFiltro, actualizarOrden, limpiarFiltros }) {
@@ -21,8 +30,8 @@ export default function BarraFiltros({ filtros, opciones, campoOrden, direccionO
         <label htmlFor="filtro-equipo">Equipo</label>
         <input id="filtro-equipo" value={filtros.equipo} onChange={(event) => actualizarFiltro('equipo', event.target.value)} placeholder="Buscar equipo" />
       </div>
-      <Selector label="Liga" name="liga" value={filtros.liga} options={opciones.ligas} onChange={actualizarFiltro} />
-      <Selector label="Posición" name="posicion" value={filtros.posicion} options={Object.values(posiciones)} onChange={actualizarFiltro} />
+      <Selector label="Liga" name="liga" value={filtros.liga} options={opciones.ligas.map((liga) => [liga, liga])} onChange={actualizarFiltro} />
+      <Selector label="Posición" name="posicion" value={filtros.posicion} options={OPCIONES_POSICION} onChange={actualizarFiltro} />
       <div className="catalog-filter">
         <label htmlFor="orden-campo">Ordenar por</label>
         <select id="orden-campo" value={campoOrden} onChange={(event) => actualizarOrden(event.target.value, direccionOrden)}>
@@ -37,7 +46,7 @@ export default function BarraFiltros({ filtros, opciones, campoOrden, direccionO
         </select>
       </div>
       <button className="btn ghost catalog-clear" type="button" onClick={limpiarFiltros}>Limpiar</button>
-      {activos.length > 0 && <div className="filter-chips" role="group" aria-label="Filtros activos">{activos.map(([name, value]) => <button aria-label={`Quitar filtro ${value}`} className="filter-chip" key={name} type="button" onClick={() => actualizarFiltro(name, '')}>{value} ×</button>)}</div>}
+      {activos.length > 0 && <div className="filter-chips" role="group" aria-label="Filtros activos">{activos.map(([name, value]) => <button aria-label={`Quitar filtro ${textoFiltro(name, value)}`} className="filter-chip" key={name} type="button" onClick={() => actualizarFiltro(name, '')}>{textoFiltro(name, value)} ×</button>)}</div>}
     </div>
   )
 }

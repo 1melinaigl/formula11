@@ -77,7 +77,7 @@ export default function DetalleJugadorPage() {
   return (
     <section className="screen catalog-screen">
       <div className="catalog-content">
-        <div className="catalog-title-row"><div><p className="eyebrow"></p><h1 className="panel-heading">Detalle del jugador</h1></div><button className="btn ghost" type="button" onClick={() => navigate('/catalogo')}>Volver al catálogo</button></div>
+        <div className="catalog-title-row"><div><p className="eyebrow"></p><h1 className="panel-heading">Detalle del jugador</h1></div><div className="title-actions"><button className="btn ghost" type="button" onClick={() => navigate('/catalogo')}>Volver al catálogo</button><button className="btn ghost" type="button" onClick={() => navigate('/')}>Menú</button></div></div>
         <DetalleJugador
           id={id}
           key={id}

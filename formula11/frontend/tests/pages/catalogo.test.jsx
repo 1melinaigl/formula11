@@ -57,7 +57,7 @@ describe('catálogo de jugadores', () => {
     server.use(http.get('/api/jugadores', ({ request }) => {
       const params = new URL(request.url).searchParams
       expect(params.get('size')).toBe('9')
-      if (params.get('liga') === 'La Liga' && params.get('posicion') === 'Mediocampista') {
+      if (params.get('liga') === 'La Liga' && params.get('posicion') === 'MED') {
         return HttpResponse.json({ content: [jugadores[2]], page: 0, size: 9, totalElements: 1, totalPages: 1 })
       }
       return HttpResponse.json({ content: jugadores, page: 0, size: 9, totalElements: jugadores.length, totalPages: 1 })
