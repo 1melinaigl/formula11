@@ -210,3 +210,23 @@
   .history-optional, .history-table .player-position { display: none; }
   .history-date { font-size: 12px; white-space: normal; }
 }
+
+/* 008: señales y panel de aciertos. Reusan la tabla del ranking y las tarjetas del portfolio. */
+.signal-type { display: inline-block; padding: 2px 8px; border: 1px solid var(--gold); color: var(--gold); font-size: 12px; font-weight: 600; text-transform: uppercase; }
+.signal-help { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; }
+.signal-buy { padding: 4px 12px; font-size: 16px; white-space: nowrap; }
+.signal-buy:disabled { cursor: progress; opacity: .6; }
+.signals-table .market-success { margin: 0; }
+.aciertos-panel { margin-top: 28px; }
+.aciertos-summary { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+
+.signals-table-wrap { max-width: 100%; overflow-x: auto; }
+
+@media (max-width: 1024px) {
+  .signals-optional, .signal-help, .signal-buy-extra { display: none; }
+}
+
+@media (max-width: 760px) {
+  .signals-liga, .signals-table .player-position, .aciertos-optional { display: none; }
+  .signal-buy { padding: 4px 8px; font-size: 14px; white-space: normal; }
+}

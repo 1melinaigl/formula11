@@ -105,4 +105,7 @@ export const handlers = [
   http.post('/api/ordenes/venta', async ({ request }) => operacionSimulada('VENTA', await request.json(), 2)),
   http.get('/api/usuarios/:id/portfolio/evolucion', ({ params }) => HttpResponse.json({ usuarioId: Number(params.id), puntos: [] })),
   http.get('/api/usuarios/:id/transacciones', () => HttpResponse.json({ content: [], page: 0, size: 10, totalElements: 0, totalPages: 0 })),
+  // 008: la alerta consulta las señales desde el shell de la app; vacías por defecto, sin alertas.
+  http.get('/api/senales', () => HttpResponse.json({ content: [], page: 0, size: 20, totalElements: 0, totalPages: 0 })),
+  http.get('/api/senales/aciertos', () => HttpResponse.json({ semanas: [], tasaAcierto: 0, diferenciaPromedio: 0 })),
 ]

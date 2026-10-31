@@ -1,6 +1,7 @@
 import { BrowserRouter } from 'react-router-dom'
 import Encabezado from './components/navegacion/Encabezado'
 import CanchaFondo from './components/comun/CanchaFondo'
+import AlertaSenales from './components/senales/AlertaSenales'
 import AppRouter from './router/AppRouter'
 
 function App() {
@@ -9,7 +10,8 @@ function App() {
       <CanchaFondo />
       <div id="app-shell">
         <Encabezado />
-        <main className="app-main">
+        <AlertaSenales />
+        <main className="app-main" id="contenido" tabIndex={-1}>
           <AppRouter />
         </main>
       </div>

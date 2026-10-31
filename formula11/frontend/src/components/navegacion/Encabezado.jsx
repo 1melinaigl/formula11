@@ -10,6 +10,7 @@ const breadcrumbs = {
   '/ranking': 'Ranking',
   '/portfolio': 'Mi portfolio',
   '/operaciones': 'Historial de operaciones',
+  '/senales': 'Señales',
 }
 
 function obtenerBreadcrumb(pathname) {
