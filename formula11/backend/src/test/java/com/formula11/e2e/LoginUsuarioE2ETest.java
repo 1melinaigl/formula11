@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Testcontainers
-@ActiveProfiles("test")
+@ActiveProfiles("e2e")
 class LoginUsuarioE2ETest {
     static {
         System.setProperty("api.version", "1.40");

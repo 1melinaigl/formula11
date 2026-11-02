@@ -126,6 +126,10 @@
 .quote-change.flat, .quote-date { color: var(--muted); }
 .quote-date { font-size: 13px; }
 .quote-chart { margin: 0 0 12px; }
+.quote-at-date { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; margin: 18px 0 4px; }
+.quote-at-date .catalog-search { flex: 0 1 220px; }
+.quote-at-date .alert, .quote-at-date-result { flex-basis: 100%; margin: 0; }
+.quote-at-date-result strong { color: var(--gold); }
 .quote-history summary { padding: 8px 0; color: var(--cyan); cursor: pointer; font: 400 17px var(--disp); text-transform: uppercase; }
 .quote-history table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .quote-history th { color: var(--cyan); font: 400 15px var(--disp); text-align: left; text-transform: uppercase; }

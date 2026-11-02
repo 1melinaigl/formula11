@@ -76,4 +76,18 @@ Como usuario, quiero ver un gráfico con la evolución del precio del jugador pa
 - `GET /api/estrategias` devuelve un array con las dos estrategias, cada una con `codigo`, `nombre`, `version`, `activa`, `pesos`, `parametros` y `creadaEn`; el detalle del `SUPERUSUARIO` usa la única entrada con `activa: true` para marcar la estrategia activa junto con la comparación. Si falla la consulta o no hay exactamente una activa, la UI informa el error y no presenta una selección implícita.
 - Todos los endpoints protegidos requieren JWT y envían `X-Correlation-Id`; los errores usan `mensaje`, `timestamp` y `correlationId`.
 - La documentación de visión que usa rutas `/players/:id` y `/players/:id/quotes` es descriptiva; para esta feature prevalece el contrato de Entrega 2 con rutas `/api/jugadores/...`.
-- Fuera de alcance: cotización a una fecha (`/cotizaciones/vigente?fecha=`).
+- La cotización a una fecha (`/cotizaciones/vigente?fecha=`) quedó fuera del alcance inicial y se agregó el 2026-11-02 (ver "Ampliación: cotización a una fecha").
+
+## Ampliación: cotización a una fecha (2026-11-02)
+
+La planilla de la Entrega 2 pide "Cotización de jugador a una fecha dada". El backend ya expone
+`GET /api/jugadores/{jugadorId}/cotizaciones/vigente?fecha=AAAA-MM-DD` (feature 008 del backend).
+
+- **FR-A01**: El detalle del jugador MUST ofrecer un selector de fecha y un botón "Consultar" que pida la
+  cotización vigente a esa fecha con la estrategia activa (sin parámetro `estrategia`).
+- **FR-A02**: El resultado MUST mostrar la fecha pedida, el precio en créditos, la fecha de la cotización
+  usada (domingo de cierre), la estrategia con su versión y la variación cuando no es `null`.
+- **FR-A03**: Un `404` (sin cotizaciones hasta esa fecha) u otro error MUST mostrarse con `AvisoError`,
+  con el `mensaje` y el `correlationId` del backend.
+- **FR-A04**: La consulta MUST hacerse solo al apretar "Consultar"; abrir el detalle no dispara pedidos nuevos.
+
