@@ -5,7 +5,6 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.formula11.model.Cotizacion;
 import com.formula11.model.Estrategia;
 import com.formula11.model.Jugador;
-import com.formula11.model.Liga;
 import com.formula11.persistence.CotizacionRepository;
 import com.formula11.persistence.EstrategiaRepository;
 import com.formula11.service.CotizacionVigentePort;
@@ -79,7 +78,7 @@ class CotizacionVigenteServiceTest {
     }
 
     private CotizacionVigenteService servicio(Cache<String, CotizacionVigentePort.CotizacionVigente> cache) {
-        return new CotizacionVigenteService(cotizaciones, estrategias, clock, cache);
+        return new CotizacionVigenteService(cotizaciones, estrategias, cache);
     }
 
     private static Jugador mockJugador(Long id) {

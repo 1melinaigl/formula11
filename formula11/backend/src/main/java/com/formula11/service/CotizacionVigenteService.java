@@ -7,7 +7,6 @@ import com.formula11.model.Jugador;
 import com.formula11.persistence.*;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
-import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -15,14 +14,12 @@ import java.time.LocalDate;
 public class CotizacionVigenteService implements CotizacionVigentePort {
     private final CotizacionRepository cotizaciones;
     private final EstrategiaRepository estrategias;
-    private final Clock clock;
     private final Cache<String, CotizacionVigentePort.CotizacionVigente> cache;
 
     public CotizacionVigenteService(CotizacionRepository cotizaciones, EstrategiaRepository estrategias,
-                                    Clock clock, Cache<String, CotizacionVigentePort.CotizacionVigente> cache) {
+                                    Cache<String, CotizacionVigentePort.CotizacionVigente> cache) {
         this.cotizaciones = cotizaciones;
         this.estrategias = estrategias;
-        this.clock = clock;
         this.cache = cache;
     }
 

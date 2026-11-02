@@ -68,7 +68,6 @@ class MercadoE2ETest {
                         .content("{\"nombre\":\"Ana\",\"email\":\"ana-market@example.com\",\"password\":\"Secreto123!\"}"))
                 .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
         JsonNode json = objectMapper.readTree(registro);
-        Usuario comprador = usuarios.findByEmail("ana-market@example.com").orElseThrow();
         mockMvc.perform(post("/api/ordenes/compra")
                         .header("Authorization", "Bearer " + json.get("token").asText())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -256,12 +255,11 @@ class MercadoE2ETest {
 
     @Test
     void registroCreaCuentaYLoginExponeRolEnRespuestaYJwt() throws Exception {
-        String registro = mockMvc.perform(post("/api/usuarios/registro")
+        mockMvc.perform(post("/api/usuarios/registro")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"nombre\":\"Rol\",\"email\":\"rol-user@example.com\",\"password\":\"Secreto123!\"}"))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.rol").doesNotExist())
-                .andReturn().getResponse().getContentAsString();
+                .andExpect(jsonPath("$.rol").doesNotExist());
         Usuario usuario = usuarios.findByEmail("rol-user@example.com").orElseThrow();
         Assertions.assertEquals(Rol.USUARIO, usuario.getRol());
         Assertions.assertEquals(new BigDecimal("100.0000"), cuentas.findByUsuarioId(usuario.getId()).orElseThrow().getSaldo());

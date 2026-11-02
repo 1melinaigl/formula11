@@ -1,5 +1,10 @@
-package com.formula11.adapter;
+package com.formula11.unit.adapter;
 
+import com.formula11.adapter.ExternalPlayer;
+import com.formula11.adapter.ExternalTeam;
+import com.formula11.adapter.FootballApiProperties;
+import com.formula11.adapter.FootballDataAdapter;
+import com.formula11.adapter.FootballDataException;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.formula11.model.Liga;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,9 +60,9 @@ class FootballDataAdapterTest {
 
     @Test
     void mapeaEquiposYJugadoresYUsaCache() throws Exception {
-        Object player = record("PlayerPayload", 10L, "Forward", "midfield");
-        Object team = record("TeamPayload", 20L, " Team ", List.of(player));
-        Object response = record("TeamsResponse", List.of(team));
+        Object player = instanciarRecord("PlayerPayload", 10L, "Forward", "midfield");
+        Object team = instanciarRecord("TeamPayload", 20L, " Team ", List.of(player));
+        Object response = instanciarRecord("TeamsResponse", List.of(team));
         when(responseSpec.onStatus(any(), any())).thenReturn(responseSpec);
         when(responseSpec.body(any(Class.class))).thenReturn(response);
 
@@ -83,8 +88,8 @@ class FootballDataAdapterTest {
 
     @Test
     void mapeaJugadoresDesdeDetalleDelEquipo() throws Exception {
-        Object player = record("PlayerPayload", 10L, "Defender", "defender");
-        stubResponse(record("TeamDetailResponse", List.of(player)));
+        Object player = instanciarRecord("PlayerPayload", 10L, "Defender", "defender");
+        stubResponse(instanciarRecord("TeamDetailResponse", List.of(player)));
         FootballDataAdapter adapter = new FootballDataAdapter(properties, Caffeine.newBuilder().build(), restClient);
 
         List<ExternalPlayer> players = adapter.obtenerJugadores(new ExternalTeam("20", "Team", Liga.LA_LIGA.name()));
@@ -157,7 +162,7 @@ class FootballDataAdapterTest {
         when(responseSpec.body(any(Class.class))).thenReturn(response);
     }
 
-    private static Object record(String name, Object... arguments) throws Exception {
+    private static Object instanciarRecord(String name, Object... arguments) throws Exception {
         Class<?> type = Class.forName(FootballDataAdapter.class.getName() + "$" + name);
         Constructor<?> constructor = type.getDeclaredConstructors()[0];
         constructor.setAccessible(true);

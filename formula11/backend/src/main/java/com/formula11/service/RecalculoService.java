@@ -54,7 +54,9 @@ public class RecalculoService {
                 LocalDate ultimaPersistida = cotizaciones.findMaxFecha().orElse(fin);
                 if (ultimaPersistida.isAfter(fin)) fin = ultimaPersistida;
             }
-            int weeks = 0, players = 0, noMetricas = 0;
+            int weeks = 0;
+            int players = 0;
+            int noMetricas = 0;
             for (LocalDate domingo = domingoDeSemana(desde); !domingo.isAfter(fin); domingo = domingo.plusWeeks(1)) {
                 RecalculoSemanaService.SemanaResultado result = semanas.procesar(domingo);
                 generarSenales(domingo);
