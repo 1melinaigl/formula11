@@ -6,6 +6,7 @@ import AvisoError from '../components/comun/AvisoError'
 import EstadoCarga from '../components/comun/EstadoCarga'
 import EstadoVacio from '../components/comun/EstadoVacio'
 import { formatearFecha, nombreEstrategia } from '../components/cotizaciones/cotizaciones'
+import SelectorEstrategia from '../components/ranking/SelectorEstrategia'
 import TablaRanking from '../components/ranking/TablaRanking'
 import { LIGAS } from '../hooks/useCatalogo'
 import { useRanking } from '../hooks/useRanking'
@@ -48,6 +49,7 @@ export default function RankingPage() {
           </div>
           <button className="btn ghost" type="button" onClick={() => navigate('/')}>Menú</button>
         </div>
+        {usuario.rol === 'SUPERUSUARIO' && ranking.estrategia && <SelectorEstrategia alActivar={ranking.recargar} estrategiaActiva={ranking.estrategia} />}
         <div className="ranking-toolbar">
           <div className="ranking-filters" role="group" aria-label="Filtrar por posición">
             {FILTROS.map(([codigo, nombre]) => (

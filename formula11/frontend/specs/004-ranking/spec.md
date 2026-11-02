@@ -70,3 +70,14 @@ Como usuario, quiero ver el ranking de una sola posición, porque la estrategia 
 - Ordena el backend por score; el filtro de posición (`POR`, `DEF`, `MED`, `DEL`) y el de liga también son del backend, y el puesto lo manda el backend.
 - `estrategia` puede ser solicitada por un `SUPERUSUARIO` según el contrato general, pero queda fuera de esta feature: el frontend muestra únicamente la estrategia activa y no envía el parámetro `estrategia`.
 - La API usa índices de página basados en cero; la interfaz presenta el número de página incrementado en uno.
+
+## Ampliación: cambiar la estrategia activa (2026-11-02)
+
+El contrato deja que el superusuario elija la estrategia con la que opera el mercado
+(`POST /api/estrategias/{codigo}/activar`), pero ninguna pantalla lo ofrecía. El ranking sigue mostrando solo la
+estrategia activa y sin enviar `estrategia`; lo que se agrega es la forma de cambiarla.
+
+- **FR-A01**: El ranking MUST mostrar al `SUPERUSUARIO`, y a nadie más, un selector con `RENDIMIENTO_POSICION` y `CONSISTENCIA`, con la estrategia activa elegida.
+- **FR-A02**: El cambio MUST hacerse recién al apretar "Activar", deshabilitado mientras la elegida sea la activa, y la pantalla MUST avisar que afecta los precios y portfolios de todos los usuarios.
+- **FR-A03**: Al activarse, el ranking MUST volver a pedirse y mostrar la estrategia nueva, manteniendo los filtros y volviendo a la página 1.
+- **FR-A04**: Un error del backend MUST mostrarse con `AvisoError`, con `mensaje` y `correlationId`, sin perder el ranking cargado.

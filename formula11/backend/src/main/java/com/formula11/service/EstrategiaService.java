@@ -54,7 +54,11 @@ public class EstrategiaService {
     public EstrategiaResponse activar(String codigo) {
         Estrategia seleccionada = repository.findTopByCodigoOrderByVersionDesc(codigo)
                 .orElseThrow(() -> new NoSuchElementException("La estrategia no existe"));
-        repository.findByActivaTrue().ifPresent(e -> e.activar(false));
+        // La base admite una sola activa (ux_estrategia_activa): la anterior tiene que bajarse antes de marcar la nueva.
+        repository.findByActivaTrue().ifPresent(actual -> {
+            actual.activar(false);
+            repository.saveAndFlush(actual);
+        });
         seleccionada.activar(true);
         cacheInvalidator.invalidate();
         return toResponse(repository.save(seleccionada));

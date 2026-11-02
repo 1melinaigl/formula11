@@ -144,6 +144,11 @@
 .ranking-toolbar { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 6px 16px; margin-bottom: 12px; }
 .ranking-toolbar .ranking-filters { margin: 0; }
 .ranking-league { min-width: 180px; }
+.ranking-strategy { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; margin: 14px 0; }
+.ranking-strategy .catalog-filter { flex: 0 1 280px; }
+.ranking-strategy .btn:disabled { cursor: not-allowed; opacity: .4; }
+.ranking-strategy .alert, .ranking-strategy-note { flex-basis: 100%; margin: 0; }
+.ranking-strategy-note { color: var(--muted); font-size: 13px; }
 .ranking-filters .filter-chip { padding: 6px 12px; font-size: 13px; }
 .ranking-filters .filter-chip[aria-pressed="true"] { background: var(--gold); color: var(--navy); }
 .ranking-table { width: 100%; border: 1px solid rgba(220, 240, 200, .35); border-collapse: collapse; background: rgba(3, 22, 10, .82); box-shadow: 5px 5px 0 rgba(0, 0, 0, .5); }
