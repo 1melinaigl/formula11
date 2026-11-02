@@ -39,6 +39,13 @@ export function useRanking() {
     setConsulta((actual) => ({ ...actual, page: 0, ...cambios }))
   }, [consulta])
 
+  // Vuelve a pedir el ranking aunque los filtros no cambien, por ejemplo al activar otra estrategia.
+  const recargar = useCallback(() => {
+    setCargando(true)
+    setError(null)
+    setConsulta((actual) => ({ ...actual, page: 0 }))
+  }, [])
+
   return {
     ...respuesta,
     posicion: consulta.posicion,
@@ -48,5 +55,6 @@ export function useRanking() {
     cambiarPagina: useCallback((page) => actualizar({ page }), [actualizar]),
     cambiarPosicion: useCallback((posicion) => actualizar({ posicion }), [actualizar]),
     cambiarLiga: useCallback((liga) => actualizar({ liga }), [actualizar]),
+    recargar,
   }
 }

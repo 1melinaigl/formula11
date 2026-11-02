@@ -91,4 +91,23 @@ class EstrategiaE2ETest {
                 .andExpect(jsonPath("$.pesos").exists())
                 .andExpect(jsonPath("$.parametros").exists());
     }
+
+    @Test
+    @WithMockUser(roles = "SUPERUSUARIO")
+    void superusuarioPuedeCambiarLaEstrategiaActivaYVolver() throws Exception {
+        mockMvc.perform(post("/api/estrategias/CONSISTENCIA/activar"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.codigo").value("CONSISTENCIA"))
+                .andExpect(jsonPath("$.activa").value(true));
+        mockMvc.perform(get("/api/estrategias"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.activa == true)].codigo").value("CONSISTENCIA"));
+
+        mockMvc.perform(post("/api/estrategias/RENDIMIENTO_POSICION/activar"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.activa").value(true));
+        mockMvc.perform(get("/api/estrategias"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.activa == true)].codigo").value("RENDIMIENTO_POSICION"));
+    }
 }

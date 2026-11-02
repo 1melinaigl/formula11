@@ -149,3 +149,11 @@ description: "Task list for Formula11 player ranking"
 3. **Hardening**: completar US3 con estados y errores trazables.
 4. **Cierre**: ejecutar accesibilidad, revisión visual, quickstart, tests, lint y build
    antes de considerar la feature terminada.
+
+## Ampliación: cambiar la estrategia activa (2026-11-02)
+
+- [x] TA01 Agregar `endpoints.activarEstrategia(codigo)` en `src/api/endpoints.js` y `recargar` en `src/hooks/useRanking.js`.
+- [x] TA02 Crear `src/hooks/useActivarEstrategia.js` y `src/components/ranking/SelectorEstrategia.jsx`; mostrarlo en `RankingPage` solo al `SUPERUSUARIO`.
+- [x] TA03 Test `tests/pages/rankingEstrategia.test.jsx`: activación exitosa, usuario sin selector y error del backend.
+- [x] TA04 Correr `npm test`, `npm run lint` y `npm run build`.
+- [x] TA05 Backend: `EstrategiaService.activar` respondía 500 porque marcaba la nueva antes de bajar la anterior (`ux_estrategia_activa`). Se baja primero y se cubre con un e2e en `EstrategiaE2ETest`.
