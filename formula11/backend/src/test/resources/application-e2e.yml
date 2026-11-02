@@ -1,0 +1,32 @@
+# Perfil de los tests end to end (paquete e2e): levantan la aplicación completa
+# (HTTP con MockMvc, seguridad, services y PostgreSQL en Testcontainers).
+# Los tests unitarios no levantan Spring y los de integración usan el perfil "test".
+# Se ejecutan por separado con los perfiles de Maven: -Punitarios, -Pintegracion y -Pe2e.
+spring:
+  datasource:
+    url: jdbc:tc:postgresql:16-alpine:///formula11_e2e
+    username: test
+    password: test
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    out-of-order: true
+logging:
+  level:
+    root: WARN
+    com.formula11: INFO
+app:
+  whoscored:
+    modo: archivos
+    carpeta-paginas: src/test/resources/whoscored
+    perfil-dir: target/whoscored-perfil-e2e
+    pausa-ms: 1
+    timeout-ms: 1000
+  jwt:
+    secret: test-secret-key-that-is-at-least-32-bytes-long
+    expiration: 3600
+mercado:
+  superusuario-email: superusuario@test.com
+  superusuario-password: Superusuario123!

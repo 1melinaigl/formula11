@@ -5,6 +5,7 @@ import { posiciones } from '../components/catalogo/posiciones'
 import AvisoError from '../components/comun/AvisoError'
 import EstadoCarga from '../components/comun/EstadoCarga'
 import EstadoVacio from '../components/comun/EstadoVacio'
+import CotizacionAFecha from '../components/cotizaciones/CotizacionAFecha'
 import GraficoEvolucion from '../components/cotizaciones/GraficoEvolucion'
 import ResumenCotizacion from '../components/cotizaciones/ResumenCotizacion'
 import TablaCotizaciones from '../components/cotizaciones/TablaCotizaciones'
@@ -55,6 +56,7 @@ function DetalleJugador({ id, operacionInicial, puedeOperar }) {
       <section className="player-card quote-panel" aria-labelledby="titulo-cotizaciones">
         <div className="player-card-heading"><span id="titulo-cotizaciones">Evolución de la cotización</span></div>
         <PanelCotizaciones cotizaciones={cotizaciones} error={errorCotizaciones} estrategiaActiva={estrategiaActiva} puedeComparar={puedeComparar} />
+        <CotizacionAFecha jugadorId={id} />
       </section>
     </div>
   )

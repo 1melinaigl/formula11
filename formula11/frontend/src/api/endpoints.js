@@ -6,6 +6,7 @@ export const endpoints = {
   estrategias: '/api/estrategias',
   jugador: (id) => `/api/jugadores/${encodeURIComponent(id)}`,
   cotizacionesJugador: (id, estrategia) => `/api/jugadores/${encodeURIComponent(id)}/cotizaciones${estrategia ? `?estrategia=${estrategia}` : ''}`,
+  cotizacionAFecha: (id, fecha) => `/api/jugadores/${encodeURIComponent(id)}/cotizaciones/vigente?fecha=${encodeURIComponent(fecha)}`,
   mercadoJugador: (id) => `/api/jugadores/${encodeURIComponent(id)}/mercado`,
   comprar: '/api/ordenes/compra',
   vender: '/api/ordenes/venta',

@@ -154,3 +154,11 @@ description: "Task list for Formula11 player detail with quote history"
    los estados de pantalla.
 3. **Hardening**: ejecutar la fase Polish, validar el contrato de Entrega 2 y cerrar
    solo cuando tests, lint, build y quickstart pasen.
+
+## Ampliación: cotización a una fecha (2026-11-02)
+
+- [x] TA01 Agregar `endpoints.cotizacionAFecha(id, fecha)` en `src/api/endpoints.js`.
+- [x] TA02 Crear `src/components/cotizaciones/CotizacionAFecha.jsx` con selector de fecha, botón "Consultar", resultado y `AvisoError`; sumarlo al panel de cotizaciones de `DetalleJugadorPage`.
+- [x] TA03 Test `tests/pages/cotizacionAFecha.test.jsx`: consulta exitosa (fecha enviada, precio, fecha de la cotización, estrategia y variación) y `404` con el mensaje del backend.
+- [ ] TA04 Correr `npm test`, `npm run lint` y `npm run build`.
+
