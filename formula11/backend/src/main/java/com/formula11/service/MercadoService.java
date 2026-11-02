@@ -17,6 +17,8 @@ import java.time.Instant;
 @Service
 public class MercadoService {
     private static final Logger log = LoggerFactory.getLogger(MercadoService.class);
+    private static final String JUGADOR_NO_EXISTE = "El jugador no existe";
+    private static final String SUPERUSUARIO_NO_EXISTE = "El superusuario no existe";
     private final UsuarioRepository usuarioRepository;
     private final JugadorRepository jugadorRepository;
     private final CuentaRepository cuentaRepository;
@@ -57,9 +59,9 @@ public class MercadoService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("El usuario no existe"));
         if (usuario.esSuperusuario()) throw new SuperusuarioNoOperaException();
         Jugador jugador = jugadorRepository.findById(jugadorId)
-                .orElseThrow(() -> new RecursoNoEncontradoException("El jugador no existe"));
+                .orElseThrow(() -> new RecursoNoEncontradoException(JUGADOR_NO_EXISTE));
         Usuario superusuario = usuarioRepository.findByRol(Rol.SUPERUSUARIO)
-                .orElseThrow(() -> new RecursoNoEncontradoException("El superusuario no existe"));
+                .orElseThrow(() -> new RecursoNoEncontradoException(SUPERUSUARIO_NO_EXISTE));
         Instant fecha = Instant.now(reloj);
         CotizacionVigentePort.CotizacionVigente cotizacion = cotizacionPort.vigente(jugador, fecha);
         BigDecimal total = cotizacion.precio().multiply(BigDecimal.valueOf(cantidad)).setScale(4, java.math.RoundingMode.HALF_UP);
@@ -82,8 +84,9 @@ public class MercadoService {
                 superusuario, fecha, cotizacion.estrategia(), cotizacion.version()));
         tenenciaRepository.save(tenencia);
         auditoriaRepository.save(new AuditoriaMercado(usuario, transaccion, antes, snapshot(cuenta, tenencia, stock), fecha));
+        String correlationId = org.slf4j.MDC.get("correlationId");
         log.info("mercado_operacion_confirmada tipo=COMPRA usuarioId={} jugadorId={} cantidad={} correlationId={}",
-                usuarioId, jugadorId, cantidad, org.slf4j.MDC.get("correlationId"));
+                usuarioId, jugadorId, cantidad, correlationId);
         return new ResultadoOperacion(transaccion, cuenta.getSaldo());
     }
 
@@ -94,9 +97,9 @@ public class MercadoService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("El usuario no existe"));
         if (usuario.esSuperusuario()) throw new SuperusuarioNoOperaException();
         Jugador jugador = jugadorRepository.findById(jugadorId)
-                .orElseThrow(() -> new RecursoNoEncontradoException("El jugador no existe"));
+                .orElseThrow(() -> new RecursoNoEncontradoException(JUGADOR_NO_EXISTE));
         Usuario superusuario = usuarioRepository.findByRol(Rol.SUPERUSUARIO)
-                .orElseThrow(() -> new RecursoNoEncontradoException("El superusuario no existe"));
+                .orElseThrow(() -> new RecursoNoEncontradoException(SUPERUSUARIO_NO_EXISTE));
         Instant fecha = Instant.now(clock);
         CotizacionVigentePort.CotizacionVigente cotizacion = cotizacionPort.vigente(jugador, fecha);
         BigDecimal total = cotizacion.precio().multiply(BigDecimal.valueOf(cantidad))
@@ -122,17 +125,18 @@ public class MercadoService {
         tenenciaRepository.save(tenencia);
         tenenciaRepository.save(stock);
         auditoriaRepository.save(new AuditoriaMercado(usuario, transaccion, antes, snapshot(cuenta, tenencia, stock), fecha));
+        String correlationId = org.slf4j.MDC.get("correlationId");
         log.info("mercado_operacion_confirmada tipo=VENTA usuarioId={} jugadorId={} cantidad={} correlationId={}",
-                usuarioId, jugadorId, cantidad, org.slf4j.MDC.get("correlationId"));
+                usuarioId, jugadorId, cantidad, correlationId);
         return new ResultadoOperacion(transaccion, cuenta.getSaldo());
     }
 
     @Transactional(readOnly = true)
     public MercadoJugadorResultado consultarMercado(Long jugadorId) {
         Jugador jugador = jugadorRepository.findById(jugadorId)
-                .orElseThrow(() -> new RecursoNoEncontradoException("El jugador no existe"));
+                .orElseThrow(() -> new RecursoNoEncontradoException(JUGADOR_NO_EXISTE));
         Usuario superusuario = usuarioRepository.findByRol(Rol.SUPERUSUARIO)
-                .orElseThrow(() -> new RecursoNoEncontradoException("El superusuario no existe"));
+                .orElseThrow(() -> new RecursoNoEncontradoException(SUPERUSUARIO_NO_EXISTE));
         Tenencia stock = tenenciaRepository.findByUsuarioIdAndJugadorId(superusuario.getId(), jugadorId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("La tenencia del mercado no existe"));
         CotizacionVigentePort.CotizacionVigente cotizacion = cotizacionPort.vigente(jugador, Instant.now(clock));

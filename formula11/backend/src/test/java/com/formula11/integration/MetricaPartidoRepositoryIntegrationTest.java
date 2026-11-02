@@ -43,8 +43,9 @@ class MetricaPartidoRepositoryIntegrationTest {
         Jugador jugador = jugadores.saveAndFlush(new Jugador("Jugador", "Equipo", Liga.LA_LIGA, "DEL"));
         metricas.saveAndFlush(metrica(jugador, LocalDate.of(2026, 1, 4)));
 
-        assertThrows(DataIntegrityViolationException.class,
-                () -> metricas.saveAndFlush(metrica(jugador, LocalDate.of(2026, 1, 4))));
+        MetricaPartido duplicada = metrica(jugador, LocalDate.of(2026, 1, 4));
+
+        assertThrows(DataIntegrityViolationException.class, () -> metricas.saveAndFlush(duplicada));
     }
 
     @Test

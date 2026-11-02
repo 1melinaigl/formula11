@@ -30,7 +30,8 @@ class MercadoModelTest {
 
     @Test
     void rechazaEstadosNoPositivos() {
-        assertThrows(DatoInvalidoException.class, () -> new Cuenta(usuario, new BigDecimal("-1")));
+        BigDecimal negativo = new BigDecimal("-1");
+        assertThrows(DatoInvalidoException.class, () -> new Cuenta(usuario, negativo));
         assertThrows(DatoInvalidoException.class, () -> new Tenencia(usuario, jugador, -1, BigDecimal.ONE));
         Tenencia tenencia = new Tenencia(usuario, jugador, 1, BigDecimal.ONE);
         assertThrows(DatoInvalidoException.class, () -> tenencia.comprar(0, BigDecimal.ONE));

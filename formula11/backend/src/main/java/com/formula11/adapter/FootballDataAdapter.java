@@ -32,9 +32,9 @@ public class FootballDataAdapter implements FootballDataPort {
         this(properties, cache, crearRestClient(properties));
     }
 
-    FootballDataAdapter(FootballApiProperties properties,
-                        com.github.benmanes.caffeine.cache.Cache<String, Object> cache,
-                        RestClient restClient) {
+    public FootballDataAdapter(FootballApiProperties properties,
+                               com.github.benmanes.caffeine.cache.Cache<String, Object> cache,
+                               RestClient restClient) {
         this.properties = properties;
         this.cache = cache;
         this.restClient = restClient;

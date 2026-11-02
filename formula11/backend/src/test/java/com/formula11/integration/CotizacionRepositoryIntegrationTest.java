@@ -61,8 +61,9 @@ class CotizacionRepositoryIntegrationTest {
         Jugador jugador = jugadores.saveAndFlush(new Jugador("Jugador", "Equipo", Liga.LA_LIGA, "DEL"));
         cotizaciones.saveAndFlush(cotizacion(jugador, LocalDate.of(2026, 1, 4), "CONSISTENCIA"));
 
-        assertThrows(DataIntegrityViolationException.class, () ->
-                cotizaciones.saveAndFlush(cotizacion(jugador, LocalDate.of(2026, 1, 4), "CONSISTENCIA")));
+        Cotizacion duplicada = cotizacion(jugador, LocalDate.of(2026, 1, 4), "CONSISTENCIA");
+
+        assertThrows(DataIntegrityViolationException.class, () -> cotizaciones.saveAndFlush(duplicada));
     }
 
     @Test

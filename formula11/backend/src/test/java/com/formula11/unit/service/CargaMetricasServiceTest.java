@@ -85,7 +85,8 @@ class CargaMetricasServiceTest {
 
     @Test
     void iniciarRechazaUnaSegundaCargaMientrasHayUnaEnCurso() {
-        when(self.getObject()).thenReturn(mock(CargaMetricasService.class));
+        CargaMetricasService proxy = mock(CargaMetricasService.class);
+        when(self.getObject()).thenReturn(proxy);
         service.iniciar(null);
 
         LocalDate desde = LocalDate.of(2026, 10, 1);
@@ -176,7 +177,8 @@ class CargaMetricasServiceTest {
 
     @Test
     void laCargaSincronicaNoArrancaSiHayOtraEnCurso() {
-        when(self.getObject()).thenReturn(mock(CargaMetricasService.class));
+        CargaMetricasService proxy = mock(CargaMetricasService.class);
+        when(self.getObject()).thenReturn(proxy);
         service.iniciar(null);
 
         assertNull(service.cargarSincronico(null));
