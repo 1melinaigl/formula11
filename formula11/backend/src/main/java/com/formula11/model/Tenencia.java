@@ -1,5 +1,8 @@
 package com.formula11.model;
 
+import com.formula11.model.excepciones.DatoInvalidoException;
+import com.formula11.model.excepciones.CantidadInsuficienteException;
+
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -14,13 +17,13 @@ public class Tenencia {
     @Column(name = "precio_promedio", nullable = false, precision = 19, scale = 4) private BigDecimal precioPromedio;
     protected Tenencia() { }
     public Tenencia(Usuario usuario, Jugador jugador, int cantidad, BigDecimal precioPromedio) {
-        this.usuario = java.util.Objects.requireNonNull(usuario, "El usuario es obligatorio");
-        this.jugador = java.util.Objects.requireNonNull(jugador, "El jugador es obligatorio");
-        if (cantidad < 0) throw new IllegalArgumentException("La cantidad no puede ser negativa");
+        this.usuario = DatoInvalidoException.requerido(usuario, "El usuario es obligatorio");
+        this.jugador = DatoInvalidoException.requerido(jugador, "El jugador es obligatorio");
+        if (cantidad < 0) throw new DatoInvalidoException("La cantidad no puede ser negativa");
         this.cantidad = cantidad; this.precioPromedio = dineroNoNegativo(precioPromedio);
     }
     public void comprar(int cantidad, BigDecimal precio) {
-        if (cantidad <= 0) throw new IllegalArgumentException("La cantidad debe ser positiva");
+        if (cantidad <= 0) throw new DatoInvalidoException("La cantidad debe ser positiva");
         BigDecimal p = dineroNoNegativo(precio);
         BigDecimal anterior = precioPromedio.multiply(BigDecimal.valueOf(this.cantidad));
         this.cantidad += cantidad;
@@ -28,12 +31,12 @@ public class Tenencia {
                 .divide(BigDecimal.valueOf(this.cantidad), 4, RoundingMode.HALF_UP);
     }
     public void vender(int cantidad) {
-        if (cantidad <= 0) throw new IllegalArgumentException("La cantidad debe ser positiva");
-        if (this.cantidad < cantidad) throw new IllegalStateException("La tenencia es insuficiente");
+        if (cantidad <= 0) throw new DatoInvalidoException("La cantidad debe ser positiva");
+        if (this.cantidad < cantidad) throw new CantidadInsuficienteException("La tenencia es insuficiente");
         this.cantidad -= cantidad;
     }
     private static BigDecimal dineroNoNegativo(BigDecimal valor) {
-        if (valor == null || valor.signum() < 0) throw new IllegalArgumentException("El precio promedio no puede ser negativo");
+        if (valor == null || valor.signum() < 0) throw new DatoInvalidoException("El precio promedio no puede ser negativo");
         return valor.setScale(4, RoundingMode.HALF_UP);
     }
     public Long getId() { return id; }

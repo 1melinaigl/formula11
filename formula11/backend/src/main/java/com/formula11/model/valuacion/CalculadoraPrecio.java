@@ -1,8 +1,9 @@
 package com.formula11.model.valuacion;
 
+import com.formula11.model.excepciones.DatoInvalidoException;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Objects;
 
 /** Applies the weekly price formula without depending on persistence or Spring. */
 public final class CalculadoraPrecio {
@@ -12,7 +13,7 @@ public final class CalculadoraPrecio {
     public static PrecioCalculado calcular(BigDecimal anterior, BigDecimal score,
                                             BigDecimal sensibilidad, BigDecimal tope,
                                             BigDecimal piso, boolean jugo) {
-        Objects.requireNonNull(score, "El score es obligatorio");
+        DatoInvalidoException.requerido(score, "El score es obligatorio");
         boolean primera = anterior == null;
         anterior = primera ? BigDecimal.ONE : anterior;
         sensibilidad = sensibilidad == null ? new BigDecimal("0.4") : sensibilidad;

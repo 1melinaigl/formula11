@@ -1,12 +1,13 @@
 package com.formula11.model;
 
+import com.formula11.model.excepciones.DatoInvalidoException;
+
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Objects;
 
 /** Señal de jugador subvaluado detectada en una semana. Única por jugador, fecha y tipo. */
 @Entity
@@ -43,10 +44,10 @@ public class Senal {
     @SuppressWarnings("java:S107") // una señal tiene ocho datos obligatorios; un builder no agrega claridad
     public Senal(Jugador jugador, LocalDate fecha, Tipo tipo, String estrategia, BigDecimal brecha,
                  BigDecimal precio, BigDecimal precioEstimado, Instant creadaEn) {
-        this.jugador = Objects.requireNonNull(jugador, "El jugador es obligatorio");
-        this.fecha = Objects.requireNonNull(fecha, "La fecha es obligatoria");
-        this.tipo = Objects.requireNonNull(tipo, "El tipo es obligatorio");
-        this.creadaEn = Objects.requireNonNull(creadaEn, "La fecha de creación es obligatoria");
+        this.jugador = DatoInvalidoException.requerido(jugador, "El jugador es obligatorio");
+        this.fecha = DatoInvalidoException.requerido(fecha, "La fecha es obligatoria");
+        this.tipo = DatoInvalidoException.requerido(tipo, "El tipo es obligatorio");
+        this.creadaEn = DatoInvalidoException.requerido(creadaEn, "La fecha de creación es obligatoria");
         asignarValores(estrategia, brecha, precio, precioEstimado);
     }
 
@@ -57,13 +58,13 @@ public class Senal {
 
     private void asignarValores(String estrategia, BigDecimal brecha, BigDecimal precio, BigDecimal precioEstimado) {
         if (estrategia == null || estrategia.isBlank()) {
-            throw new IllegalArgumentException("La estrategia es obligatoria");
+            throw new DatoInvalidoException("La estrategia es obligatoria");
         }
         if (brecha == null || brecha.signum() < 0) {
-            throw new IllegalArgumentException("La brecha no puede ser negativa");
+            throw new DatoInvalidoException("La brecha no puede ser negativa");
         }
         if (precio == null || precio.signum() <= 0 || precioEstimado == null || precioEstimado.signum() <= 0) {
-            throw new IllegalArgumentException("Los precios de la señal deben ser positivos");
+            throw new DatoInvalidoException("Los precios de la señal deben ser positivos");
         }
         this.estrategia = estrategia;
         this.brecha = brecha.setScale(2, RoundingMode.HALF_UP);

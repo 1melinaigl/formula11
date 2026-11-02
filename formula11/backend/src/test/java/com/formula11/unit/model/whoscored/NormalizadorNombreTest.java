@@ -1,5 +1,7 @@
 package com.formula11.unit.model.whoscored;
 
+import com.formula11.model.excepciones.DatoInvalidoException;
+
 import com.formula11.model.whoscored.NormalizadorNombre;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +15,7 @@ class NormalizadorNombreTest {
 
     @Test
     void rechazaEntradaNulaYBlanca() {
-        assertThrows(IllegalArgumentException.class, () -> NormalizadorNombre.normalizar(null));
-        assertThrows(IllegalArgumentException.class, () -> NormalizadorNombre.normalizar(" \t "));
+        assertThrows(DatoInvalidoException.class, () -> NormalizadorNombre.normalizar(null));
+        assertThrows(DatoInvalidoException.class, () -> NormalizadorNombre.normalizar(" \t "));
     }
 }

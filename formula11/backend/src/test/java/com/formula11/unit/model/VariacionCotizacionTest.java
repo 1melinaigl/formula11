@@ -1,5 +1,7 @@
 package com.formula11.unit.model;
 
+import com.formula11.model.excepciones.DatoInvalidoException;
+
 import com.formula11.model.VariacionCotizacion;
 import org.junit.jupiter.api.Test;
 
@@ -47,13 +49,13 @@ class VariacionCotizacionTest {
         BigDecimal actual = new BigDecimal("1.0000");
         BigDecimal cero = BigDecimal.ZERO;
 
-        assertThrows(IllegalArgumentException.class, () -> VariacionCotizacion.porcentaje(cero, actual));
+        assertThrows(DatoInvalidoException.class, () -> VariacionCotizacion.porcentaje(cero, actual));
     }
 
     @Test
     void rechazaPrecioActualNulo() {
         BigDecimal anterior = new BigDecimal("1.0000");
 
-        assertThrows(IllegalArgumentException.class, () -> VariacionCotizacion.porcentaje(anterior, null));
+        assertThrows(DatoInvalidoException.class, () -> VariacionCotizacion.porcentaje(anterior, null));
     }
 }

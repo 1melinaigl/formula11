@@ -1,5 +1,7 @@
 package com.formula11.unit.model;
 
+import com.formula11.model.excepciones.DatoInvalidoException;
+
 import com.formula11.model.Jugador;
 import com.formula11.model.Liga;
 import org.junit.jupiter.api.Test;
@@ -14,6 +16,6 @@ class JugadorTest {
 
     @Test
     void rechazaLigaNula() {
-        assertThrows(NullPointerException.class, () -> new Jugador("Jugador", "Equipo", null, "Defensa"));
+        assertThrows(DatoInvalidoException.class, () -> new Jugador("Jugador", "Equipo", null, "Defensa"));
     }
 }

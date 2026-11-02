@@ -1,5 +1,7 @@
 package com.formula11.model.senales;
 
+import com.formula11.model.excepciones.DatoInvalidoException;
+
 import com.formula11.model.Senal;
 import com.formula11.model.VariacionCotizacion;
 
@@ -9,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -34,24 +35,24 @@ public final class DetectorSenales {
     public record Candidato(long jugadorId, String posicion, BigDecimal precio, BigDecimal score,
                             BigDecimal precioOtraEstrategia) {
         public Candidato {
-            Objects.requireNonNull(posicion, "La posición es obligatoria");
+            DatoInvalidoException.requerido(posicion, "La posición es obligatoria");
             if (precio == null || precio.signum() <= 0) {
-                throw new IllegalArgumentException("El precio debe ser positivo");
+                throw new DatoInvalidoException("El precio debe ser positivo");
             }
-            Objects.requireNonNull(score, "El score es obligatorio");
+            DatoInvalidoException.requerido(score, "El score es obligatorio");
         }
     }
 
     public record Parametros(BigDecimal umbral, BigDecimal ventanaScore, int minimoPares, int maximoPorTipo) {
         public Parametros {
             if (umbral == null || umbral.signum() <= 0) {
-                throw new IllegalArgumentException("El umbral debe ser positivo");
+                throw new DatoInvalidoException("El umbral debe ser positivo");
             }
             if (ventanaScore == null || ventanaScore.signum() < 0) {
-                throw new IllegalArgumentException("La ventana de score no puede ser negativa");
+                throw new DatoInvalidoException("La ventana de score no puede ser negativa");
             }
             if (minimoPares < 1 || maximoPorTipo < 1) {
-                throw new IllegalArgumentException("El mínimo de pares y el máximo por tipo deben ser al menos 1");
+                throw new DatoInvalidoException("El mínimo de pares y el máximo por tipo deben ser al menos 1");
             }
         }
     }

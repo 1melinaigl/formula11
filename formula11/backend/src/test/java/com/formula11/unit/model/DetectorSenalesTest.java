@@ -1,5 +1,7 @@
 package com.formula11.unit.model;
 
+import com.formula11.model.excepciones.DatoInvalidoException;
+
 import com.formula11.model.Senal;
 import com.formula11.model.senales.DetectorSenales;
 import com.formula11.model.senales.DetectorSenales.Candidato;
@@ -118,11 +120,11 @@ class DetectorSenalesTest {
         BigDecimal uno = BigDecimal.ONE;
         BigDecimal medio = new BigDecimal("0.5");
 
-        assertThrows(IllegalArgumentException.class, () -> new Parametros(cero, ventana, 5, 20));
-        assertThrows(IllegalArgumentException.class, () -> new Parametros(quince, negativa, 5, 20));
-        assertThrows(IllegalArgumentException.class, () -> new Parametros(quince, ventana, 0, 20));
-        assertThrows(IllegalArgumentException.class, () -> new Parametros(quince, ventana, 5, 0));
-        assertThrows(IllegalArgumentException.class, () -> new Candidato(1, "DEL", cero, medio, null));
-        assertThrows(NullPointerException.class, () -> new Candidato(1, null, uno, medio, null));
+        assertThrows(DatoInvalidoException.class, () -> new Parametros(cero, ventana, 5, 20));
+        assertThrows(DatoInvalidoException.class, () -> new Parametros(quince, negativa, 5, 20));
+        assertThrows(DatoInvalidoException.class, () -> new Parametros(quince, ventana, 0, 20));
+        assertThrows(DatoInvalidoException.class, () -> new Parametros(quince, ventana, 5, 0));
+        assertThrows(DatoInvalidoException.class, () -> new Candidato(1, "DEL", cero, medio, null));
+        assertThrows(DatoInvalidoException.class, () -> new Candidato(1, null, uno, medio, null));
     }
 }

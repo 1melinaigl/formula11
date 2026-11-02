@@ -1,5 +1,7 @@
 package com.formula11.model.valuacion;
 
+import com.formula11.model.excepciones.DatoInvalidoException;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -10,8 +12,8 @@ public record MetricaPartidoInput(long jugadorId, String liga, String posicion, 
                                   Integer intercepciones, Integer amarillas, Integer rojas, Integer atajadas,
                                   Integer golesRecibidos, Integer vallaInvicta, BigDecimal rating) {
     public MetricaPartidoInput {
-        if (fecha == null || posicion == null || posicion.isBlank()) throw new IllegalArgumentException("Datos incompletos");
-        if (minutos != null && minutos < 0) throw new IllegalArgumentException("Los minutos no pueden ser negativos");
+        if (fecha == null || posicion == null || posicion.isBlank()) throw new DatoInvalidoException("Datos incompletos");
+        if (minutos != null && minutos < 0) throw new DatoInvalidoException("Los minutos no pueden ser negativos");
     }
     public Integer goles() { return nz(goles); }
     public Integer asistencias() { return nz(asistencias); }

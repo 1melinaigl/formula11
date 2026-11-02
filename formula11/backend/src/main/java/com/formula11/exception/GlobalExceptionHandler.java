@@ -2,6 +2,8 @@ package com.formula11.exception;
 
 import com.formula11.dto.ErrorResponse;
 import com.formula11.adapter.FootballDataException;
+import com.formula11.model.excepciones.CantidadInsuficienteException;
+import com.formula11.model.excepciones.DatoInvalidoException;
 import com.formula11.service.UsuarioService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.MDC;
@@ -37,6 +39,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({IllegalArgumentException.class})
     public ResponseEntity<ErrorResponse> argumento(IllegalArgumentException exception, HttpServletRequest request) {
         return responder(HttpStatus.BAD_REQUEST, exception.getMessage(), request);
+    }
+
+    /** Invariante del dominio violada por un dato (excepción propia del modelo). */
+    @ExceptionHandler(DatoInvalidoException.class)
+    public ResponseEntity<ErrorResponse> datoInvalido(DatoInvalidoException exception, HttpServletRequest request) {
+        return responder(HttpStatus.BAD_REQUEST, exception.getMessage(), request);
+    }
+
+    /** El modelo rechaza una operación por falta de créditos o de tokens. */
+    @ExceptionHandler(CantidadInsuficienteException.class)
+    public ResponseEntity<ErrorResponse> cantidadInsuficiente(CantidadInsuficienteException exception, HttpServletRequest request) {
+        return responder(HttpStatus.CONFLICT, exception.getMessage(), request);
     }
 
     @ExceptionHandler(IllegalStateException.class)

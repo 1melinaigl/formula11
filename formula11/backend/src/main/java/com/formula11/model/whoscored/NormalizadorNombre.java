@@ -1,5 +1,7 @@
 package com.formula11.model.whoscored;
 
+import com.formula11.model.excepciones.DatoInvalidoException;
+
 import java.text.Normalizer;
 import java.util.Locale;
 
@@ -8,7 +10,7 @@ public final class NormalizadorNombre {
 
     public static String normalizar(String nombre) {
         if (nombre == null || nombre.isBlank()) {
-            throw new IllegalArgumentException("El nombre es obligatorio");
+            throw new DatoInvalidoException("El nombre es obligatorio");
         }
         return Normalizer.normalize(nombre, Normalizer.Form.NFD)
                 .replaceAll("\\p{M}", "")

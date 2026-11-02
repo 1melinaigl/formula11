@@ -1,5 +1,7 @@
 package com.formula11.model;
 
+import com.formula11.model.excepciones.DatoInvalidoException;
+
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -23,14 +25,14 @@ public class Transaccion {
     protected Transaccion() { }
     public Transaccion(Tipo tipo, Usuario usuario, Jugador jugador, int cantidad, BigDecimal precioUnitario,
                        Usuario contraparte, Instant fecha, String estrategia, Integer versionCotizacion) {
-        if (tipo == null || usuario == null || jugador == null || contraparte == null || fecha == null) throw new IllegalArgumentException("La transacción está incompleta");
-        if (cantidad <= 0) throw new IllegalArgumentException("La cantidad debe ser positiva");
+        if (tipo == null || usuario == null || jugador == null || contraparte == null || fecha == null) throw new DatoInvalidoException("La transacción está incompleta");
+        if (cantidad <= 0) throw new DatoInvalidoException("La cantidad debe ser positiva");
         this.tipo = tipo; this.usuario = usuario; this.jugador = jugador; this.cantidad = cantidad;
         this.precioUnitario = dinero(precioUnitario); this.total = dinero(this.precioUnitario.multiply(BigDecimal.valueOf(cantidad)));
         this.contraparte = contraparte; this.fecha = fecha; this.estrategia = estrategia; this.versionCotizacion = versionCotizacion;
     }
     private static BigDecimal dinero(BigDecimal valor) {
-        if (valor == null || valor.signum() < 0) throw new IllegalArgumentException("El importe no puede ser negativo");
+        if (valor == null || valor.signum() < 0) throw new DatoInvalidoException("El importe no puede ser negativo");
         return valor.setScale(4, RoundingMode.HALF_UP);
     }
     public Long getId() { return id; }
