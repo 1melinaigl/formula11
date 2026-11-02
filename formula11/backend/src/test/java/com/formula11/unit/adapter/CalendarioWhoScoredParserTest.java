@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.formula11.adapter.CalendarioWhoScoredParser;
 import com.formula11.model.Liga;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -49,38 +51,26 @@ class CalendarioWhoScoredParserTest {
         assertTrue(parser.parse("{\"tournaments\":[]}", Liga.SERIE_A, LONDRES, BUENOS_AIRES).isEmpty());
     }
 
-    @Test
-    void rechazaPartidoSinFecha() {
-        String json = """
-                {"tournaments":[{"matches":[
-                  {"id":104,"homeTeamName":"Local","awayTeamName":"Visitante","elapsed":"FT"}
-                ]}]}
-                """;
-
-        assertThrows(IllegalArgumentException.class,
-                () -> parser.parse(json, Liga.SERIE_A, LONDRES, BUENOS_AIRES));
-    }
-
-    @Test
-    void rechazaPartidoSinEquipo() {
-        String json = """
-                {"tournaments":[{"matches":[
-                  {"id":105,"startTime":"2026-10-10T12:30:00","homeTeamName":"Local","elapsed":"FT"}
-                ]}]}
-                """;
-
-        assertThrows(IllegalArgumentException.class,
-                () -> parser.parse(json, Liga.SERIE_A, LONDRES, BUENOS_AIRES));
-    }
-
-    @Test
-    void rechazaPartidoSinId() {
-        String json = """
-                {"tournaments":[{"matches":[
-                  {"startTime":"2026-10-10T12:30:00","homeTeamName":"A","awayTeamName":"B","elapsed":"FT"}
-                ]}]}
-                """;
-
+    /** Casos: partido sin fecha, sin equipo visitante y sin id. */
+    @ParameterizedTest
+    @ValueSource(strings = {
+            """
+            {"tournaments":[{"matches":[
+              {"id":104,"homeTeamName":"Local","awayTeamName":"Visitante","elapsed":"FT"}
+            ]}]}
+            """,
+            """
+            {"tournaments":[{"matches":[
+              {"id":105,"startTime":"2026-10-10T12:30:00","homeTeamName":"Local","elapsed":"FT"}
+            ]}]}
+            """,
+            """
+            {"tournaments":[{"matches":[
+              {"startTime":"2026-10-10T12:30:00","homeTeamName":"A","awayTeamName":"B","elapsed":"FT"}
+            ]}]}
+            """
+    })
+    void rechazaPartidoIncompleto(String json) {
         assertThrows(IllegalArgumentException.class,
                 () -> parser.parse(json, Liga.SERIE_A, LONDRES, BUENOS_AIRES));
     }

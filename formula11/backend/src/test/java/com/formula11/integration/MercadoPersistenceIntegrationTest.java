@@ -40,7 +40,7 @@ class MercadoPersistenceIntegrationTest {
     @Autowired TransaccionRepository transaccionRepository;
 
     @Test
-    void initializerEsIdempotenteYElSuperusuarioNoTieneCuenta() throws Exception {
+    void initializerEsIdempotenteYElSuperusuarioNoTieneCuenta() {
         ApplicationArguments args = new DefaultApplicationArguments();
         initializer.run(args);
         long usuariosAntes = usuarios.findAll().stream().filter(Usuario::esSuperusuario).count();
@@ -67,7 +67,7 @@ class MercadoPersistenceIntegrationTest {
     }
 
     @Test
-    void initializerAsignaCienTokensAUnJugadorNuevo() throws Exception {
+    void initializerAsignaCienTokensAUnJugadorNuevo() {
         Usuario superusuario = usuarios.findByRol(Rol.SUPERUSUARIO).orElseThrow();
         Jugador jugador = jugadores.saveAndFlush(new Jugador("Nuevo", "Equipo", Liga.LA_LIGA, "DEL"));
 

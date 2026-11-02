@@ -19,7 +19,6 @@ public class MetricaPartido {
     private PartidoExterno partidoExterno;
     @Column(name = "fecha_partido", nullable = false)
     private LocalDate fechaPartido;
-    private String rival;
     private Integer minutos;
     private Boolean titular;
     private int goles;

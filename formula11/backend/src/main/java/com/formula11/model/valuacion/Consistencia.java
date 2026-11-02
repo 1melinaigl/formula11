@@ -26,15 +26,13 @@ public final class Consistencia implements EstrategiaValuacion {
                 .filter(m -> !m.fecha().isAfter(domingo))
                 .collect(Collectors.groupingBy(MetricaPartidoInput::jugadorId));
         Map<Long, Double> raw = new HashMap<>();
-        Set<Long> elegibles = new HashSet<>();
         for (var entry : ventanas.entrySet()) {
             List<MetricaPartidoInput> partidos = entry.getValue().stream()
                     .sorted(Comparator.comparing(MetricaPartidoInput::fecha).reversed()).limit(6).toList();
             long jugados = partidos.stream().filter(MetricaPartidoInput::jugo).count();
             if (jugados < 4) continue;
-            elegibles.add(entry.getKey());
             List<Double> ratings = partidos.stream().map(MetricaPartidoInput::rating)
-                    .filter(Objects::nonNull).mapToDouble(x -> x.doubleValue()).boxed().toList();
+                    .filter(Objects::nonNull).mapToDouble(Number::doubleValue).boxed().toList();
             double promedio = ratings.stream().mapToDouble(Double::doubleValue).average().orElse(0);
             double desvio = Math.sqrt(ratings.stream().mapToDouble(v -> (v - promedio) * (v - promedio))
                     .average().orElse(0));
@@ -53,7 +51,7 @@ public final class Consistencia implements EstrategiaValuacion {
             scores.put(e.getKey(), Normalizador.scoreFinal(e.getValue(), group));
         }
         // Players with insufficient history use the already normalized performance score.
-        fallback.scores().forEach((id, score) -> scores.putIfAbsent(id, score));
+        fallback.scores().forEach(scores::putIfAbsent);
         return new ResultadoValuacion(scores, raw, fallback.filasSinMinutos());
     }
 

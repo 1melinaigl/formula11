@@ -50,10 +50,10 @@ class RecalculoServiceTest {
         assertEquals(2, response.semanasCalculadas());
         verify(semanas).procesar(LocalDate.of(2026, 1, 11));
         verify(semanas).procesar(LocalDate.of(2026, 1, 18));
-        assertThrows(IllegalArgumentException.class, () -> service.recalcular(
-                new RecalculoRequest(LocalDate.of(2026, 1, 19), LocalDate.of(2026, 1, 18))));
-        assertThrows(IllegalArgumentException.class, () -> service.recalcular(
-                new RecalculoRequest(LocalDate.of(2026, 1, 19), null)));
+        var rangoInvertido = new RecalculoRequest(LocalDate.of(2026, 1, 19), LocalDate.of(2026, 1, 18));
+        var sinHasta = new RecalculoRequest(LocalDate.of(2026, 1, 19), null);
+        assertThrows(IllegalArgumentException.class, () -> service.recalcular(rangoInvertido));
+        assertThrows(IllegalArgumentException.class, () -> service.recalcular(sinHasta));
     }
 
     @Test

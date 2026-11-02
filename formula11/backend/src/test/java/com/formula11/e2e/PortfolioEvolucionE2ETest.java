@@ -17,11 +17,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -64,7 +64,7 @@ class PortfolioEvolucionE2ETest {
     @Autowired JdbcTemplate jdbc;
     // 008: el port real lee la tabla cotizacion; este test valida la reconstrucción del portfolio,
     // así que el port se reemplaza por un mock con el comportamiento del adapter provisorio.
-    @MockBean CotizacionHistoricaPort cotizacionHistoricaPort;
+    @MockitoBean CotizacionHistoricaPort cotizacionHistoricaPort;
 
     @BeforeEach
     void limpiar() {

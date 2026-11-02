@@ -49,7 +49,7 @@ class EstrategiaServiceTest {
 
         assertEquals(2, result.version());
         assertFalse(result.activa());
-        assertTrue(result.creadaEn().equals(clock.instant()));
+        assertEquals(clock.instant(), result.creadaEn());
         verify(repository).save(argThat(e -> e.getVersion() == 2 && !e.isActiva()));
         assertTrue(actual.isActiva());
     }
@@ -75,8 +75,10 @@ class EstrategiaServiceTest {
         when(repository.findTopByCodigoOrderByVersionDesc(actual.getCodigo())).thenReturn(Optional.of(actual));
         var service = new EstrategiaService(repository, clock, invalidator);
 
-        assertThrows(IllegalArgumentException.class,
-                () -> service.crearVersion(actual.getCodigo(), new NuevaVersionRequest(Map.of(), Map.of())));
+        String codigo = actual.getCodigo();
+        var vacia = new NuevaVersionRequest(Map.of(), Map.of());
+
+        assertThrows(IllegalArgumentException.class, () -> service.crearVersion(codigo, vacia));
     }
 
     @Test
@@ -85,9 +87,11 @@ class EstrategiaServiceTest {
         when(repository.findTopByCodigoOrderByVersionDesc(actual.getCodigo())).thenReturn(Optional.of(actual));
         var service = new EstrategiaService(repository, clock, invalidator);
 
-        assertThrows(IllegalArgumentException.class, () -> service.crearVersion(actual.getCodigo(),
-                new NuevaVersionRequest(Map.of("DEL", Map.of("goles", 1d)),
-                        Map.of("k", -0.1d, "topeVariacion", 0.2d, "piso", 0.1d))));
+        String codigo = actual.getCodigo();
+        var precioNegativo = new NuevaVersionRequest(Map.of("DEL", Map.of("goles", 1d)),
+                Map.of("k", -0.1d, "topeVariacion", 0.2d, "piso", 0.1d));
+
+        assertThrows(IllegalArgumentException.class, () -> service.crearVersion(codigo, precioNegativo));
         when(repository.findTopByCodigoOrderByVersionDesc("NO_EXISTE")).thenReturn(Optional.empty());
         assertThrows(NoSuchElementException.class, () -> service.activar("NO_EXISTE"));
     }
@@ -98,11 +102,13 @@ class EstrategiaServiceTest {
         when(repository.findTopByCodigoOrderByVersionDesc(actual.getCodigo())).thenReturn(Optional.of(actual));
         var service = new EstrategiaService(repository, clock, invalidator);
 
+        String codigo = actual.getCodigo();
+        var posicionDesconocida = new NuevaVersionRequest(Map.of("ATAQUE", Map.of("goles", 1d)), request().parametros());
+        var metricaDesconocida = new NuevaVersionRequest(Map.of("DEL", Map.of("posesiones", 1d)), request().parametros());
+
         assertAll(
-                () -> assertThrows(IllegalArgumentException.class, () -> service.crearVersion(actual.getCodigo(),
-                        new NuevaVersionRequest(Map.of("ATAQUE", Map.of("goles", 1d)), request().parametros()))),
-                () -> assertThrows(IllegalArgumentException.class, () -> service.crearVersion(actual.getCodigo(),
-                        new NuevaVersionRequest(Map.of("DEL", Map.of("posesiones", 1d)), request().parametros()))));
+                () -> assertThrows(IllegalArgumentException.class, () -> service.crearVersion(codigo, posicionDesconocida)),
+                () -> assertThrows(IllegalArgumentException.class, () -> service.crearVersion(codigo, metricaDesconocida)));
     }
 
     private static NuevaVersionRequest request() {

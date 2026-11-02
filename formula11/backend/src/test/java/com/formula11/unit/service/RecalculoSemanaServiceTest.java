@@ -37,8 +37,8 @@ class RecalculoSemanaServiceTest {
                 .procesar(LocalDate.of(2026, 1, 4));
 
         verify(cotizaciones).deleteByFecha(LocalDate.of(2026, 1, 4));
-        verify(cotizaciones).saveAll(argThat(cotizaciones -> {
-            Cotizacion cotizacion = cotizaciones.iterator().next();
+        verify(cotizaciones).saveAll(argThat(guardadas -> {
+            Cotizacion cotizacion = guardadas.iterator().next();
             return cotizacion.getPrecio().compareTo(new BigDecimal("1.2345")) == 0
                     && cotizacion.getScore().compareTo(BigDecimal.ZERO) == 0;
         }));
@@ -61,9 +61,9 @@ class RecalculoSemanaServiceTest {
         new RecalculoSemanaService(jugadores, metricas, estrategias, cotizaciones)
                 .procesar(LocalDate.of(2026, 1, 4));
 
-        verify(cotizaciones).saveAll(argThat(cotizaciones -> {
+        verify(cotizaciones).saveAll(argThat(guardadas -> {
             List<Cotizacion> nuevas = new ArrayList<>();
-            cotizaciones.forEach(nuevas::add);
+            guardadas.forEach(nuevas::add);
             return nuevas.size() == 2
                     && nuevas.stream().anyMatch(c -> c.getJugador().getId().equals(1L)
                     && c.getPrecio().compareTo(new BigDecimal("1.1000")) == 0)

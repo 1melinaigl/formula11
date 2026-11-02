@@ -36,7 +36,7 @@ public final class Normalizador {
         double variance = group.stream().mapToDouble(v -> (v - mean) * (v - mean)).average().orElse(0d);
         double deviation = Math.sqrt(variance);
         if (deviation == 0d) return 0.5d;
-        double z = Math.max(-2d, Math.min(2d, (value - mean) / deviation));
+        double z = Math.clamp((value - mean) / deviation, -2d, 2d);
         return (z + 2d) / 4d;
     }
 
