@@ -6,7 +6,7 @@
 
 **Status**: Draft
 
-**Input**: User description: "Conectar el catálogo de jugadores del frontend al endpoint paginado del backend, enviando filtros y orden mediante query params, usando siempre diez elementos por página y mostrando solo la navegación de páginas."
+**Input**: User description: "Conectar el catálogo de jugadores del frontend al endpoint paginado del backend, enviando filtros y orden mediante query params, usando siempre nueve elementos por página y mostrando solo la navegación de páginas."
 
 **Backend contract source**: `backend/specs/003-paginacion-catalogo-jugadores/contracts/openapi.yaml` y su `spec.md` asociado. El frontend no redefine ese contrato.
 
@@ -22,11 +22,11 @@ Como usuario autenticado, quiero consultar una página del catálogo y navegar e
 
 **Acceptance Scenarios**:
 
-1. **Given** una sesión válida y una respuesta paginada del backend, **When** se abre el catálogo, **Then** el frontend solicita `page=0` con `size=10` y muestra `content`, la página actual y el total de páginas, sin mostrar `totalElements`.
+1. **Given** una sesión válida y una respuesta paginada del backend, **When** se abre el catálogo, **Then** el frontend solicita `page=0` con `size=9` y muestra `content`, la página actual y el total de páginas, sin mostrar `totalElements`.
 2. **Given** una página posterior a la primera, **When** el usuario pulsa "Siguiente", **Then** se solicita únicamente la página siguiente y se actualiza la lista sin descargar el catálogo completo; la interfaz muestra la numeración iniciando en 1.
 3. **Given** la primera página, **When** el usuario pulsa "Anterior", **Then** el control está deshabilitado y no se envía una página negativa.
 4. **Given** la última página, **When** el usuario pulsa "Siguiente", **Then** el control está deshabilitado y no se realiza una solicitud fuera del rango conocido.
-5. **Given** el catálogo abierto, **When** el usuario navega entre páginas, **Then** todas las solicitudes usan `size=10` y no existe un control para cambiar ese tamaño.
+5. **Given** el catálogo abierto, **When** el usuario navega entre páginas, **Then** todas las solicitudes usan `size=9` y no existe un control para cambiar ese tamaño.
 6. **Given** que el backend responde una página fuera de rango con `content` vacío y `totalElements>0`, **When** el frontend recibe esa respuesta, **Then** solicita una sola vez la última página válida (`totalPages - 1`) y muestra sus resultados.
 
 ---
@@ -88,8 +88,8 @@ Como usuario del catálogo, quiero distinguir carga, catálogo vacío, ausencia 
 
 ## Edge Cases
 
-- La primera consulta usa `page=0` y `size=10` aunque no haya estado previo.
-- El frontend usa siempre `size=10`; no ofrece selector ni mantiene tamaño configurable en su estado.
+- La primera consulta usa `page=0` y `size=9` aunque no haya estado previo.
+- El frontend usa siempre `size=9`; no ofrece selector ni mantiene tamaño configurable en su estado.
 - Cambiar filtro u orden siempre reinicia la página a 0, incluso si la respuesta anterior estaba en una página posterior.
 - El valor de `equipo` se sanea quitando espacios externos antes de enviarse; no se dispara una request por cada tecla.
 - La lista fija de ligas contiene exactamente `Premier League`, `Bundesliga`, `La Liga`, `Serie A` y `Ligue 1`, y no se genera a partir de `content`.
@@ -97,7 +97,7 @@ Como usuario del catálogo, quiero distinguir carga, catálogo vacío, ausencia 
 - La interfaz muestra la página actual y el total de páginas con numeración humana base 1, pero transforma internamente la página mostrada a la query param `page` base 0.
 - Una respuesta con `content=[]` y `totalElements=0` no debe mostrar controles de navegación activos.
 - Un error no debe reemplazarse por "Catálogo vacío" ni por "Sin coincidencias".
-- El cambio de página conserva filtros y orden actuales, y vuelve a enviar siempre `size=10`.
+- El cambio de página conserva filtros y orden actuales, y vuelve a enviar siempre `size=9`.
 - El frontend no filtra, ordena ni pagina localmente el array recibido; `content` se muestra tal como lo entrega el backend.
 - La búsqueda por nombre existente en la entrega anterior se retira de esta vista porque el backend paginado no acepta `nombre`; no se debe aplicar localmente sobre una sola página.
 
@@ -106,17 +106,17 @@ Como usuario del catálogo, quiero distinguir carga, catálogo vacío, ausencia 
 ### Functional Requirements
 
 - **FR-001**: El catálogo DEBE consultar `GET /api/jugadores` usando el contrato paginado del backend y DEBE enviar una sola página por solicitud.
-- **FR-002**: La consulta inicial DEBE usar `page=0` y `size=10`.
+- **FR-002**: La consulta inicial DEBE usar `page=0` y `size=9`.
 - **FR-003**: La interfaz DEBE mostrar controles "Anterior" y "Siguiente", la página actual con numeración base 1 y el total de páginas con numeración base 1; NO DEBE mostrar la cantidad total de jugadores.
 - **FR-004**: "Anterior" DEBE estar deshabilitado en la primera página y "Siguiente" DEBE estar deshabilitado en la última página conocida.
-- **FR-005**: El frontend DEBE enviar siempre `size=10` y NO DEBE ofrecer un selector de tamaño de página.
-- **FR-006**: Al cambiar `page`, filtros u orden, la consulta DEBE construir sus query params con los valores vigentes, `size=10` y sin enviar parámetros vacíos innecesarios.
+- **FR-005**: El frontend DEBE enviar siempre `size=9` y NO DEBE ofrecer un selector de tamaño de página.
+- **FR-006**: Al cambiar `page`, filtros u orden, la consulta DEBE construir sus query params con los valores vigentes, `size=9` y sin enviar parámetros vacíos innecesarios.
 - **FR-007**: Al cambiar cualquier filtro u orden, el estado de página DEBE volver a 0 antes de consultar; la acción "Limpiar" NO DEBE modificar el tamaño fijo.
 - **FR-008**: El filtro de liga DEBE usar una lista fija con exactamente las cinco ligas del dominio: `Premier League`, `Bundesliga`, `La Liga`, `Serie A` y `Ligue 1`.
 - **FR-009**: Los filtros de liga, equipo y posición DEBEN enviarse como `liga`, `equipo` y `posicion`; no DEBEN aplicarse como filtrado posterior en el cliente.
 - **FR-010**: El filtro de equipo DEBE ser texto libre y DEBE aplicar debounce o confirmación para no generar una solicitud por cada tecla.
 - **FR-011**: La interfaz DEBE ofrecer orden por `nombre`, `equipo`, `liga` y `posicion`, con dirección `asc` o `desc`, enviando un único parámetro `sort=campo,direccion`; NO DEBE mostrar `id` como opción.
-- **FR-012**: El catálogo DEBE conservar filtros y orden al navegar entre páginas, y enviar siempre `size=10`.
+- **FR-012**: El catálogo DEBE conservar filtros y orden al navegar entre páginas, y enviar siempre `size=9`.
 - **FR-013**: El catálogo DEBE representar por separado los estados de carga, catálogo vacío, sin coincidencias y error.
 - **FR-014**: Catálogo vacío DEBE corresponder a una respuesta sin filtros con `totalElements=0`; sin coincidencias DEBE corresponder a una respuesta filtrada con `totalElements=0`.
 - **FR-015**: Ante un error del backend, la interfaz DEBE mostrar `mensaje` y `correlationId` recibidos en el `ErrorResponse` estándar.
@@ -124,14 +124,14 @@ Como usuario del catálogo, quiero distinguir carga, catálogo vacío, ausencia 
 - **FR-017**: El frontend DEBE mantener la sesión, la protección de la ruta y el tratamiento actual de `401`.
 - **FR-018**: El JWT DEBE permanecer oculto en pantalla, mensajes, controles y estados del catálogo.
 - **FR-019**: El cambio DEBE preservar la estética retro actual y la accesibilidad existente: etiquetas asociadas, foco visible y controles operables por teclado.
-- **FR-020**: Los tests con Vitest y MSW DEBEN cubrir hook y componentes para paginación, filtros, orden, tamaño fijo 10, carga, vacío, sin coincidencias y error, usando respuestas con `content`, `page`, `size`, `totalElements` y `totalPages`.
+- **FR-020**: Los tests con Vitest y MSW DEBEN cubrir hook y componentes para paginación, filtros, orden, tamaño fijo 9, carga, vacío, sin coincidencias y error, usando respuestas con `content`, `page`, `size`, `totalElements` y `totalPages`.
 - **FR-021**: La implementación NO DEBE modificar el backend, la ficha/detalle del jugador, el mercado de tokens ni los gráficos.
 - **FR-022**: En escritorio, la barra de filtros DEBE usar seis columnas para mantener en una sola fila los cinco campos y el botón "Limpiar", con alineación inferior; en pantallas pequeñas DEBE conservar el reacomodo responsive existente.
 
 ### Key Entities
 
 - **Página de catálogo**: Respuesta del backend con `content`, `page`, `size`, `totalElements` y `totalPages`.
-- **Consulta de catálogo**: Estado del frontend compuesto por página, tamaño fijo 10, orden, dirección y filtros `liga`, `equipo` y `posicion`.
+- **Consulta de catálogo**: Estado del frontend compuesto por página, tamaño fijo 9, orden, dirección y filtros `liga`, `equipo` y `posicion`.
 - **Jugador**: Elemento recibido en `content` con `id`, `nombre`, `equipo`, `liga` y `posicion`.
 - **Estado del catálogo**: Estado visual diferenciado de carga, datos, catálogo vacío, sin coincidencias o error.
 - **ErrorResponse**: Error del backend con `mensaje`, `timestamp` y `correlationId`.
@@ -140,8 +140,8 @@ Como usuario del catálogo, quiero distinguir carga, catálogo vacío, ausencia 
 
 ### Measurable Outcomes
 
-- **SC-001**: El 100% de las consultas iniciales y de navegación envía exactamente una página con `page` válido y `size=10`, sin descargar la lista completa.
-- **SC-002**: El 100% de los cambios de filtro u orden envía `page=0` y `size=10` en la siguiente consulta.
+- **SC-001**: El 100% de las consultas iniciales y de navegación envía exactamente una página con `page` válido y `size=9`, sin descargar la lista completa.
+- **SC-002**: El 100% de los cambios de filtro u orden envía `page=0` y `size=9` en la siguiente consulta.
 - **SC-003**: El 100% de las solicitudes con filtros usa los nombres y valores del contrato backend, y ninguna respuesta se vuelve a filtrar u ordenar localmente.
 - **SC-004**: El 100% de las pruebas de equipo con varias teclas evita solicitudes intermedias por cada tecla y produce como máximo la consulta correspondiente al valor estabilizado.
 - **SC-005**: El 100% de las respuestas paginadas usa `totalPages` para habilitar o deshabilitar navegación y no muestra `totalElements` como contador.

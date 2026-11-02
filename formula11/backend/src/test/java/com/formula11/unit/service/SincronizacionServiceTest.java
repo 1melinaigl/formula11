@@ -5,7 +5,12 @@ import com.formula11.adapter.ExternalTeam;
 import com.formula11.adapter.FootballDataPort;
 import com.formula11.model.Jugador;
 import com.formula11.model.Liga;
+import com.formula11.model.Rol;
+import com.formula11.model.Usuario;
 import com.formula11.persistence.JugadorRepository;
+import com.formula11.persistence.TenenciaRepository;
+import com.formula11.persistence.TransaccionRepository;
+import com.formula11.persistence.UsuarioRepository;
 import com.formula11.service.SincronizacionService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +32,12 @@ class SincronizacionServiceTest {
     private FootballDataPort footballDataPort;
     @Mock
     private JugadorRepository jugadorRepository;
+    @Mock
+    private TenenciaRepository tenenciaRepository;
+    @Mock
+    private TransaccionRepository transaccionRepository;
+    @Mock
+    private UsuarioRepository usuarioRepository;
     @InjectMocks
     private SincronizacionService sincronizacionService;
 
@@ -48,8 +59,30 @@ class SincronizacionServiceTest {
         assertEquals("COMPLETADA", resultado.estado());
         assertEquals(5, resultado.ligas().size());
         assertEquals(5, resultado.creados());
-        verify(jugadorRepository).deleteAllByOrigen("LEGACY");
         verify(jugadorRepository, times(5)).save(any());
+    }
+
+    @Test
+    void creaTenenciaDeCienTokensDelSuperusuarioPorCadaJugadorNuevo() {
+        Usuario superusuario = new Usuario("Super", "super@example.com", "hash");
+        superusuario.asignarRol(Rol.SUPERUSUARIO);
+        when(usuarioRepository.findByRol(Rol.SUPERUSUARIO)).thenReturn(Optional.of(superusuario));
+        when(footballDataPort.estaConfigurado()).thenReturn(true);
+        when(footballDataPort.obtenerEquipos(any(Liga.class))).thenAnswer(invocation -> {
+            Liga liga = invocation.getArgument(0);
+            return List.of(new ExternalTeam("team-" + liga.name(), "Equipo " + liga.name(), liga.name()));
+        });
+        when(footballDataPort.obtenerJugadores(any(ExternalTeam.class))).thenAnswer(invocation -> {
+            ExternalTeam equipo = invocation.getArgument(0);
+            return List.of(new ExternalPlayer("player-" + equipo.externalId(), "Jugador", equipo.nombre(), equipo.liga(), "DEL"));
+        });
+        when(jugadorRepository.findByExternalProviderAndExternalId(anyString(), anyString())).thenReturn(Optional.empty());
+        when(jugadorRepository.save(any(Jugador.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        sincronizacionService.sincronizar();
+
+        verify(tenenciaRepository, times(5)).save(argThat(tenencia ->
+                tenencia.getUsuario() == superusuario && tenencia.getCantidad() == 100));
     }
 
     @Test

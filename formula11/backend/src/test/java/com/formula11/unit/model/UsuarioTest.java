@@ -1,5 +1,7 @@
 package com.formula11.unit.model;
 
+import com.formula11.model.excepciones.DatoInvalidoException;
+
 import com.formula11.model.Usuario;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,6 +16,6 @@ class UsuarioTest {
 
     @Test
     void rechazaEmailInvalido() {
-        assertThrows(IllegalArgumentException.class, () -> new Usuario("Ana", "sin-email", "hash"));
+        assertThrows(DatoInvalidoException.class, () -> new Usuario("Ana", "sin-email", "hash"));
     }
 }

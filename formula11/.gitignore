@@ -37,3 +37,5 @@ bin/
 # Archivos internos del compilador de Maven
 createdFiles.lst
 inputFiles.lst
+# Variables de entorno (claves de APIs externas)
+.env*

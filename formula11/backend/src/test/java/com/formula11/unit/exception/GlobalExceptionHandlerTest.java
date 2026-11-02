@@ -1,6 +1,7 @@
 package com.formula11.unit.exception;
 
 import com.formula11.exception.GlobalExceptionHandler;
+import com.formula11.exception.AccesoPortfolioDenegadoException;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -17,5 +18,15 @@ class GlobalExceptionHandlerTest {
 
             assertEquals("generado-por-filtro", respuesta.getBody().correlationId());
         }
+    }
+
+    @Test
+    void accesoAlPortfolioRespondeForbidden() {
+        GlobalExceptionHandler handler = new GlobalExceptionHandler();
+
+        var respuesta = handler.accesoPortfolio(
+                new AccesoPortfolioDenegadoException(), new MockHttpServletRequest());
+
+        assertEquals(403, respuesta.getStatusCode().value());
     }
 }

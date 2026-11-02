@@ -1,10 +1,15 @@
 <!--
 Sync Impact Report
-- Version change: none -> 1.0.0
-- Modified principles: template placeholders -> five frontend governance principles
+- Version change: 1.0.0 -> 1.1.0
+- Modified principles: II. Contratos del backend como autoridad
 - Added sections: Additional Constraints; Development Workflow
 - Removed sections: none
 - Follow-up TODOs: RATIFICATION_DATE requires confirmation of the original adoption date.
+- Amendment reason: authorize the Entrega 2 OpenAPI contract for features 003 onward
+  while preserving Entrega 1 contracts for existing features.
+- Impact: Entrega 2 features may consume the shared contract without a constitutional
+  exception; existing registration, login and catalog features retain their current
+  contract sources.
 -->
 
 # Formula11 Frontend Constitution
@@ -21,9 +26,12 @@ considerarse terminada.
 ### II. Contratos del backend como autoridad
 Los endpoints, campos, estados y errores MUST provenir de
 `backend/specs/001-registro-catalogo-jugadores/contracts/openapi.yaml` y
-`backend/specs/002-login-usuarios/contracts/openapi.yaml`. El frontend MUST NOT inventar
-endpoints, campos ni datos. Una capacidad no ofrecida por el backend MUST mostrarse como
-"Próximamente" o registrarse explícitamente como dependencia.
+`backend/specs/002-login-usuarios/contracts/openapi.yaml` para las features existentes
+de registro, login y catálogo. Para las features de Entrega 2, desde la feature 003 en
+adelante, la fuente autorizada MUST ser
+`backend/specs/005-contratos-entrega2/contracts/openapi.yaml`. El frontend MUST NOT
+inventar endpoints, campos ni datos. Una capacidad no ofrecida por el contrato aplicable
+MUST mostrarse como "Próximamente" o registrarse explícitamente como dependencia.
 
 ### III. Capas y límites explícitos
 La dependencia MUST fluir como páginas, componentes, hooks/estado y cliente de API.
@@ -82,4 +90,4 @@ modificar contratos OpenAPI, autenticación, estado global, accesibilidad o el s
 visual. La definición de terminado exige que build, lint y tests pasen, además de una
 comprobación visual contra el mockup.
 
-**Version**: 1.0.0 | **Ratified**: TODO(RATIFICATION_DATE): confirmar fecha original de adopción | **Last Amended**: 2026-09-23
+**Version**: 1.1.0 | **Ratified**: TODO(RATIFICATION_DATE): confirmar fecha original de adopción | **Last Amended**: 2026-10-24

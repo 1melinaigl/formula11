@@ -7,6 +7,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -15,8 +16,11 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.time.Instant;
+import java.util.UUID;
+import org.slf4j.MDC;
 
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter, ObjectMapper objectMapper) throws Exception {
@@ -30,7 +34,15 @@ public class SecurityConfig {
                 .exceptionHandling(errors -> errors.authenticationEntryPoint((request, response, exception) -> {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
-                    response.getWriter().write(objectMapper.writeValueAsString(new ErrorResponse("La autenticación es requerida", Instant.now(), request.getHeader("X-Correlation-Id"))));
+                    String correlationId = MDC.get("correlationId");
+                    if (correlationId == null || correlationId.isBlank()) {
+                        correlationId = request.getHeader("X-Correlation-Id");
+                    }
+                    if (correlationId == null || correlationId.isBlank()) {
+                        correlationId = UUID.randomUUID().toString();
+                    }
+                    response.getWriter().write(objectMapper.writeValueAsString(
+                            new ErrorResponse("La autenticación es requerida", Instant.now(), correlationId)));
                 }))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

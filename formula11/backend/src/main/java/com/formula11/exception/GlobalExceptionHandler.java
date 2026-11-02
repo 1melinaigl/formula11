@@ -2,6 +2,8 @@ package com.formula11.exception;
 
 import com.formula11.dto.ErrorResponse;
 import com.formula11.adapter.FootballDataException;
+import com.formula11.model.excepciones.CantidadInsuficienteException;
+import com.formula11.model.excepciones.DatoInvalidoException;
 import com.formula11.service.UsuarioService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.MDC;
@@ -11,11 +13,22 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import jakarta.validation.ConstraintViolationException;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.time.Instant;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> accesoDenegado(AccessDeniedException exception, HttpServletRequest request) {
+        return responder(HttpStatus.FORBIDDEN, "No tiene permisos para realizar esta operación", request);
+    }
+
+    @ExceptionHandler(java.util.NoSuchElementException.class)
+    public ResponseEntity<ErrorResponse> noEncontrado(java.util.NoSuchElementException exception, HttpServletRequest request) {
+        return responder(HttpStatus.NOT_FOUND, exception.getMessage(), request);
+    }
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> validacion(MethodArgumentNotValidException exception, HttpServletRequest request) {
         String mensaje = exception.getBindingResult().getFieldErrors().stream().findFirst()
@@ -28,14 +41,67 @@ public class GlobalExceptionHandler {
         return responder(HttpStatus.BAD_REQUEST, exception.getMessage(), request);
     }
 
+    /** Invariante del dominio violada por un dato (excepción propia del modelo). */
+    @ExceptionHandler(DatoInvalidoException.class)
+    public ResponseEntity<ErrorResponse> datoInvalido(DatoInvalidoException exception, HttpServletRequest request) {
+        return responder(HttpStatus.BAD_REQUEST, exception.getMessage(), request);
+    }
+
+    /** El modelo rechaza una operación por falta de créditos o de tokens. */
+    @ExceptionHandler(CantidadInsuficienteException.class)
+    public ResponseEntity<ErrorResponse> cantidadInsuficiente(CantidadInsuficienteException exception, HttpServletRequest request) {
+        return responder(HttpStatus.CONFLICT, exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> conflicto(IllegalStateException exception, HttpServletRequest request) {
+        return responder(HttpStatus.CONFLICT, exception.getMessage(), request);
+    }
+
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> tipoDeArgumento(MethodArgumentTypeMismatchException exception, HttpServletRequest request) {
         return responder(HttpStatus.BAD_REQUEST, "El parámetro " + exception.getName() + " no es válido", request);
     }
 
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> restriccion(ConstraintViolationException exception,
+                                                       HttpServletRequest request) {
+        return responder(HttpStatus.BAD_REQUEST, "La solicitud no es válida", request);
+    }
+
     @ExceptionHandler(UsuarioService.EmailDuplicadoException.class)
     public ResponseEntity<ErrorResponse> duplicado(UsuarioService.EmailDuplicadoException exception, HttpServletRequest request) {
         return responder(HttpStatus.CONFLICT, exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(SuperusuarioNoOperaException.class)
+    public ResponseEntity<ErrorResponse> superusuario(SuperusuarioNoOperaException exception, HttpServletRequest request) {
+        return responder(HttpStatus.FORBIDDEN, exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(SoloSuperusuarioException.class)
+    public ResponseEntity<ErrorResponse> soloSuperusuario(SoloSuperusuarioException exception, HttpServletRequest request) {
+        return responder(HttpStatus.FORBIDDEN, exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(AccesoPortfolioDenegadoException.class)
+    public ResponseEntity<ErrorResponse> accesoPortfolio(AccesoPortfolioDenegadoException exception, HttpServletRequest request) {
+        return responder(HttpStatus.FORBIDDEN, exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(RecursoNoEncontradoException.class)
+    public ResponseEntity<ErrorResponse> noEncontrado(RecursoNoEncontradoException exception, HttpServletRequest request) {
+        return responder(HttpStatus.NOT_FOUND, exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(ConflictoMercadoException.class)
+    public ResponseEntity<ErrorResponse> conflicto(ConflictoMercadoException exception, HttpServletRequest request) {
+        return responder(HttpStatus.CONFLICT, exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(OperacionNoValidaException.class)
+    public ResponseEntity<ErrorResponse> operacionNoValida(OperacionNoValidaException exception, HttpServletRequest request) {
+        return responder(HttpStatus.UNPROCESSABLE_ENTITY, exception.getMessage(), request);
     }
 
     @ExceptionHandler(CredencialesInvalidasException.class)

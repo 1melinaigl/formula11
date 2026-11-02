@@ -1,5 +1,6 @@
 package com.formula11.security;
 
+import com.formula11.model.Rol;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -22,10 +23,15 @@ public class JwtService {
     }
 
     public String generarToken(Long usuarioId, String email) {
+        return generarToken(usuarioId, email, Rol.USUARIO);
+    }
+
+    public String generarToken(Long usuarioId, String email, Rol rol) {
         Instant now = Instant.now();
         return Jwts.builder()
                 .subject(email)
                 .claim("usuarioId", usuarioId)
+                .claim("rol", rol.name())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusSeconds(expirationSeconds)))
                 .signWith(key)
@@ -43,6 +49,15 @@ public class JwtService {
         } catch (RuntimeException exception) {
             return false;
         }
+    }
+
+    public Long extraerUsuarioId(String token) {
+        return parsear(token).get("usuarioId", Long.class);
+    }
+
+    public Rol extraerRol(String token) {
+        String claim = parsear(token).get("rol", String.class);
+        return claim == null ? Rol.USUARIO : Rol.valueOf(claim);
     }
 
     private Claims parsear(String token) {

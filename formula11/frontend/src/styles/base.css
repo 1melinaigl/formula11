@@ -63,6 +63,7 @@ input {
 
 button:focus-visible,
 input:focus-visible,
+select:focus-visible,
 a:focus-visible {
   outline: 3px solid var(--gold);
   outline-offset: 3px;
@@ -88,3 +89,5 @@ a:focus-visible {
   fill: rgba(244, 233, 184, .26);
   stroke: none;
 }
+
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
