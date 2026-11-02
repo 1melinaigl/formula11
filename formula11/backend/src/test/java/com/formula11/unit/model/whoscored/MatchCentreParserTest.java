@@ -1,5 +1,7 @@
 package com.formula11.unit.model.whoscored;
 
+import com.formula11.model.excepciones.DatoInvalidoException;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.formula11.model.whoscored.MatchCentreParser;
@@ -158,7 +160,7 @@ class MatchCentreParserTest {
 
     @Test
     void rechazaJsonDeMatchCentreInvalido() {
-        assertThrows(IllegalArgumentException.class, () -> parser.parse("{", "{}"));
+        assertThrows(DatoInvalidoException.class, () -> parser.parse("{", "{}"));
     }
 
     @Test

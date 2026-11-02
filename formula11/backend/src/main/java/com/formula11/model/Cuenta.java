@@ -1,5 +1,8 @@
 package com.formula11.model;
 
+import com.formula11.model.excepciones.DatoInvalidoException;
+import com.formula11.model.excepciones.CantidadInsuficienteException;
+
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -14,17 +17,17 @@ public class Cuenta {
     @Column(nullable = false, precision = 19, scale = SCALE) private BigDecimal saldo;
     protected Cuenta() { }
     public Cuenta(Usuario usuario, BigDecimal saldoInicial) {
-        this.usuario = java.util.Objects.requireNonNull(usuario, "El usuario es obligatorio");
+        this.usuario = DatoInvalidoException.requerido(usuario, "El usuario es obligatorio");
         this.saldo = dineroNoNegativo(saldoInicial);
     }
     public void debitar(BigDecimal importe) {
         BigDecimal valor = dineroNoNegativo(importe);
-        if (saldo.compareTo(valor) < 0) throw new IllegalStateException("El saldo es insuficiente");
+        if (saldo.compareTo(valor) < 0) throw new CantidadInsuficienteException("El saldo es insuficiente");
         saldo = saldo.subtract(valor).setScale(SCALE, RoundingMode.HALF_UP);
     }
     public void acreditar(BigDecimal importe) { saldo = saldo.add(dineroNoNegativo(importe)).setScale(SCALE, RoundingMode.HALF_UP); }
     private static BigDecimal dineroNoNegativo(BigDecimal valor) {
-        if (valor == null || valor.signum() < 0) throw new IllegalArgumentException("El saldo no puede ser negativo");
+        if (valor == null || valor.signum() < 0) throw new DatoInvalidoException("El saldo no puede ser negativo");
         return valor.setScale(SCALE, RoundingMode.HALF_UP);
     }
     public Long getId() { return id; }

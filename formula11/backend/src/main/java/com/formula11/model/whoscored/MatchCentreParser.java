@@ -1,5 +1,7 @@
 package com.formula11.model.whoscored;
 
+import com.formula11.model.excepciones.DatoInvalidoException;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -44,7 +46,7 @@ public final class MatchCentreParser {
     private final ObjectMapper objectMapper;
 
     public MatchCentreParser(ObjectMapper objectMapper) {
-        this.objectMapper = Objects.requireNonNull(objectMapper);
+        this.objectMapper = DatoInvalidoException.requerido(objectMapper, "El ObjectMapper es obligatorio");
     }
 
     public Partido parse(String matchCentreDataJson, String eventTypesJson) {
@@ -69,7 +71,7 @@ public final class MatchCentreParser {
                     countAssists(data.path(EVENTS), eventTypes),
                     countCards(data.path(EVENTS), YELLOW));
         } catch (IOException exception) {
-            throw new IllegalArgumentException("JSON de matchCentreData inválido", exception);
+            throw new DatoInvalidoException("JSON de matchCentreData inválido", exception);
         }
     }
 

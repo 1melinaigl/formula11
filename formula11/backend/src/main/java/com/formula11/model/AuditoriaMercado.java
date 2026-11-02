@@ -1,5 +1,7 @@
 package com.formula11.model;
 
+import com.formula11.model.excepciones.DatoInvalidoException;
+
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -16,9 +18,9 @@ public class AuditoriaMercado {
     @Column(nullable = false) private Instant timestamp;
     protected AuditoriaMercado() { }
     public AuditoriaMercado(Usuario autor, Transaccion operacion, String antes, String despues, Instant timestamp) {
-        this.autor = java.util.Objects.requireNonNull(autor, "El autor es obligatorio");
-        this.operacion = java.util.Objects.requireNonNull(operacion, "La operación es obligatoria");
-        if (antes == null || despues == null || timestamp == null) throw new IllegalArgumentException("La auditoría está incompleta");
+        this.autor = DatoInvalidoException.requerido(autor, "El autor es obligatorio");
+        this.operacion = DatoInvalidoException.requerido(operacion, "La operación es obligatoria");
+        if (antes == null || despues == null || timestamp == null) throw new DatoInvalidoException("La auditoría está incompleta");
         this.antes = antes; this.despues = despues; this.timestamp = timestamp;
     }
     public Long getId() { return id; }

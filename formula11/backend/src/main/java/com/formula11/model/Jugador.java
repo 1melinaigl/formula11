@@ -1,5 +1,7 @@
 package com.formula11.model;
 
+import com.formula11.model.excepciones.DatoInvalidoException;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -31,7 +33,7 @@ public class Jugador {
     public Jugador(String nombre, String equipo, Liga liga, String posicion) {
         this.nombre = requireText(nombre, "El nombre del jugador es obligatorio");
         this.equipo = requireText(equipo, "El equipo es obligatorio");
-        this.liga = java.util.Objects.requireNonNull(liga, "La liga es obligatoria");
+        this.liga = DatoInvalidoException.requerido(liga, "La liga es obligatoria");
         this.posicion = requireText(posicion, "La posición es obligatoria");
     }
 
@@ -43,7 +45,7 @@ public class Jugador {
     public void actualizarDesdeExterno(String externalProvider, String externalId, String nombre, String equipo, Liga liga, String posicion) {
         this.nombre = requireText(nombre, "El nombre del jugador es obligatorio");
         this.equipo = requireText(equipo, "El equipo es obligatorio");
-        this.liga = java.util.Objects.requireNonNull(liga, "La liga es obligatoria");
+        this.liga = DatoInvalidoException.requerido(liga, "La liga es obligatoria");
         this.posicion = requireText(posicion, "La posición es obligatoria");
         this.externalProvider = requireText(externalProvider, "El proveedor externo es obligatorio");
         this.externalId = requireText(externalId, "El id externo es obligatorio");
@@ -51,7 +53,7 @@ public class Jugador {
     }
 
     private static String requireText(String value, String message) {
-        if (value == null || value.isBlank()) throw new IllegalArgumentException(message);
+        if (value == null || value.isBlank()) throw new DatoInvalidoException(message);
         return value.trim();
     }
 

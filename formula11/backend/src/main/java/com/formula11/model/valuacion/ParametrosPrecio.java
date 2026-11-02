@@ -1,5 +1,7 @@
 package com.formula11.model.valuacion;
 
+import com.formula11.model.excepciones.DatoInvalidoException;
+
 import java.math.BigDecimal;
 
 public record ParametrosPrecio(BigDecimal sensibilidad, BigDecimal topeVariacion, BigDecimal piso) {
@@ -8,6 +10,6 @@ public record ParametrosPrecio(BigDecimal sensibilidad, BigDecimal topeVariacion
         topeVariacion = topeVariacion == null ? new BigDecimal("0.20") : topeVariacion;
         piso = piso == null ? new BigDecimal("0.10") : piso;
         if (sensibilidad.signum() < 0 || topeVariacion.signum() < 0 || piso.signum() <= 0)
-            throw new IllegalArgumentException("Parámetros de precio inválidos");
+            throw new DatoInvalidoException("Parámetros de precio inválidos");
     }
 }

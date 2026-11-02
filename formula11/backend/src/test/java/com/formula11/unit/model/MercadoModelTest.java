@@ -1,5 +1,8 @@
 package com.formula11.unit.model;
 
+import com.formula11.model.excepciones.DatoInvalidoException;
+import com.formula11.model.excepciones.CantidadInsuficienteException;
+
 import com.formula11.model.*;
 import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
@@ -27,10 +30,10 @@ class MercadoModelTest {
 
     @Test
     void rechazaEstadosNoPositivos() {
-        assertThrows(IllegalArgumentException.class, () -> new Cuenta(usuario, new BigDecimal("-1")));
-        assertThrows(IllegalArgumentException.class, () -> new Tenencia(usuario, jugador, -1, BigDecimal.ONE));
+        assertThrows(DatoInvalidoException.class, () -> new Cuenta(usuario, new BigDecimal("-1")));
+        assertThrows(DatoInvalidoException.class, () -> new Tenencia(usuario, jugador, -1, BigDecimal.ONE));
         Tenencia tenencia = new Tenencia(usuario, jugador, 1, BigDecimal.ONE);
-        assertThrows(IllegalArgumentException.class, () -> tenencia.comprar(0, BigDecimal.ONE));
-        assertThrows(IllegalStateException.class, () -> tenencia.vender(2));
+        assertThrows(DatoInvalidoException.class, () -> tenencia.comprar(0, BigDecimal.ONE));
+        assertThrows(CantidadInsuficienteException.class, () -> tenencia.vender(2));
     }
 }

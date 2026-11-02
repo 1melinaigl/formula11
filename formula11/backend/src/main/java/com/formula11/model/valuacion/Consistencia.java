@@ -1,5 +1,7 @@
 package com.formula11.model.valuacion;
 
+import com.formula11.model.excepciones.DatoInvalidoException;
+
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,7 +15,7 @@ public final class Consistencia implements EstrategiaValuacion {
     }
 
     public Consistencia(RendimientoPosicion rendimiento) {
-        this.rendimiento = Objects.requireNonNull(rendimiento);
+        this.rendimiento = DatoInvalidoException.requerido(rendimiento, "La estrategia de rendimiento es obligatoria");
     }
 
     @Override

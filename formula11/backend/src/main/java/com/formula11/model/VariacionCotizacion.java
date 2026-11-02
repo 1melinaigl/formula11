@@ -1,5 +1,7 @@
 package com.formula11.model;
 
+import com.formula11.model.excepciones.DatoInvalidoException;
+
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -24,10 +26,10 @@ public final class VariacionCotizacion {
             return null;
         }
         if (actual == null) {
-            throw new IllegalArgumentException("El precio actual es obligatorio");
+            throw new DatoInvalidoException("El precio actual es obligatorio");
         }
         if (anterior.signum() <= 0) {
-            throw new IllegalArgumentException("El precio anterior debe ser positivo");
+            throw new DatoInvalidoException("El precio anterior debe ser positivo");
         }
         return actual.divide(anterior, MathContext.DECIMAL64)
                 .subtract(BigDecimal.ONE)
