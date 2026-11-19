@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Guarda un partido ya descargado y parseado en una única transacción: verificación de idempotencia,
@@ -50,32 +50,44 @@ public class GuardadoPartidoService {
     @Transactional
     public CargaPartidoService.ResultadoPartido guardar(PartidoWhoScoredResumen resumen,
                                                         MatchCentreParser.Partido partido) {
-        String id = String.valueOf(resumen.idExterno());
-        if (partidoRepository.existsByFuenteAndIdExterno(FUENTE, id)) {
+        if (yaCargado(resumen.idExterno())) {
             return new CargaPartidoService.ResultadoPartido(false, 0, 0);
         }
         Instant ahora = Instant.now(clock);
-        LocalDate fecha = resumen.startTime().toLocalDate();
-        PartidoExterno externo = partidoRepository.save(new PartidoExterno(FUENTE, id, resumen.liga(),
-                fecha, resumen.equipoLocal(), resumen.equipoVisitante(), ahora));
+        PartidoExterno externo = crearPartidoExterno(resumen, ahora);
+        List<MatchCentreParser.Jugador> jugadores = partido.jugadores();
         int vinculados = 0;
-        int pendientes = 0;
-        for (MatchCentreParser.Jugador jugadorWhoScored : partido.jugadores()) {
-            var vinculo = vinculacionService.vincular(jugadorWhoScored, resumen.liga());
-            if (vinculo.vinculado()) {
-                guardarMetrica(vinculo.jugador(), fecha, jugadorWhoScored, externo);
+        for (MatchCentreParser.Jugador jugador : jugadores) {
+            if (guardarJugador(jugador, resumen, externo, ahora)) {
                 vinculados++;
-            } else {
-                registrarPendiente(jugadorWhoScored, resumen, ahora);
-                pendientes++;
             }
         }
-        return new CargaPartidoService.ResultadoPartido(true, vinculados, pendientes);
+        return new CargaPartidoService.ResultadoPartido(true, vinculados, jugadores.size() - vinculados);
     }
 
-    private void guardarMetrica(Jugador jugador, LocalDate fecha, MatchCentreParser.Jugador datos,
-                                PartidoExterno externo) {
-        MetricaPartido metrica = new MetricaPartido(jugador, fecha, datos.minutos(), datos.titular(),
+    private PartidoExterno crearPartidoExterno(PartidoWhoScoredResumen resumen, Instant ahora) {
+        return partidoRepository.save(new PartidoExterno(FUENTE, String.valueOf(resumen.idExterno()),
+                resumen.liga(), resumen.startTime().toLocalDate(), resumen.equipoLocal(),
+                resumen.equipoVisitante(), ahora));
+    }
+
+    /**
+     * Guarda la métrica del jugador si se pudo vincular a uno del catálogo; si no, lo deja pendiente.
+     * Devuelve si quedó vinculado.
+     */
+    private boolean guardarJugador(MatchCentreParser.Jugador datos, PartidoWhoScoredResumen resumen,
+                                   PartidoExterno externo, Instant ahora) {
+        var vinculo = vinculacionService.vincular(datos, resumen.liga());
+        if (!vinculo.vinculado()) {
+            registrarPendiente(datos, resumen, ahora);
+            return false;
+        }
+        guardarMetrica(vinculo.jugador(), datos, externo);
+        return true;
+    }
+
+    private void guardarMetrica(Jugador jugador, MatchCentreParser.Jugador datos, PartidoExterno externo) {
+        MetricaPartido metrica = new MetricaPartido(jugador, externo.getFechaPartido(), datos.minutos(), datos.titular(),
                 datos.goles(), datos.asistencias(), datos.tiros(), datos.pasesClave(), datos.regates(),
                 datos.entradas(), datos.intercepciones(), datos.amarillas(), datos.rojas(), datos.atajadas(),
                 datos.golesRecibidos(), datos.vallaInvicta(), datos.rating(), FUENTE);
