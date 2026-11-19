@@ -13,17 +13,21 @@ import com.formula11.persistence.TenenciaRepository;
 import com.formula11.persistence.TransaccionRepository;
 import com.formula11.persistence.UsuarioRepository;
 import com.formula11.model.Rol;
+import com.formula11.model.Tenencia;
 import com.formula11.model.Usuario;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class SincronizacionService {
     private static final String PROVIDER = "FOOTBALL_DATA";
+    private static final int TOKENS_INICIALES = 100;
 
     private final FootballDataPort footballDataPort;
     private final JugadorRepository jugadorRepository;
@@ -46,33 +50,22 @@ public class SincronizacionService {
         if (!footballDataPort.estaConfigurado()) {
             throw new FootballDataException(FootballDataException.Tipo.NO_CONFIGURADO, "La integración de fútbol no está configurada");
         }
-        List<LigaSyncResultResponse> resultados = new ArrayList<>();
-        int creados = 0;
-        int actualizados = 0;
-        int omitidos = 0;
-        int exitosas = 0;
         Usuario superusuario = usuarioRepository.findByRol(Rol.SUPERUSUARIO).orElse(null);
-        for (Jugador jugador : jugadorRepository.findAllByOrigen("LEGACY")) {
-            if (!transaccionRepository.existsByJugadorId(jugador.getId())) {
-                if (superusuario != null) {
-                    tenenciaRepository.deleteByUsuarioIdAndJugadorId(superusuario.getId(), jugador.getId());
-                }
-                jugadorRepository.delete(jugador);
-            }
-        }
+        eliminarJugadoresLegacySinOperaciones(superusuario);
 
+        List<LigaSyncResultResponse> resultados = new ArrayList<>();
+        Totales totales = Totales.VACIO;
+        int exitosas = 0;
         for (Liga liga : Liga.values()) {
             try {
-                int[] totales = sincronizarLiga(liga, superusuario);
-                creados += totales[0];
-                actualizados += totales[1];
-                omitidos += totales[2];
+                Totales deLiga = sincronizarLiga(liga, superusuario);
+                totales = totales.sumar(deLiga);
                 exitosas++;
-                resultados.add(new LigaSyncResultResponse(liga.getNombreLegible(), "COMPLETADA", totales[0], totales[1], totales[2], null));
+                resultados.add(ligaCompletada(liga, deLiga));
             } catch (FootballDataException exception) {
-                resultados.add(new LigaSyncResultResponse(liga.getNombreLegible(), "FALLIDA", 0, 0, 0, exception.getMessage()));
+                resultados.add(ligaFallida(liga, exception.getMessage()));
             } catch (RuntimeException exception) {
-                resultados.add(new LigaSyncResultResponse(liga.getNombreLegible(), "FALLIDA", 0, 0, 0, "No se pudo sincronizar la liga"));
+                resultados.add(ligaFallida(liga, "No se pudo sincronizar la liga"));
             }
         }
 
@@ -80,36 +73,69 @@ public class SincronizacionService {
             throw new FootballDataException(FootballDataException.Tipo.PROVEEDOR, "No se pudo sincronizar ninguna liga");
         }
         String estado = exitosas == Liga.values().length ? "COMPLETADA" : "PARCIAL";
-        return new SincronizacionResponse(estado, resultados, creados, actualizados, omitidos, MDC.get("correlationId"));
+        return new SincronizacionResponse(estado, resultados, totales.creados(), totales.actualizados(),
+                totales.omitidos(), MDC.get("correlationId"));
     }
 
-    private int[] sincronizarLiga(Liga liga, Usuario superusuario) {
-        int creados = 0;
-        int actualizados = 0;
-        int omitidos = 0;
-        List<ExternalTeam> equipos = footballDataPort.obtenerEquipos(liga);
-        for (ExternalTeam equipo : equipos) {
+    /** Los jugadores del seed inicial se reemplazan por los del proveedor, salvo que alguien ya haya operado con ellos. */
+    private void eliminarJugadoresLegacySinOperaciones(Usuario superusuario) {
+        for (Jugador jugador : jugadorRepository.findAllByOrigen("LEGACY")) {
+            if (transaccionRepository.existsByJugadorId(jugador.getId())) {
+                continue;
+            }
+            if (superusuario != null) {
+                tenenciaRepository.deleteByUsuarioIdAndJugadorId(superusuario.getId(), jugador.getId());
+            }
+            jugadorRepository.delete(jugador);
+        }
+    }
+
+    private Totales sincronizarLiga(Liga liga, Usuario superusuario) {
+        Totales totales = Totales.VACIO;
+        for (ExternalTeam equipo : footballDataPort.obtenerEquipos(liga)) {
             for (ExternalPlayer player : footballDataPort.obtenerJugadores(equipo)) {
-                if (!esValidoParaProcesar(player)) {
-                    omitidos++;
-                    continue;
-                }
-                Liga ligaJugador = Liga.valueOf(player.liga());
-                Jugador jugador = jugadorRepository.findByExternalProviderAndExternalId(PROVIDER, player.externalId()).orElse(null);
-                if (jugador == null) {
-                    Jugador guardado = jugadorRepository.save(new Jugador(player.nombre(), player.equipo(), ligaJugador, player.posicion(), PROVIDER, player.externalId()));
-                    if (superusuario != null) {
-                        tenenciaRepository.save(new com.formula11.model.Tenencia(superusuario, guardado, 100, java.math.BigDecimal.ONE));
-                    }
-                    creados++;
-                } else {
-                    jugador.actualizarDesdeExterno(PROVIDER, player.externalId(), player.nombre(), player.equipo(), ligaJugador, player.posicion());
-                    jugadorRepository.save(jugador);
-                    actualizados++;
-                }
+                totales = totales.sumar(sincronizarJugador(player, superusuario));
             }
         }
-        return new int[]{creados, actualizados, omitidos};
+        return totales;
+    }
+
+    private ResultadoJugador sincronizarJugador(ExternalPlayer player, Usuario superusuario) {
+        if (!esValidoParaProcesar(player)) {
+            return ResultadoJugador.OMITIDO;
+        }
+        Liga liga = Liga.valueOf(player.liga());
+        Optional<Jugador> existente = jugadorRepository.findByExternalProviderAndExternalId(PROVIDER, player.externalId());
+        if (existente.isPresent()) {
+            actualizarJugador(existente.get(), player, liga);
+            return ResultadoJugador.ACTUALIZADO;
+        }
+        crearJugador(player, liga, superusuario);
+        return ResultadoJugador.CREADO;
+    }
+
+    /** Un jugador nuevo arranca con sus 100 tokens en manos del superusuario. */
+    private void crearJugador(ExternalPlayer player, Liga liga, Usuario superusuario) {
+        Jugador guardado = jugadorRepository.save(new Jugador(player.nombre(), player.equipo(), liga,
+                player.posicion(), PROVIDER, player.externalId()));
+        if (superusuario != null) {
+            tenenciaRepository.save(new Tenencia(superusuario, guardado, TOKENS_INICIALES, BigDecimal.ONE));
+        }
+    }
+
+    private void actualizarJugador(Jugador jugador, ExternalPlayer player, Liga liga) {
+        jugador.actualizarDesdeExterno(PROVIDER, player.externalId(), player.nombre(), player.equipo(), liga,
+                player.posicion());
+        jugadorRepository.save(jugador);
+    }
+
+    private static LigaSyncResultResponse ligaCompletada(Liga liga, Totales totales) {
+        return new LigaSyncResultResponse(liga.getNombreLegible(), "COMPLETADA", totales.creados(),
+                totales.actualizados(), totales.omitidos(), null);
+    }
+
+    private static LigaSyncResultResponse ligaFallida(Liga liga, String error) {
+        return new LigaSyncResultResponse(liga.getNombreLegible(), "FALLIDA", 0, 0, 0, error);
     }
 
     private boolean esValidoParaProcesar(ExternalPlayer player) {
@@ -122,6 +148,24 @@ public class SincronizacionService {
             return true;
         } catch (IllegalArgumentException | NullPointerException exception) {
             return false;
+        }
+    }
+
+    private enum ResultadoJugador { CREADO, ACTUALIZADO, OMITIDO }
+
+    private record Totales(int creados, int actualizados, int omitidos) {
+        static final Totales VACIO = new Totales(0, 0, 0);
+
+        Totales sumar(ResultadoJugador resultado) {
+            return switch (resultado) {
+                case CREADO -> new Totales(creados + 1, actualizados, omitidos);
+                case ACTUALIZADO -> new Totales(creados, actualizados + 1, omitidos);
+                case OMITIDO -> new Totales(creados, actualizados, omitidos + 1);
+            };
+        }
+
+        Totales sumar(Totales otros) {
+            return new Totales(creados + otros.creados, actualizados + otros.actualizados, omitidos + otros.omitidos);
         }
     }
 }

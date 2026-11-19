@@ -32,12 +32,20 @@ public class AsyncConfig {
             return () -> {
                 Map<String, String> previous = MDC.getCopyOfContextMap();
                 try {
-                    if (context == null) MDC.clear(); else MDC.setContextMap(context);
+                    restaurarMdc(context);
                     runnable.run();
                 } finally {
-                    if (previous == null) MDC.clear(); else MDC.setContextMap(previous);
+                    restaurarMdc(previous);
                 }
             };
         };
+    }
+
+    private static void restaurarMdc(Map<String, String> contexto) {
+        if (contexto == null) {
+            MDC.clear();
+        } else {
+            MDC.setContextMap(contexto);
+        }
     }
 }

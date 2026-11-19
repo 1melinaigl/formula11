@@ -26,6 +26,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -132,35 +133,43 @@ public class PortfolioService {
         int indiceTransaccion = 0;
 
         for (LocalDate fecha : fechas) {
-            while (indiceTransaccion < transacciones.size()
-                    && !fechaDe(transacciones.get(indiceTransaccion)).isAfter(fecha)) {
-                aplicar(transacciones.get(indiceTransaccion), tenencias);
-                indiceTransaccion++;
-            }
-
-            List<Long> jugadores = tenencias.values().stream()
-                    .filter(tenencia -> tenencia.cantidad > 0)
-                    .map(tenencia -> tenencia.jugador.getId())
-                    .toList();
-            Map<Long, BigDecimal> precios = cotizacionHistoricaPort.preciosA(jugadores, fecha);
-            BigDecimal invertido = ceroDinero();
-            BigDecimal valor = ceroDinero();
-            for (TenenciaHistorica tenencia : tenencias.values()) {
-                if (tenencia.cantidad <= 0) {
-                    continue;
-                }
-                BigDecimal cantidad = BigDecimal.valueOf(tenencia.cantidad);
-                invertido = dinero(invertido.add(dinero(tenencia.precioPromedio.multiply(cantidad))));
-                BigDecimal precio = precios.get(tenencia.jugador.getId());
-                if (precio == null) {
-                    throw new IllegalStateException(
-                            "No hay cotización histórica para el jugador " + tenencia.jugador.getId());
-                }
-                valor = dinero(valor.add(dinero(precio.multiply(cantidad))));
-            }
-            puntos.add(new PuntoEvolucionResultado(fecha, dinero(valor), dinero(invertido)));
+            indiceTransaccion = aplicarHasta(fecha, transacciones, indiceTransaccion, tenencias);
+            puntos.add(valuarA(fecha, tenencias.values()));
         }
         return new EvolucionPortfolioResultado(usuario, puntos);
+    }
+
+    /** Aplica, desde {@code desde}, las transacciones hechas hasta la fecha. Devuelve el índice de la primera sin aplicar. */
+    private static int aplicarHasta(LocalDate fecha, List<Transaccion> transacciones, int desde,
+                                    Map<Long, TenenciaHistorica> tenencias) {
+        int indice = desde;
+        while (indice < transacciones.size() && !fechaDe(transacciones.get(indice)).isAfter(fecha)) {
+            aplicar(transacciones.get(indice), tenencias);
+            indice++;
+        }
+        return indice;
+    }
+
+    private PuntoEvolucionResultado valuarA(LocalDate fecha, Collection<TenenciaHistorica> tenencias) {
+        List<TenenciaHistorica> conTokens = tenencias.stream().filter(tenencia -> tenencia.cantidad > 0).toList();
+        List<Long> jugadores = conTokens.stream().map(tenencia -> tenencia.jugador.getId()).toList();
+        Map<Long, BigDecimal> precios = cotizacionHistoricaPort.preciosA(jugadores, fecha);
+        BigDecimal invertido = ceroDinero();
+        BigDecimal valor = ceroDinero();
+        for (TenenciaHistorica tenencia : conTokens) {
+            BigDecimal cantidad = BigDecimal.valueOf(tenencia.cantidad);
+            invertido = dinero(invertido.add(dinero(tenencia.precioPromedio.multiply(cantidad))));
+            valor = dinero(valor.add(dinero(precioHistorico(precios, tenencia).multiply(cantidad))));
+        }
+        return new PuntoEvolucionResultado(fecha, dinero(valor), dinero(invertido));
+    }
+
+    private static BigDecimal precioHistorico(Map<Long, BigDecimal> precios, TenenciaHistorica tenencia) {
+        BigDecimal precio = precios.get(tenencia.jugador.getId());
+        if (precio == null) {
+            throw new IllegalStateException("No hay cotización histórica para el jugador " + tenencia.jugador.getId());
+        }
+        return precio;
     }
 
     @Transactional(readOnly = true)

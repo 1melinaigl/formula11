@@ -48,12 +48,8 @@ public class RecalculoService {
         }
         Instant inicio = clock.instant();
         try {
-            LocalDate fin = request != null && request.hasta() != null ? request.hasta() : ultimaSemanaCerrada();
+            LocalDate fin = calcularFin(request);
             LocalDate desde = request != null && request.desde() != null ? request.desde() : fin;
-            if (request != null && request.desde() != null && request.hasta() != null) {
-                LocalDate ultimaPersistida = cotizaciones.findMaxFecha().orElse(fin);
-                if (ultimaPersistida.isAfter(fin)) fin = ultimaPersistida;
-            }
             int weeks = 0;
             int players = 0;
             int noMetricas = 0;
@@ -70,6 +66,22 @@ public class RecalculoService {
         } finally {
             ejecutando.set(false);
         }
+    }
+
+    /**
+     * Sin rango, se recalcula la última semana cerrada. Con desde y hasta, el recálculo se extiende hasta la última
+     * cotización persistida si es posterior a hasta.
+     */
+    private LocalDate calcularFin(RecalculoRequest request) {
+        if (request == null || request.hasta() == null) {
+            return ultimaSemanaCerrada();
+        }
+        LocalDate hasta = request.hasta();
+        if (request.desde() == null) {
+            return hasta;
+        }
+        LocalDate ultimaPersistida = cotizaciones.findMaxFecha().orElse(hasta);
+        return ultimaPersistida.isAfter(hasta) ? ultimaPersistida : hasta;
     }
 
     /** Las señales son un extra: si fallan, se registra y el recálculo sigue. */

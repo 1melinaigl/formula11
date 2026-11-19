@@ -10,6 +10,11 @@ import java.util.*;
 
 @Service
 public class EstrategiaService {
+    private static final Set<String> POSICIONES = Set.of("POR", "DEF", "MED", "DEL", "TODAS");
+    private static final Set<String> METRICAS = Set.of("goles", "asistencias", "tiros", "pasesClave", "regates",
+            "entradas", "intercepciones", "amarillas", "rojas", "atajadas", "golesRecibidos",
+            "vallaInvicta", "rating", "menosDe90Minutos", "titularidad", "suplencias");
+
     private final EstrategiaRepository repository;
     private final Clock clock;
     private final CotizacionCacheInvalidator cacheInvalidator;
@@ -66,24 +71,24 @@ public class EstrategiaService {
     private void validar(NuevaVersionRequest request) {
         if (request == null) throw new IllegalArgumentException("La versión es obligatoria");
         if (request.pesos().isEmpty() || request.parametros().isEmpty()) throw new IllegalArgumentException("Pesos y parámetros son obligatorios");
-        Set<String> posiciones = Set.of("POR", "DEF", "MED", "DEL", "TODAS");
-        Set<String> metricas = Set.of("goles", "asistencias", "tiros", "pasesClave", "regates",
-                "entradas", "intercepciones", "amarillas", "rojas", "atajadas", "golesRecibidos",
-                "vallaInvicta", "rating", "menosDe90Minutos", "titularidad", "suplencias");
-        request.pesos().forEach((posicion, valores) -> {
-            if (!posiciones.contains(posicion.toUpperCase(Locale.ROOT)) || valores == null || valores.isEmpty()) {
-                throw new IllegalArgumentException("La posición de la estrategia no es válida");
-            }
-            valores.forEach((metrica, peso) -> {
-                if (!metricas.contains(metrica) || peso == null || !Double.isFinite(peso)) {
-                    throw new IllegalArgumentException("La métrica de la estrategia no es válida");
-                }
-            });
-        });
+        request.pesos().forEach(EstrategiaService::validarPesosDePosicion);
         Double k = request.parametros().get("k");
         Double tope = request.parametros().get("topeVariacion");
         Double piso = request.parametros().get("piso");
         if (k == null || tope == null || piso == null || k < 0 || tope < 0 || piso < 0) throw new IllegalArgumentException("Los parámetros de la estrategia no son válidos");
+    }
+
+    private static void validarPesosDePosicion(String posicion, Map<String, Double> pesos) {
+        if (!POSICIONES.contains(posicion.toUpperCase(Locale.ROOT)) || pesos == null || pesos.isEmpty()) {
+            throw new IllegalArgumentException("La posición de la estrategia no es válida");
+        }
+        pesos.forEach(EstrategiaService::validarPeso);
+    }
+
+    private static void validarPeso(String metrica, Double peso) {
+        if (!METRICAS.contains(metrica) || peso == null || !Double.isFinite(peso)) {
+            throw new IllegalArgumentException("La métrica de la estrategia no es válida");
+        }
     }
 
     private EstrategiaResponse toResponse(Estrategia e) {

@@ -159,9 +159,7 @@ public class CargaMetricasService {
         boolean completa = true;
         try {
             for (YearMonth mes = YearMonth.from(desde); !mes.isAfter(hasta); mes = mes.plusMonths(1)) {
-                for (PartidoWhoScoredResumen partido : port.listarPartidos(liga, mes)) {
-                    completa &= procesarPartido(resumen, partido, desde);
-                }
+                completa &= procesarMes(resumen, liga, mes, desde);
             }
         } catch (RuntimeException exception) {
             completa = false;
@@ -173,6 +171,15 @@ public class CargaMetricasService {
                 resumen.getPartidosEncontrados(), resumen.getPartidosCargados(), resumen.getPartidosFallidos(),
                 resumen.getJugadoresVinculados(), resumen.getPendientes());
         return completa;
+    }
+
+    /** Devuelve false si falló algún partido del mes. Se procesan todos aunque falle uno. */
+    private boolean procesarMes(EjecucionMetricaLiga resumen, Liga liga, YearMonth mes, LocalDate desde) {
+        boolean completo = true;
+        for (PartidoWhoScoredResumen partido : port.listarPartidos(liga, mes)) {
+            completo &= procesarPartido(resumen, partido, desde);
+        }
+        return completo;
     }
 
     /** Devuelve false si el partido falló. Los no terminados y los ya cargados no se descargan. */

@@ -55,16 +55,8 @@ public final class MatchCentreParser {
             JsonNode eventTypes = objectMapper.readTree(eventTypesJson);
             int expandedMaxMinute = data.path(EXPANDED_MAX_MINUTE).asInt();
             List<Jugador> jugadores = new ArrayList<>();
-            Map<Long, JsonNode> playerNodes = new HashMap<>();
             for (String side : List.of("home", "away")) {
-                JsonNode team = data.path(side);
-                for (JsonNode player : team.path(PLAYERS)) {
-                    JsonNode stats = player.path(STATS);
-                    if (!stats.isObject() || stats.size() == 0) continue;
-                    long playerId = player.path(PLAYER_ID).asLong();
-                    playerNodes.put(playerId, player);
-                    jugadores.add(parseJugador(player, team, expandedMaxMinute, data.path(EVENTS), eventTypes));
-                }
+                jugadores.addAll(parseEquipo(data.path(side), expandedMaxMinute, data.path(EVENTS), eventTypes));
             }
             return new Partido(List.copyOf(jugadores),
                     countEvents(data.path(EVENTS), GOAL, null),
@@ -73,6 +65,18 @@ public final class MatchCentreParser {
         } catch (IOException exception) {
             throw new DatoInvalidoException("JSON de matchCentreData inválido", exception);
         }
+    }
+
+    /** Los jugadores sin estadísticas no entraron a la cancha y se descartan. */
+    private List<Jugador> parseEquipo(JsonNode team, int maxMinute, JsonNode events, JsonNode eventTypes) {
+        List<Jugador> jugadores = new ArrayList<>();
+        for (JsonNode player : team.path(PLAYERS)) {
+            JsonNode stats = player.path(STATS);
+            if (stats.isObject() && stats.size() > 0) {
+                jugadores.add(parseJugador(player, team, maxMinute, events, eventTypes));
+            }
+        }
+        return jugadores;
     }
 
     private Jugador parseJugador(JsonNode player, JsonNode team, int maxMinute,
