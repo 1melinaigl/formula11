@@ -1,9 +1,9 @@
 package com.formula11.unit.service;
 
-import com.formula11.dto.cotizaciones.EstrategiaResponse;
 import com.formula11.model.Estrategia;
 import com.formula11.persistence.EstrategiaRepository;
 import com.formula11.service.cotizaciones.CotizacionCacheInvalidator;
+import com.formula11.service.cotizaciones.EstrategiaResultado;
 import com.formula11.service.cotizaciones.EstrategiaService;
 import org.junit.jupiter.api.Test;
 
@@ -33,7 +33,7 @@ class EstrategiaListadoTest {
         EstrategiaService service = new EstrategiaService(repository, Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
                 mock(CotizacionCacheInvalidator.class));
 
-        List<EstrategiaResponse> listado = service.listar();
+        List<EstrategiaResultado> listado = service.listar();
 
         assertEquals(2, listado.size());
         assertEquals("CONSISTENCIA", listado.get(0).codigo());

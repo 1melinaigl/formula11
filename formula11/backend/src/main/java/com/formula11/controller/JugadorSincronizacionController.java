@@ -24,6 +24,6 @@ public class JugadorSincronizacionController {
     @ApiResponse(responseCode = "502", description = "El proveedor externo rechazó o no pudo procesar la solicitud")
     @ApiResponse(responseCode = "503", description = "La integración no está configurada o el proveedor no está disponible")
     public SincronizacionResponse sincronizar() {
-        return sincronizacionService.sincronizar();
+        return SincronizacionResponse.from(sincronizacionService.sincronizar());
     }
 }

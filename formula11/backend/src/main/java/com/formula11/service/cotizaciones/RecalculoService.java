@@ -3,8 +3,6 @@ package com.formula11.service.cotizaciones;
 import com.formula11.config.ClockConfig;
 import com.formula11.model.Estrategia;
 import com.formula11.persistence.EstrategiaRepository;
-import com.formula11.dto.cotizaciones.RecalculoRequest;
-import com.formula11.dto.cotizaciones.RecalculoResponse;
 import com.formula11.service.senales.GeneradorSenalesPort;
 import org.slf4j.*;
 import org.springframework.beans.factory.ObjectProvider;
@@ -42,9 +40,9 @@ public class RecalculoService {
         this.generadoresSenales = generadoresSenales;
     }
 
-    public RecalculoResponse recalcular(RecalculoRequest request) {
+    public RecalculoResultado recalcular(RangoRecalculo request) {
         if (!ejecutando.compareAndSet(false, true)) throw new IllegalStateException("Ya hay un recálculo en curso");
-        if (request != null && !request.rangoValido()) {
+        if (request != null && !request.esValido()) {
             ejecutando.set(false);
             throw new IllegalArgumentException("Desde y hasta deben enviarse juntas y desde no puede ser posterior a hasta");
         }
@@ -62,9 +60,9 @@ public class RecalculoService {
             }
             cache.invalidate();
             String correlationId = Optional.ofNullable(org.slf4j.MDC.get("correlationId")).orElse(UUID.randomUUID().toString());
-            List<RecalculoResponse.EstrategiaVersionResponse> versions = Estrategia.vigentes(estrategias.findAll()).stream()
-                    .map(e -> new RecalculoResponse.EstrategiaVersionResponse(e.getCodigo(), e.getVersion())).toList();
-            return new RecalculoResponse("COMPLETADO", weeks, players, noMetricas, versions, inicio, clock.instant(), correlationId);
+            List<RecalculoResultado.EstrategiaVersion> versions = Estrategia.vigentes(estrategias.findAll()).stream()
+                    .map(e -> new RecalculoResultado.EstrategiaVersion(e.getCodigo(), e.getVersion())).toList();
+            return new RecalculoResultado("COMPLETADO", weeks, players, noMetricas, versions, inicio, clock.instant(), correlationId);
         } finally {
             ejecutando.set(false);
         }
@@ -74,7 +72,7 @@ public class RecalculoService {
      * Sin rango, se recalcula la última semana cerrada. Con desde y hasta, el recálculo se extiende hasta la última
      * cotización persistida si es posterior a hasta.
      */
-    private LocalDate calcularFin(RecalculoRequest request) {
+    private LocalDate calcularFin(RangoRecalculo request) {
         if (request == null || request.hasta() == null) {
             return ultimaSemanaCerrada();
         }

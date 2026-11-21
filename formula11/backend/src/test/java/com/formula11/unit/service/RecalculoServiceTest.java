@@ -1,6 +1,6 @@
 package com.formula11.unit.service;
 
-import com.formula11.dto.cotizaciones.RecalculoRequest;
+import com.formula11.service.cotizaciones.RangoRecalculo;
 import com.formula11.model.Estrategia;
 import com.formula11.persistence.EstrategiaRepository;
 import com.formula11.service.cotizaciones.CotizacionCacheInvalidator;
@@ -46,14 +46,14 @@ class RecalculoServiceTest {
         when(cotizaciones.findMaxFecha()).thenReturn(Optional.empty());
         var service = new RecalculoService(clock, semanas, estrategias, cotizaciones, cache);
 
-        var response = service.recalcular(new RecalculoRequest(
+        var response = service.recalcular(new RangoRecalculo(
                 LocalDate.of(2026, 1, 5), LocalDate.of(2026, 1, 18)));
 
         assertEquals(2, response.semanasCalculadas());
         verify(semanas).procesar(LocalDate.of(2026, 1, 11));
         verify(semanas).procesar(LocalDate.of(2026, 1, 18));
-        var rangoInvertido = new RecalculoRequest(LocalDate.of(2026, 1, 19), LocalDate.of(2026, 1, 18));
-        var sinHasta = new RecalculoRequest(LocalDate.of(2026, 1, 19), null);
+        var rangoInvertido = new RangoRecalculo(LocalDate.of(2026, 1, 19), LocalDate.of(2026, 1, 18));
+        var sinHasta = new RangoRecalculo(LocalDate.of(2026, 1, 19), null);
         assertThrows(IllegalArgumentException.class, () -> service.recalcular(rangoInvertido));
         assertThrows(IllegalArgumentException.class, () -> service.recalcular(sinHasta));
     }
@@ -65,7 +65,7 @@ class RecalculoServiceTest {
         when(cotizaciones.findMaxFecha()).thenReturn(Optional.of(LocalDate.of(2026, 1, 25)));
 
         var service = new RecalculoService(Clock.systemUTC(), semanas, estrategias, cotizaciones, cache);
-        var response = service.recalcular(new RecalculoRequest(
+        var response = service.recalcular(new RangoRecalculo(
                 LocalDate.of(2026, 1, 5), LocalDate.of(2026, 1, 11)));
 
         assertEquals(3, response.semanasCalculadas());

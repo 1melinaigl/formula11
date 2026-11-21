@@ -1,9 +1,5 @@
 package com.formula11.service.usuarios;
 
-import com.formula11.dto.usuarios.RegistroUsuarioRequest;
-import com.formula11.dto.usuarios.RegistroUsuarioResponse;
-import com.formula11.dto.usuarios.LoginRequest;
-import com.formula11.dto.usuarios.LoginResponse;
 import com.formula11.exception.CredencialesInvalidasException;
 import com.formula11.model.Usuario;
 import com.formula11.persistence.UsuarioRepository;
@@ -37,28 +33,27 @@ public class UsuarioService {
     }
 
     @Transactional
-    public RegistroUsuarioResponse registrar(RegistroUsuarioRequest request) {
-        String email = Usuario.normalizarEmail(request.email());
-        if (usuarioRepository.existsByEmail(email)) throw new EmailDuplicadoException();
-        Usuario usuario = new Usuario(request.nombre().trim(), email, passwordEncoder.encode(request.password()), clock.instant());
+    public UsuarioAutenticado registrar(String nombre, String email, String password) {
+        String emailNormalizado = Usuario.normalizarEmail(email);
+        if (usuarioRepository.existsByEmail(emailNormalizado)) throw new EmailDuplicadoException();
+        Usuario usuario = new Usuario(nombre.trim(), emailNormalizado, passwordEncoder.encode(password), clock.instant());
         try {
             Usuario guardado = usuarioRepository.saveAndFlush(usuario);
             cuentaRepository.saveAndFlush(new Cuenta(guardado, mercadoProperties.getSaldoInicial()));
-            return RegistroUsuarioResponse.from(guardado, jwtService.generarToken(
+            return UsuarioAutenticado.de(guardado, jwtService.generarToken(
                     guardado.getId(), guardado.getEmail(), guardado.getRol()));
         } catch (DataIntegrityViolationException exception) {
             throw new EmailDuplicadoException();
         }
     }
 
-    public LoginResponse login(LoginRequest request) {
-        String email = Usuario.normalizarEmail(request.email());
-        Usuario usuario = usuarioRepository.findByEmail(email)
+    public UsuarioAutenticado login(String email, String password) {
+        Usuario usuario = usuarioRepository.findByEmail(Usuario.normalizarEmail(email))
                 .orElseThrow(CredencialesInvalidasException::new);
-        if (!passwordEncoder.matches(request.password(), usuario.getPasswordHash())) {
+        if (!passwordEncoder.matches(password, usuario.getPasswordHash())) {
             throw new CredencialesInvalidasException();
         }
-        return LoginResponse.from(usuario, jwtService.generarToken(usuario.getId(), usuario.getEmail(), usuario.getRol()));
+        return UsuarioAutenticado.de(usuario, jwtService.generarToken(usuario.getId(), usuario.getEmail(), usuario.getRol()));
     }
 
     public Long obtenerIdPorEmail(String email) {

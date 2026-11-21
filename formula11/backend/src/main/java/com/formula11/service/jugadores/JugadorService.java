@@ -1,7 +1,5 @@
 package com.formula11.service.jugadores;
 
-import com.formula11.dto.jugadores.JugadorResponse;
-import com.formula11.dto.jugadores.JugadoresPageResponse;
 import com.formula11.model.Jugador;
 import com.formula11.model.Liga;
 import com.formula11.persistence.JugadorRepository;
@@ -30,11 +28,11 @@ public class JugadorService {
         this.jugadorRepository = jugadorRepository;
     }
 
-    public List<JugadorResponse> listar() {
-        return jugadorRepository.findAllByOrderByNombreAsc().stream().map(JugadorResponse::from).toList();
+    public List<Jugador> listar() {
+        return jugadorRepository.findAllByOrderByNombreAsc();
     }
 
-    public JugadoresPageResponse listar(int page, int size, String sort, String liga, String equipo, String posicion) {
+    public PaginaJugadores listar(int page, int size, String sort, String liga, String equipo, String posicion) {
         validarPaginacion(page, size);
         Pageable pageable = PageRequest.of(page, size, construirOrden(sort));
         Specification<Jugador> specification = (root, query, builder) -> null;
@@ -44,8 +42,8 @@ public class JugadorService {
                 .and(filtrarTexto("posicion", posicion));
 
         Page<Jugador> resultado = jugadorRepository.findAll(specification, pageable);
-        return new JugadoresPageResponse(
-                resultado.getContent().stream().map(JugadorResponse::from).toList(),
+        return new PaginaJugadores(
+                resultado.getContent(),
                 page,
                 size,
                 resultado.getTotalElements(),

@@ -2,8 +2,6 @@ package com.formula11.unit.service;
 
 import com.formula11.adapter.whoscored.WhoScoredPort;
 import com.formula11.config.WhoScoredProperties;
-import com.formula11.dto.metricas.EjecucionMetricasResponse;
-import com.formula11.dto.metricas.PendientesPageResponse;
 import com.formula11.model.EjecucionMetricaLiga;
 import com.formula11.model.EjecucionMetricas;
 import com.formula11.model.Liga;
@@ -13,6 +11,8 @@ import com.formula11.persistence.EjecucionMetricasRepository;
 import com.formula11.persistence.PendienteVinculacionRepository;
 import com.formula11.service.metricas.CargaMetricasService;
 import com.formula11.service.metricas.CargaPartidoService;
+import com.formula11.service.metricas.PaginaPendientes;
+import com.formula11.service.metricas.ResumenEjecucion;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.PageImpl;
@@ -43,8 +43,8 @@ class CargaMetricasRespuestaTest {
         EjecucionMetricas ejecucion = new EjecucionMetricas("COMPLETADA", AHORA, "corr");
         EjecucionMetricaLiga laLiga = new EjecucionMetricaLiga(ejecucion, Liga.LA_LIGA);
 
-        EjecucionMetricasResponse respuesta = service(mock(PendienteVinculacionRepository.class))
-                .response(ejecucion, List.of(laLiga));
+        ResumenEjecucion respuesta = service(mock(PendienteVinculacionRepository.class))
+                .resumen(ejecucion, List.of(laLiga));
 
         assertEquals("La Liga", respuesta.ligas().get(0).liga());
     }
@@ -56,7 +56,7 @@ class CargaMetricasRespuestaTest {
                 Liga.SERIE_A, AHORA);
         when(repository.findByResueltoFalse(any())).thenReturn(new PageImpl<>(List.of(pendiente), PageRequest.of(0, 20), 1));
 
-        PendientesPageResponse respuesta = service(repository).pendientes(PageRequest.of(0, 20));
+        PaginaPendientes respuesta = service(repository).pendientes(PageRequest.of(0, 20));
 
         assertEquals("Serie A", respuesta.content().get(0).liga());
     }

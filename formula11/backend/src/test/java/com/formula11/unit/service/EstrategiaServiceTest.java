@@ -1,10 +1,10 @@
 package com.formula11.unit.service;
 
-import com.formula11.dto.cotizaciones.NuevaVersionRequest;
 import com.formula11.model.Estrategia;
 import com.formula11.persistence.EstrategiaRepository;
 import com.formula11.service.cotizaciones.CotizacionCacheInvalidator;
 import com.formula11.service.cotizaciones.EstrategiaService;
+import com.formula11.service.cotizaciones.NuevaVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -41,7 +41,7 @@ class EstrategiaServiceTest {
     void creaVersionInmutableConVersionIncrementada() {
         Estrategia actual = estrategia("RENDIMIENTO_POSICION", 1, true);
         when(repository.findTopByCodigoOrderByVersionDesc(actual.getCodigo())).thenReturn(Optional.of(actual));
-        NuevaVersionRequest request = request();
+        NuevaVersion request = request();
         when(repository.save(any(Estrategia.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         var result = new EstrategiaService(repository, clock, invalidator)
@@ -76,7 +76,7 @@ class EstrategiaServiceTest {
         var service = new EstrategiaService(repository, clock, invalidator);
 
         String codigo = actual.getCodigo();
-        var vacia = new NuevaVersionRequest(Map.of(), Map.of());
+        var vacia = new NuevaVersion(Map.of(), Map.of());
 
         assertThrows(IllegalArgumentException.class, () -> service.crearVersion(codigo, vacia));
     }
@@ -88,7 +88,7 @@ class EstrategiaServiceTest {
         var service = new EstrategiaService(repository, clock, invalidator);
 
         String codigo = actual.getCodigo();
-        var precioNegativo = new NuevaVersionRequest(Map.of("DEL", Map.of("goles", 1d)),
+        var precioNegativo = new NuevaVersion(Map.of("DEL", Map.of("goles", 1d)),
                 Map.of("k", -0.1d, "topeVariacion", 0.2d, "piso", 0.1d));
 
         assertThrows(IllegalArgumentException.class, () -> service.crearVersion(codigo, precioNegativo));
@@ -103,16 +103,16 @@ class EstrategiaServiceTest {
         var service = new EstrategiaService(repository, clock, invalidator);
 
         String codigo = actual.getCodigo();
-        var posicionDesconocida = new NuevaVersionRequest(Map.of("ATAQUE", Map.of("goles", 1d)), request().parametros());
-        var metricaDesconocida = new NuevaVersionRequest(Map.of("DEL", Map.of("posesiones", 1d)), request().parametros());
+        var posicionDesconocida = new NuevaVersion(Map.of("ATAQUE", Map.of("goles", 1d)), request().parametros());
+        var metricaDesconocida = new NuevaVersion(Map.of("DEL", Map.of("posesiones", 1d)), request().parametros());
 
         assertAll(
                 () -> assertThrows(IllegalArgumentException.class, () -> service.crearVersion(codigo, posicionDesconocida)),
                 () -> assertThrows(IllegalArgumentException.class, () -> service.crearVersion(codigo, metricaDesconocida)));
     }
 
-    private static NuevaVersionRequest request() {
-        return new NuevaVersionRequest(Map.of("DEL", Map.of("goles", 1d)),
+    private static NuevaVersion request() {
+        return new NuevaVersion(Map.of("DEL", Map.of("goles", 1d)),
                 Map.of("k", 0.4d, "topeVariacion", 0.2d, "piso", 0.1d));
     }
 

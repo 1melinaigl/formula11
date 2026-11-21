@@ -4,13 +4,10 @@ import com.formula11.adapter.whoscored.PartidoWhoScoredResumen;
 import com.formula11.adapter.whoscored.WhoScoredPort;
 import com.formula11.config.ClockConfig;
 import com.formula11.config.WhoScoredProperties;
-import com.formula11.dto.metricas.EjecucionMetricasResponse;
-import com.formula11.dto.metricas.LigaEjecucionResponse;
-import com.formula11.dto.metricas.PendienteVinculacion;
-import com.formula11.dto.metricas.PendientesPageResponse;
 import com.formula11.model.EjecucionMetricaLiga;
 import com.formula11.model.EjecucionMetricas;
 import com.formula11.model.Liga;
+import com.formula11.model.PendienteVinculacion;
 import com.formula11.persistence.EjecucionMetricaLigaRepository;
 import com.formula11.persistence.EjecucionMetricasRepository;
 import com.formula11.persistence.PendienteVinculacionRepository;
@@ -248,27 +245,27 @@ public class CargaMetricasService {
     }
 
     /** Estado de una ejecución con el resumen de cada liga procesada. */
-    public EjecucionMetricasResponse estado(Long ejecucionId) {
-        return response(obtener(ejecucionId), ligaRepository.findByEjecucionId(ejecucionId));
+    public ResumenEjecucion estado(Long ejecucionId) {
+        return resumen(obtener(ejecucionId), ligaRepository.findByEjecucionId(ejecucionId));
     }
 
-    public PendientesPageResponse pendientes(Pageable pageable) {
-        Page<com.formula11.model.PendienteVinculacion> page = pendienteRepository.findByResueltoFalse(pageable);
-        List<PendienteVinculacion> content = page.getContent().stream()
-                .map(item -> new PendienteVinculacion(item.getWhoscoredId(), item.getNombre(),
+    public PaginaPendientes pendientes(Pageable pageable) {
+        Page<PendienteVinculacion> page = pendienteRepository.findByResueltoFalse(pageable);
+        List<PaginaPendientes.Pendiente> content = page.getContent().stream()
+                .map(item -> new PaginaPendientes.Pendiente(item.getWhoscoredId(), item.getNombre(),
                         item.getEquipo(), item.getLiga().getNombreLegible(), item.getFechaRegistro()))
                 .toList();
-        return new PendientesPageResponse(content, page.getNumber(), page.getSize(),
+        return new PaginaPendientes(content, page.getNumber(), page.getSize(),
                 page.getTotalElements(), page.getTotalPages());
     }
 
-    public EjecucionMetricasResponse response(EjecucionMetricas ejecucion, List<EjecucionMetricaLiga> ligas) {
-        List<LigaEjecucionResponse> resumenes = ligas.stream()
-                .map(item -> new LigaEjecucionResponse(item.getLiga().getNombreLegible(), estadoLiga(ejecucion, item),
+    public ResumenEjecucion resumen(EjecucionMetricas ejecucion, List<EjecucionMetricaLiga> ligas) {
+        List<ResumenEjecucion.Liga> resumenes = ligas.stream()
+                .map(item -> new ResumenEjecucion.Liga(item.getLiga().getNombreLegible(), estadoLiga(ejecucion, item),
                         item.getPartidosCargados(), item.getPartidosEncontrados() - item.getPartidosCargados(),
                         item.getJugadoresVinculados(), item.getPendientes(), null))
                 .toList();
-        return new EjecucionMetricasResponse(ejecucion.getId(), ejecucion.getEstado(), ejecucion.getInicio(),
+        return new ResumenEjecucion(ejecucion.getId(), ejecucion.getEstado(), ejecucion.getInicio(),
                 ejecucion.getFin(), resumenes, ejecucion.getCorrelationId());
     }
 

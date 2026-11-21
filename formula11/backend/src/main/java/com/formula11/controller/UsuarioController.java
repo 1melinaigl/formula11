@@ -26,7 +26,8 @@ public class UsuarioController {
     @Operation(summary = "Registro de usuario", description = "Registra un nuevo usuario en el sistema")
     @ApiResponse(responseCode = "201", description = "Usuario registrado correctamente")
     public RegistroUsuarioResponse registrar(@Valid @RequestBody RegistroUsuarioRequest request) {
-        return usuarioService.registrar(request);
+        return RegistroUsuarioResponse.from(
+                usuarioService.registrar(request.nombre(), request.email(), request.password()));
     }
 
     @PostMapping("/login")
@@ -36,6 +37,6 @@ public class UsuarioController {
     @ApiResponse(responseCode = "400", description = "Datos de login inválidos")
     @ApiResponse(responseCode = "401", description = "Credenciales inválidas")
     public LoginResponse login(@Valid @RequestBody LoginRequest request) {
-        return usuarioService.login(request);
+        return LoginResponse.from(usuarioService.login(request.email(), request.password()));
     }
 }

@@ -1,7 +1,6 @@
 package com.formula11.service.portfolio;
 
 import com.formula11.config.MercadoProperties;
-import com.formula11.dto.usuarios.RegistroUsuarioRequest;
 import com.formula11.exception.RecursoNoEncontradoException;
 import com.formula11.model.Jugador;
 import com.formula11.model.Liga;
@@ -70,8 +69,7 @@ public class DemoPortfolioInitializer implements ApplicationRunner {
                 ZoneOffset.UTC);
         for (int indiceUsuario = 0; indiceUsuario < emails.size(); indiceUsuario++) {
             String email = normalizar(emails.get(indiceUsuario));
-            usuarioService.registrar(new RegistroUsuarioRequest(
-                    "Demo " + (indiceUsuario + 1), email, password));
+            usuarioService.registrar("Demo " + (indiceUsuario + 1), email, password);
             Long usuarioId = usuarioRepository.findByEmail(email)
                     .orElseThrow(() -> new IllegalStateException(
                             "No se pudo recuperar el usuario demo " + email))

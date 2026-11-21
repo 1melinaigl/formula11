@@ -1,10 +1,10 @@
 package com.formula11.unit.controller;
 
 import com.formula11.controller.MetricasController;
-import com.formula11.dto.metricas.EjecucionMetricasResponse;
-import com.formula11.dto.metricas.PendientesPageResponse;
 import com.formula11.model.EjecucionMetricas;
 import com.formula11.service.metricas.CargaMetricasService;
+import com.formula11.service.metricas.PaginaPendientes;
+import com.formula11.service.metricas.ResumenEjecucion;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -23,8 +23,8 @@ class MetricasControllerTest {
         CargaMetricasService service = mock(CargaMetricasService.class);
         EjecucionMetricasRepositoryFixture fixture = new EjecucionMetricasRepositoryFixture();
         when(service.iniciar(null)).thenReturn(fixture.ejecucion);
-        when(service.response(any(), anyList())).thenReturn(
-                new EjecucionMetricasResponse(1L, "EN_CURSO", fixture.ejecucion.getInicio(),
+        when(service.resumen(any(), anyList())).thenReturn(
+                new ResumenEjecucion(1L, "EN_CURSO", fixture.ejecucion.getInicio(),
                         null, List.of(), "corr"));
         MockMvc mvc = mvc(service);
 
@@ -40,9 +40,9 @@ class MetricasControllerTest {
         EjecucionMetricas ejecucion = new EjecucionMetricas("COMPLETADA",
                 Instant.parse("2026-10-28T00:00:00Z"), "corr");
         when(service.estado(7L)).thenReturn(
-                new EjecucionMetricasResponse(7L, "COMPLETADA", ejecucion.getInicio(),
+                new ResumenEjecucion(7L, "COMPLETADA", ejecucion.getInicio(),
                         null, List.of(), "corr"));
-        when(service.pendientes(any())).thenReturn(new PendientesPageResponse(List.of(), 0, 20, 0, 0));
+        when(service.pendientes(any())).thenReturn(new PaginaPendientes(List.of(), 0, 20, 0, 0));
         MockMvc mvc = mvc(service);
 
         mvc.perform(get("/api/metricas/sincronizacion/7"))

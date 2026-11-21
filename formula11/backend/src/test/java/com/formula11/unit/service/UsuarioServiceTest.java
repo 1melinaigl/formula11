@@ -1,6 +1,5 @@
 package com.formula11.unit.service;
 
-import com.formula11.dto.usuarios.RegistroUsuarioRequest;
 import com.formula11.model.Usuario;
 import com.formula11.persistence.UsuarioRepository;
 import com.formula11.persistence.CuentaRepository;
@@ -45,7 +44,6 @@ class UsuarioServiceTest {
 
     @Test
     void registrarCreaUsuarioYDevuelveTokenCuandoElEmailNoExiste() {
-        var request = new RegistroUsuarioRequest("Ana", "ana@example.com", "Secreto123!");
         when(usuarioRepository.existsByEmail("ana@example.com")).thenReturn(false);
         when(passwordEncoder.encode("Secreto123!")).thenReturn("hash-encriptado");
         when(usuarioRepository.saveAndFlush(any(Usuario.class))).thenAnswer(invocacion -> {
@@ -57,7 +55,7 @@ class UsuarioServiceTest {
         when(clock.instant()).thenReturn(Instant.parse("2026-10-24T17:00:00Z"));
         when(jwtService.generarToken(anyLong(), eq("ana@example.com"), any())).thenReturn("token-jwt");
 
-        var respuesta = usuarioService.registrar(request);
+        var respuesta = usuarioService.registrar("Ana", "ana@example.com", "Secreto123!");
 
         assertEquals(1L, respuesta.id());
         assertEquals("Ana", respuesta.nombre());
@@ -68,10 +66,9 @@ class UsuarioServiceTest {
 
     @Test
     void registrarRechazaEmailYaExistenteSinConsultarLaBase() {
-        var request = new RegistroUsuarioRequest("Ana", "ana@example.com", "Secreto123!");
         when(usuarioRepository.existsByEmail("ana@example.com")).thenReturn(true);
 
-        assertThrows(UsuarioService.EmailDuplicadoException.class, () -> usuarioService.registrar(request));
+        assertThrows(UsuarioService.EmailDuplicadoException.class, () -> usuarioService.registrar("Ana", "ana@example.com", "Secreto123!"));
 
         verify(usuarioRepository, never()).saveAndFlush(any());
         verify(jwtService, never()).generarToken(anyLong(), any(), any());
@@ -79,14 +76,13 @@ class UsuarioServiceTest {
 
     @Test
     void registrarConvierteViolacionDeIntegridadEnEmailDuplicado() {
-        var request = new RegistroUsuarioRequest("Ana", "ana@example.com", "Secreto123!");
         when(usuarioRepository.existsByEmail("ana@example.com")).thenReturn(false);
         when(passwordEncoder.encode("Secreto123!")).thenReturn("hash-encriptado");
         when(clock.instant()).thenReturn(Instant.parse("2026-10-24T17:00:00Z"));
         when(usuarioRepository.saveAndFlush(any(Usuario.class)))
                 .thenThrow(new DataIntegrityViolationException("email duplicado"));
 
-        assertThrows(UsuarioService.EmailDuplicadoException.class, () -> usuarioService.registrar(request));
+        assertThrows(UsuarioService.EmailDuplicadoException.class, () -> usuarioService.registrar("Ana", "ana@example.com", "Secreto123!"));
 
         verify(jwtService, never()).generarToken(anyLong(), any(), any());
     }

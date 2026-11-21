@@ -80,7 +80,7 @@ class RecalculoServiceIntegrationTest {
         }
         metricas.flush();
 
-        var response = recalculo.recalcular(new com.formula11.dto.cotizaciones.RecalculoRequest(
+        var response = recalculo.recalcular(new com.formula11.service.cotizaciones.RangoRecalculo(
                 LocalDate.of(2026, 1, 4), LocalDate.of(2026, 1, 18)));
 
         assertEquals(3, response.semanasCalculadas());

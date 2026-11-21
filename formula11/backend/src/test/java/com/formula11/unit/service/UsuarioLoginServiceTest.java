@@ -1,6 +1,5 @@
 package com.formula11.unit.service;
 
-import com.formula11.dto.usuarios.LoginRequest;
 import com.formula11.exception.CredencialesInvalidasException;
 import com.formula11.model.Usuario;
 import com.formula11.persistence.UsuarioRepository;
@@ -51,7 +50,7 @@ class UsuarioLoginServiceTest {
         when(passwordEncoder.matches("Secreto123!", "hash-encriptado")).thenReturn(true);
         when(jwtService.generarToken(1L, "ana@example.com", usuario.getRol())).thenReturn("token-jwt");
 
-        var respuesta = usuarioService.login(new LoginRequest(" ANA@EXAMPLE.COM ", "Secreto123!"));
+        var respuesta = usuarioService.login(" ANA@EXAMPLE.COM ", "Secreto123!");
 
         assertEquals(1L, respuesta.id());
         assertEquals("Ana", respuesta.nombre());
@@ -64,10 +63,9 @@ class UsuarioLoginServiceTest {
     @Test
     void loginRechazaEmailInexistenteSinEmitirToken() {
         when(usuarioRepository.findByEmail("no-existe@example.com")).thenReturn(Optional.empty());
-        LoginRequest request = new LoginRequest("no-existe@example.com", "Secreto123!");
 
         var exception = assertThrows(CredencialesInvalidasException.class,
-        () -> usuarioService.login(request));
+        () -> usuarioService.login("no-existe@example.com", "Secreto123!"));
 
         assertEquals("Las credenciales no son válidas", exception.getMessage());
         verify(passwordEncoder, never()).matches("Secreto123!", "hash-encriptado");
@@ -79,10 +77,9 @@ class UsuarioLoginServiceTest {
     Usuario usuario = usuario("Ana", "ana@example.com", "hash-encriptado", 1L);
     when(usuarioRepository.findByEmail("ana@example.com")).thenReturn(Optional.of(usuario));
     when(passwordEncoder.matches("Incorrecta1!", "hash-encriptado")).thenReturn(false);
-    LoginRequest request = new LoginRequest("ana@example.com", "Incorrecta1!");
 
     var exception = assertThrows(CredencialesInvalidasException.class,
-            () -> usuarioService.login(request));
+            () -> usuarioService.login("ana@example.com", "Incorrecta1!"));
 
     assertEquals("Las credenciales no son válidas", exception.getMessage());
     verify(jwtService, never()).generarToken(anyLong(), eq("ana@example.com"), any());

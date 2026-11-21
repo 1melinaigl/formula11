@@ -45,6 +45,6 @@ public class JugadorController {
         if (!PARAMETROS_VALIDOS.containsAll(parametros.keySet())) {
             throw new IllegalArgumentException("El parámetro de consulta no es válido");
         }
-        return jugadorService.listar(page, size, sort, liga, equipo, posicion);
+        return JugadoresPageResponse.from(jugadorService.listar(page, size, sort, liga, equipo, posicion));
     }
 }

@@ -16,6 +16,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/metricas")
 @PreAuthorize("hasRole('SUPERUSUARIO')")
@@ -33,13 +35,13 @@ public class MetricasController {
     public ResponseEntity<EjecucionMetricasResponse> sincronizar(
             @Valid @RequestBody(required = false) SincronizacionMetricasRequest request) {
         EjecucionMetricas ejecucion = service.iniciar(request == null ? null : request.desde());
-        return ResponseEntity.accepted().body(service.response(ejecucion, java.util.List.of()));
+        return ResponseEntity.accepted().body(EjecucionMetricasResponse.from(service.resumen(ejecucion, List.of())));
     }
 
     @GetMapping("/sincronizacion/{ejecucionId}")
     @Operation(summary = "Consulta el estado de una carga de métricas")
     public EjecucionMetricasResponse estado(@PathVariable Long ejecucionId) {
-        return service.estado(ejecucionId);
+        return EjecucionMetricasResponse.from(service.estado(ejecucionId));
     }
 
     @GetMapping("/pendientes")
@@ -47,6 +49,6 @@ public class MetricasController {
     public PendientesPageResponse pendientes(
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
-        return service.pendientes(PageRequest.of(page, size));
+        return PendientesPageResponse.from(service.pendientes(PageRequest.of(page, size)));
     }
 }

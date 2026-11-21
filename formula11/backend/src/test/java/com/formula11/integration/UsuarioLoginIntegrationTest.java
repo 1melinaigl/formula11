@@ -1,7 +1,5 @@
 package com.formula11.integration;
 
-import com.formula11.dto.usuarios.LoginRequest;
-import com.formula11.dto.usuarios.RegistroUsuarioRequest;
 import com.formula11.exception.CredencialesInvalidasException;
 import com.formula11.persistence.UsuarioRepository;
 import com.formula11.service.usuarios.UsuarioService;
@@ -53,9 +51,9 @@ class UsuarioLoginIntegrationTest {
 
     @Test
     void loginBuscaEmailNormalizadoYVerificaPasswordConPostgres() {
-        usuarioService.registrar(new RegistroUsuarioRequest("Ana", "ana-login@example.com", "Secreto123!"));
+        usuarioService.registrar("Ana", "ana-login@example.com", "Secreto123!");
 
-        var respuesta = usuarioService.login(new LoginRequest(" ANA-LOGIN@EXAMPLE.COM ", "Secreto123!"));
+        var respuesta = usuarioService.login(" ANA-LOGIN@EXAMPLE.COM ", "Secreto123!");
 
         assertEquals("ana-login@example.com", respuesta.email());
         assertEquals("Ana", respuesta.nombre());
@@ -63,10 +61,9 @@ class UsuarioLoginIntegrationTest {
 
     @Test
     void loginRechazaPasswordIncorrecta() {
-    usuarioService.registrar(new RegistroUsuarioRequest("Ana", "ana-login@example.com", "Secreto123!"));
-    LoginRequest request = new LoginRequest("ana-login@example.com", "Otra1234!");
+    usuarioService.registrar("Ana", "ana-login@example.com", "Secreto123!");
 
     assertThrows(CredencialesInvalidasException.class,
-            () -> usuarioService.login(request));
+            () -> usuarioService.login("ana-login@example.com", "Otra1234!"));
     }
 }

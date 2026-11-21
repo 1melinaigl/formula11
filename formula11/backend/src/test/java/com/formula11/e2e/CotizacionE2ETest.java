@@ -1,7 +1,7 @@
 package com.formula11.e2e;
 
-import com.formula11.dto.cotizaciones.RecalculoResponse;
-import com.formula11.dto.cotizaciones.RecalculoRequest;
+import com.formula11.service.cotizaciones.RangoRecalculo;
+import com.formula11.service.cotizaciones.RecalculoResultado;
 import com.formula11.service.cotizaciones.RecalculoService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,10 +69,10 @@ class CotizacionE2ETest {
     @Test
     @WithMockUser(roles = "SUPERUSUARIO")
     void rangoInvalidoDevuelve400ConErrorContractual() throws Exception {
-        when(recalculo.recalcular(any(RecalculoRequest.class)))
+        when(recalculo.recalcular(any(RangoRecalculo.class)))
                 .thenAnswer(invocation -> {
-                    RecalculoRequest request = invocation.getArgument(0);
-                    if (!request.rangoValido()) {
+                    RangoRecalculo request = invocation.getArgument(0);
+                    if (!request.esValido()) {
                         throw new IllegalArgumentException("Desde y hasta deben enviarse juntas y desde no puede ser posterior a hasta");
                     }
                     return null;
@@ -91,9 +91,9 @@ class CotizacionE2ETest {
     @Test
     @WithMockUser(roles = "SUPERUSUARIO")
     void recalculateExitosoDevuelveEsquemaContractual() throws Exception {
-        when(recalculo.recalcular(isNull())).thenReturn(new RecalculoResponse(
+        when(recalculo.recalcular(isNull())).thenReturn(new RecalculoResultado(
                 "COMPLETADO", 1, 4, 0,
-                List.of(new RecalculoResponse.EstrategiaVersionResponse("RENDIMIENTO_POSICION", 1)),
+                List.of(new RecalculoResultado.EstrategiaVersion("RENDIMIENTO_POSICION", 1)),
                 Instant.parse("2026-01-11T00:00:00Z"),
                 Instant.parse("2026-01-11T00:01:00Z"), "corr-e2e"));
 
@@ -111,7 +111,7 @@ class CotizacionE2ETest {
     @Test
     @WithMockUser(roles = "SUPERUSUARIO")
     void conflictoDeRecacluloDevuelve409() throws Exception {
-        when(recalculo.recalcular(any(RecalculoRequest.class)))
+        when(recalculo.recalcular(any(RangoRecalculo.class)))
                 .thenThrow(new IllegalStateException("Ya hay un recálculo en curso"));
 
         mockMvc.perform(post("/api/cotizaciones/recalcular")

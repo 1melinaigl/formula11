@@ -4,8 +4,6 @@ import com.formula11.adapter.footballdata.ExternalPlayer;
 import com.formula11.adapter.footballdata.ExternalTeam;
 import com.formula11.adapter.footballdata.FootballDataException;
 import com.formula11.adapter.footballdata.FootballDataPort;
-import com.formula11.dto.jugadores.LigaSyncResultResponse;
-import com.formula11.dto.jugadores.SincronizacionResponse;
 import com.formula11.model.Jugador;
 import com.formula11.model.Liga;
 import com.formula11.persistence.JugadorRepository;
@@ -46,14 +44,14 @@ public class SincronizacionService {
     }
 
     @Transactional
-    public SincronizacionResponse sincronizar() {
+    public SincronizacionResultado sincronizar() {
         if (!footballDataPort.estaConfigurado()) {
             throw new FootballDataException(FootballDataException.Tipo.NO_CONFIGURADO, "La integración de fútbol no está configurada");
         }
         Usuario superusuario = usuarioRepository.findByRol(Rol.SUPERUSUARIO).orElse(null);
         eliminarJugadoresLegacySinOperaciones(superusuario);
 
-        List<LigaSyncResultResponse> resultados = new ArrayList<>();
+        List<SincronizacionResultado.LigaSincronizada> resultados = new ArrayList<>();
         Totales totales = Totales.VACIO;
         int exitosas = 0;
         for (Liga liga : Liga.values()) {
@@ -73,7 +71,7 @@ public class SincronizacionService {
             throw new FootballDataException(FootballDataException.Tipo.PROVEEDOR, "No se pudo sincronizar ninguna liga");
         }
         String estado = exitosas == Liga.values().length ? "COMPLETADA" : "PARCIAL";
-        return new SincronizacionResponse(estado, resultados, totales.creados(), totales.actualizados(),
+        return new SincronizacionResultado(estado, resultados, totales.creados(), totales.actualizados(),
                 totales.omitidos(), MDC.get("correlationId"));
     }
 
@@ -129,13 +127,13 @@ public class SincronizacionService {
         jugadorRepository.save(jugador);
     }
 
-    private static LigaSyncResultResponse ligaCompletada(Liga liga, Totales totales) {
-        return new LigaSyncResultResponse(liga.getNombreLegible(), "COMPLETADA", totales.creados(),
+    private static SincronizacionResultado.LigaSincronizada ligaCompletada(Liga liga, Totales totales) {
+        return new SincronizacionResultado.LigaSincronizada(liga.getNombreLegible(), "COMPLETADA", totales.creados(),
                 totales.actualizados(), totales.omitidos(), null);
     }
 
-    private static LigaSyncResultResponse ligaFallida(Liga liga, String error) {
-        return new LigaSyncResultResponse(liga.getNombreLegible(), "FALLIDA", 0, 0, 0, error);
+    private static SincronizacionResultado.LigaSincronizada ligaFallida(Liga liga, String error) {
+        return new SincronizacionResultado.LigaSincronizada(liga.getNombreLegible(), "FALLIDA", 0, 0, 0, error);
     }
 
     private boolean esValidoParaProcesar(ExternalPlayer player) {

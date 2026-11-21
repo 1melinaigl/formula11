@@ -1,9 +1,10 @@
 package com.formula11.dto.usuarios;
 
-import com.formula11.model.Usuario;
+import com.formula11.model.Rol;
+import com.formula11.service.usuarios.UsuarioAutenticado;
 
-public record LoginResponse(Long id, String nombre, String email, com.formula11.model.Rol rol, String token) {
-    public static LoginResponse from(Usuario usuario, String token) {
-       return new LoginResponse(usuario.getId(), usuario.getNombre(), usuario.getEmail(), usuario.getRol(), token);
+public record LoginResponse(Long id, String nombre, String email, Rol rol, String token) {
+    public static LoginResponse from(UsuarioAutenticado usuario) {
+        return new LoginResponse(usuario.id(), usuario.nombre(), usuario.email(), usuario.rol(), usuario.token());
     }
 }

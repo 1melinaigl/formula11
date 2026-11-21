@@ -1,6 +1,6 @@
 package com.formula11.unit.service;
 
-import com.formula11.dto.cotizaciones.RecalculoRequest;
+import com.formula11.service.cotizaciones.RangoRecalculo;
 import com.formula11.persistence.CotizacionRepository;
 import com.formula11.persistence.EstrategiaRepository;
 import com.formula11.service.cotizaciones.CotizacionCacheInvalidator;
@@ -50,7 +50,7 @@ class RecalculoServiceSenalesTest {
 
     @Test
     void generaLasSenalesDeCadaSemanaDespuesDeProcesarla() {
-        var respuesta = service.recalcular(new RecalculoRequest(PRIMER_DOMINGO, SEGUNDO_DOMINGO));
+        var respuesta = service.recalcular(new RangoRecalculo(PRIMER_DOMINGO, SEGUNDO_DOMINGO));
 
         assertEquals(2, respuesta.semanasCalculadas());
         var orden = inOrder(semanas, generador);
@@ -64,7 +64,7 @@ class RecalculoServiceSenalesTest {
     void siFallaLaGeneracionElRecalculoTerminaIgual() {
         doThrow(new IllegalStateException("falla de señales")).when(generador).generar(any());
 
-        var respuesta = service.recalcular(new RecalculoRequest(PRIMER_DOMINGO, SEGUNDO_DOMINGO));
+        var respuesta = service.recalcular(new RangoRecalculo(PRIMER_DOMINGO, SEGUNDO_DOMINGO));
 
         assertEquals("COMPLETADO", respuesta.estado());
         assertEquals(2, respuesta.semanasCalculadas());

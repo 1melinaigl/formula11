@@ -2,8 +2,6 @@ package com.formula11.service.cotizaciones;
 
 import com.formula11.model.Estrategia;
 import com.formula11.persistence.EstrategiaRepository;
-import com.formula11.dto.cotizaciones.EstrategiaResponse;
-import com.formula11.dto.cotizaciones.NuevaVersionRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
@@ -29,34 +27,33 @@ public class EstrategiaService {
      * La marca se toma por código porque, al crear una versión de la estrategia activa, la fila activa sigue
      * siendo la anterior.
      */
-    public List<EstrategiaResponse> listar() {
+    public List<EstrategiaResultado> listar() {
         List<Estrategia> todas = repository.findAll();
         Set<String> activas = new HashSet<>();
         todas.stream().filter(Estrategia::isActiva).map(Estrategia::getCodigo).forEach(activas::add);
         return Estrategia.vigentes(todas).stream().sorted(Comparator.comparing(Estrategia::getCodigo))
-                .map(e -> new EstrategiaResponse(e.getCodigo(), e.getNombre(), e.getVersion(),
-                        activas.contains(e.getCodigo()), e.getPesos(), e.getParametros(), e.getCreadaEn()))
+                .map(e -> EstrategiaResultado.de(e, activas.contains(e.getCodigo())))
                 .toList();
     }
 
-    public List<EstrategiaResponse> versiones(String codigo) {
+    public List<EstrategiaResultado> versiones(String codigo) {
         List<Estrategia> result = repository.findByCodigoOrderByVersionDesc(codigo);
         if (result.isEmpty()) throw new NoSuchElementException("La estrategia no existe");
-        return result.stream().map(this::toResponse).toList();
+        return result.stream().map(EstrategiaResultado::de).toList();
     }
 
     @Transactional
-    public EstrategiaResponse crearVersion(String codigo, NuevaVersionRequest request) {
+    public EstrategiaResultado crearVersion(String codigo, NuevaVersion version) {
         Estrategia actual = repository.findTopByCodigoOrderByVersionDesc(codigo)
                 .orElseThrow(() -> new NoSuchElementException("La estrategia no existe"));
-        validar(request);
+        validar(version);
         Estrategia nueva = new Estrategia(codigo, actual.getNombre(), actual.getVersion() + 1,
-                request.pesos(), request.parametros(), false, clock.instant());
-        return toResponse(repository.save(nueva));
+                version.pesos(), version.parametros(), false, clock.instant());
+        return EstrategiaResultado.de(repository.save(nueva));
     }
 
     @Transactional
-    public EstrategiaResponse activar(String codigo) {
+    public EstrategiaResultado activar(String codigo) {
         Estrategia seleccionada = repository.findTopByCodigoOrderByVersionDesc(codigo)
                 .orElseThrow(() -> new NoSuchElementException("La estrategia no existe"));
         // La base admite una sola activa (ux_estrategia_activa): la anterior tiene que bajarse antes de marcar la nueva.
@@ -66,10 +63,10 @@ public class EstrategiaService {
         });
         seleccionada.activar(true);
         cacheInvalidator.invalidate();
-        return toResponse(repository.save(seleccionada));
+        return EstrategiaResultado.de(repository.save(seleccionada));
     }
 
-    private void validar(NuevaVersionRequest request) {
+    private void validar(NuevaVersion request) {
         if (request == null) throw new IllegalArgumentException("La versión es obligatoria");
         if (request.pesos().isEmpty() || request.parametros().isEmpty()) throw new IllegalArgumentException("Pesos y parámetros son obligatorios");
         request.pesos().forEach(EstrategiaService::validarPesosDePosicion);
@@ -92,7 +89,4 @@ public class EstrategiaService {
         }
     }
 
-    private EstrategiaResponse toResponse(Estrategia e) {
-        return new EstrategiaResponse(e.getCodigo(), e.getNombre(), e.getVersion(), e.isActiva(), e.getPesos(), e.getParametros(), e.getCreadaEn());
-    }
 }

@@ -36,8 +36,8 @@ class JugadorServiceTest {
         var resultado = jugadorService.listar();
 
         assertEquals(1, resultado.size());
-        assertEquals("Messi", resultado.get(0).nombre());
-        assertEquals("La Liga", resultado.get(0).liga());
+        assertEquals("Messi", resultado.get(0).getNombre());
+        assertEquals("La Liga", resultado.get(0).getLiga().getNombreLegible());
         verify(jugadorRepository).findAllByOrderByNombreAsc();
     }
 
@@ -60,7 +60,7 @@ class JugadorServiceTest {
 
         var resultado = jugadorService.listar(1, 2, "nombre,asc", "La Liga", "Madrid", "medio");
 
-        assertEquals(List.of("Zidane"), resultado.content().stream().map(com.formula11.dto.jugadores.JugadorResponse::nombre).toList());
+        assertEquals(List.of("Zidane"), resultado.content().stream().map(Jugador::getNombre).toList());
         assertEquals(1, resultado.page());
         assertEquals(2, resultado.size());
         assertEquals(3, resultado.totalElements());

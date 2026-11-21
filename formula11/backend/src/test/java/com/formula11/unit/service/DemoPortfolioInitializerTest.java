@@ -73,7 +73,7 @@ class DemoPortfolioInitializerTest {
 
         initializer.run(arguments);
 
-        verify(usuarioService, times(4)).registrar(any());
+        verify(usuarioService, times(4)).registrar(anyString(), anyString(), anyString());
         int[] cantidades = {10, 8, 5, 3};
         for (int usuario = 0; usuario < cantidades.length; usuario++) {
             for (long jugadorId = 1; jugadorId <= 5; jugadorId++) {
