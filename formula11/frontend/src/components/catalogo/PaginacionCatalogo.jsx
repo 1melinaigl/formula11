@@ -1,14 +1,21 @@
-export default function PaginacionCatalogo({ page, totalPages, cambiarPagina, etiqueta = 'Paginación del catálogo' }) {
+export default function PaginacionCatalogo({
+  page,
+  totalPages,
+  cambiarPagina,
+  etiqueta = 'Paginación del catálogo',
+  textoAnterior = 'Anterior',
+  textoSiguiente = 'Siguiente',
+}) {
   if (totalPages === 0) return null
 
   return (
     <nav className="catalog-pagination" aria-label={etiqueta}>
       <button className="btn ghost" type="button" onClick={() => cambiarPagina(page - 1)} disabled={page === 0}>
-        Anterior
+        {textoAnterior}
       </button>
       <span aria-live="polite">Página {page + 1} de {totalPages}</span>
       <button className="btn ghost" type="button" onClick={() => cambiarPagina(page + 1)} disabled={page >= totalPages - 1}>
-        Siguiente
+        {textoSiguiente}
       </button>
     </nav>
   )

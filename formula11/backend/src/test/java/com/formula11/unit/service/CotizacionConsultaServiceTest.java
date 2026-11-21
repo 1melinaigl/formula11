@@ -17,6 +17,7 @@ import com.formula11.service.cotizaciones.RankingResultado;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -87,9 +88,9 @@ class CotizacionConsultaServiceTest {
 
     @Test
     void sinEstrategiaUsaLaActiva() {
-        when(cotizaciones.findByJugadorIdAndEstrategiaOrderByFechaAsc(7L, ACTIVA)).thenReturn(List.of());
+        when(cotizaciones.findAll(any(Specification.class), any(Pageable.class))).thenReturn(Page.empty());
 
-        HistorialCotizacionesResultado resultado = service.historial(7L, null, null, null, false);
+        HistorialCotizacionesResultado resultado = service.historial(7L, null, null, null, 0, 20, false);
 
         assertEquals(ACTIVA, resultado.estrategia());
         assertTrue(resultado.cotizaciones().isEmpty());
@@ -97,15 +98,15 @@ class CotizacionConsultaServiceTest {
 
     @Test
     void unUsuarioPuedePedirExplicitamenteLaActiva() {
-        when(cotizaciones.findByJugadorIdAndEstrategiaOrderByFechaAsc(7L, ACTIVA)).thenReturn(List.of());
+        when(cotizaciones.findAll(any(Specification.class), any(Pageable.class))).thenReturn(Page.empty());
 
-        assertEquals(ACTIVA, service.historial(7L, ACTIVA, null, null, false).estrategia());
+        assertEquals(ACTIVA, service.historial(7L, ACTIVA, null, null, 0, 20, false).estrategia());
     }
 
     @Test
     void unUsuarioNoPuedePedirOtraEstrategia() {
         SoloSuperusuarioException error = assertThrows(SoloSuperusuarioException.class,
-                () -> service.historial(7L, OTRA, null, null, false));
+                () -> service.historial(7L, OTRA, null, null, 0, 20, false));
 
         assertTrue(error.getMessage().contains("superusuario"));
         verifyNoInteractions(cotizaciones);
@@ -113,14 +114,14 @@ class CotizacionConsultaServiceTest {
 
     @Test
     void elSuperusuarioPuedePedirOtraEstrategia() {
-        when(cotizaciones.findByJugadorIdAndEstrategiaOrderByFechaAsc(7L, OTRA)).thenReturn(List.of());
+        when(cotizaciones.findAll(any(Specification.class), any(Pageable.class))).thenReturn(Page.empty());
 
-        assertEquals(OTRA, service.historial(7L, OTRA, null, null, true).estrategia());
+        assertEquals(OTRA, service.historial(7L, OTRA, null, null, 0, 20, true).estrategia());
     }
 
     @Test
     void rechazaUnaEstrategiaQueNoExiste() {
-        assertThrows(IllegalArgumentException.class, () -> service.historial(7L, "OTRA_COSA", null, null, true));
+        assertThrows(IllegalArgumentException.class, () -> service.historial(7L, "OTRA_COSA", null, null, 0, 20, true));
         assertThrows(IllegalArgumentException.class, () -> service.vigente(7L, " ", null, true));
     }
 
@@ -128,7 +129,7 @@ class CotizacionConsultaServiceTest {
     void sinEstrategiaActivaElHistorialEsVacio() {
         when(estrategias.findByActivaTrue()).thenReturn(Optional.empty());
 
-        HistorialCotizacionesResultado resultado = service.historial(7L, null, null, null, false);
+        HistorialCotizacionesResultado resultado = service.historial(7L, null, null, null, 0, 20, false);
 
         assertNull(resultado.estrategia());
         assertTrue(resultado.cotizaciones().isEmpty());
@@ -174,27 +175,31 @@ class CotizacionConsultaServiceTest {
     // ---------------------------------------------------------------- historial
 
     @Test
-    void historialFiltraElRangoYCalculaLaVariacionDeLaPrimeraContraLaAnterior() {
-        when(cotizaciones.findByJugadorIdAndEstrategiaOrderByFechaAsc(7L, ACTIVA)).thenReturn(List.of(
-                cotizacion(jugador, DOMINGO_1, "1.0000", "0.5", ACTIVA),
-                cotizacion(jugador, DOMINGO_2, "1.2000", "0.9", ACTIVA),
-                cotizacion(jugador, DOMINGO_3, "0.9600", "0.1", ACTIVA)));
+    void historialPideLasMasRecientesYCalculaLaVariacionDeLaPrimeraContraLaAnterior() {
+        PageRequest pedido = PageRequest.of(0, 2, Sort.by(Sort.Direction.DESC, "fecha"));
+        when(cotizaciones.findAll(any(Specification.class), eq(pedido))).thenReturn(new PageImpl<>(List.of(
+                cotizacion(jugador, DOMINGO_3, "0.9600", "0.1", ACTIVA),
+                cotizacion(jugador, DOMINGO_2, "1.2000", "0.9", ACTIVA)), pedido, 3));
+        when(cotizaciones.findTopByJugadorIdAndEstrategiaAndFechaLessThanOrderByFechaDesc(7L, ACTIVA, DOMINGO_2))
+                .thenReturn(Optional.of(cotizacion(jugador, DOMINGO_1, "1.0000", "0.5", ACTIVA)));
 
-        HistorialCotizacionesResultado resultado = service.historial(7L, null, DOMINGO_2, DOMINGO_3, false);
+        HistorialCotizacionesResultado resultado = service.historial(7L, null, null, null, 0, 2, false);
 
-        assertEquals(2, resultado.cotizaciones().size());
-        assertEquals(DOMINGO_2, resultado.cotizaciones().get(0).fecha());
+        assertEquals(List.of(DOMINGO_2, DOMINGO_3), resultado.cotizaciones().stream().map(CotizacionLeida::fecha).toList());
         assertEquals(new BigDecimal("20.00"), resultado.cotizaciones().get(0).variacion());
         assertEquals(new BigDecimal("-20.00"), resultado.cotizaciones().get(1).variacion());
+        assertEquals(3, resultado.totalElements());
+        assertEquals(2, resultado.totalPages());
     }
 
     @Test
-    void historialCompletoTieneLaPrimeraSinVariacion() {
-        when(cotizaciones.findByJugadorIdAndEstrategiaOrderByFechaAsc(7L, ACTIVA)).thenReturn(List.of(
-                cotizacion(jugador, DOMINGO_1, "1.0000", "0.5", ACTIVA),
-                cotizacion(jugador, DOMINGO_2, "1.2000", "0.9", ACTIVA)));
+    void historialSinCotizacionAnteriorTieneLaPrimeraSinVariacion() {
+        when(cotizaciones.findAll(any(Specification.class), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(
+                cotizacion(jugador, DOMINGO_1, "1.0000", "0.5", ACTIVA))));
+        when(cotizaciones.findTopByJugadorIdAndEstrategiaAndFechaLessThanOrderByFechaDesc(7L, ACTIVA, DOMINGO_1))
+                .thenReturn(Optional.empty());
 
-        HistorialCotizacionesResultado resultado = service.historial(7L, null, null, DOMINGO_1, false);
+        HistorialCotizacionesResultado resultado = service.historial(7L, null, null, DOMINGO_1, 0, 20, false);
 
         assertEquals(1, resultado.cotizaciones().size());
         assertNull(resultado.cotizaciones().get(0).variacion());
@@ -202,13 +207,20 @@ class CotizacionConsultaServiceTest {
     }
 
     @Test
+    void historialRechazaPaginacionInvalida() {
+        assertThrows(IllegalArgumentException.class, () -> service.historial(7L, null, null, null, -1, 20, false));
+        assertThrows(IllegalArgumentException.class, () -> service.historial(7L, null, null, null, 0, 0, false));
+        assertThrows(IllegalArgumentException.class, () -> service.historial(7L, null, null, null, 0, 101, false));
+    }
+
+    @Test
     void historialRechazaDesdePosteriorAHasta() {
-        assertThrows(IllegalArgumentException.class, () -> service.historial(7L, null, DOMINGO_3, DOMINGO_1, false));
+        assertThrows(IllegalArgumentException.class, () -> service.historial(7L, null, DOMINGO_3, DOMINGO_1, 0, 20, false));
     }
 
     @Test
     void historialDeJugadorInexistenteDa404() {
-        assertThrows(RecursoNoEncontradoException.class, () -> service.historial(99L, null, null, null, false));
+        assertThrows(RecursoNoEncontradoException.class, () -> service.historial(99L, null, null, null, 0, 20, false));
     }
 
     // ---------------------------------------------------------------- vigente

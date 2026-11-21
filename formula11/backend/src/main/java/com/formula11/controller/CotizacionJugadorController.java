@@ -67,7 +67,8 @@ public class CotizacionJugadorController {
 
     @GetMapping("/{jugadorId}/cotizaciones")
     @Operation(summary = "Historial de cotizaciones de un jugador",
-            description = "Una cotización por semana, ordenadas por fecha ascendente.")
+            description = "Paginado: la página 0 tiene las semanas más recientes. Dentro de cada página, una "
+                    + "cotización por semana ordenadas por fecha ascendente.")
     @SecurityRequirement(name = "bearerAuth")
     @ApiResponse(responseCode = "200", description = "Historial, posiblemente vacío")
     @ApiResponse(responseCode = "400", description = "Parámetros inválidos")
@@ -79,9 +80,11 @@ public class CotizacionJugadorController {
             @Parameter(description = DESCRIPCION_ESTRATEGIA) @RequestParam(required = false) String estrategia,
             @Parameter(description = "Fecha inicial inclusive") @RequestParam(required = false) LocalDate desde,
             @Parameter(description = "Fecha final inclusive") @RequestParam(required = false) LocalDate hasta,
+            @Parameter(description = "Índice de página base 0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamaño de página, entre 1 y 100") @RequestParam(defaultValue = "20") int size,
             Authentication authentication) {
-        return HistorialCotizacionesResponse.from(
-                service.historial(jugadorId, estrategia, desde, hasta, esSuperusuario(authentication)));
+        return HistorialCotizacionesResponse.from(service.historial(
+                jugadorId, estrategia, desde, hasta, page, size, esSuperusuario(authentication)));
     }
 
     @GetMapping("/{jugadorId}/cotizaciones/vigente")

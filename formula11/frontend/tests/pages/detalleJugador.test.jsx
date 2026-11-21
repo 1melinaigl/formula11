@@ -202,6 +202,40 @@ describe('detalle de jugador con cotizaciones', () => {
     expect(consultas).toBe(0)
   })
 
+  it('pagina el historial sin cambiar la cotización vigente del resumen', async () => {
+    const paginas = []
+    server.use(http.get('/api/jugadores/:id/cotizaciones', ({ request }) => {
+      const url = new URL(request.url)
+      const page = Number(url.searchParams.get('page'))
+      paginas.push({ page, size: url.searchParams.get('size') })
+      const anteriores = [
+        { jugadorId: 7, fecha: '2026-09-28', precio: 0.9, score: 0.4, variacion: null, estrategia: 'RENDIMIENTO_POSICION', version: 1 },
+        { jugadorId: 7, fecha: '2026-10-05', precio: 1, score: 0.5, variacion: 11.11, estrategia: 'RENDIMIENTO_POSICION', version: 1 },
+      ]
+      return HttpResponse.json({
+        ...historial.RENDIMIENTO_POSICION,
+        cotizaciones: page === 0 ? historial.RENDIMIENTO_POSICION.cotizaciones : anteriores,
+        page,
+        size: 12,
+        totalElements: 4,
+        totalPages: 2,
+      })
+    }))
+    const user = userEvent.setup()
+    renderDetalle()
+
+    const paginacion = await screen.findByRole('navigation', { name: 'Paginación de las cotizaciones' })
+    expect(within(paginacion).getByText('Página 1 de 2')).toBeInTheDocument()
+    await user.click(within(paginacion).getByRole('button', { name: 'Más antiguas' }))
+
+    expect(await screen.findByText('05/10/2026')).toBeInTheDocument()
+    expect(within(paginacion).getByText('Página 2 de 2')).toBeInTheDocument()
+    expect(screen.queryByText('19/10/2026')).not.toBeInTheDocument()
+    const resumen = screen.getByRole('list', { name: 'Cotización vigente' })
+    expect(within(resumen).getByText(/1,21/)).toBeInTheDocument()
+    expect(paginas).toEqual([{ page: 0, size: '12' }, { page: 1, size: '12' }])
+  })
+
   it('se abre desde la ficha del catálogo y vuelve al catálogo', async () => {
     server.use(http.get('/api/jugadores', () => HttpResponse.json({ content: [barella], page: 0, size: 9, totalElements: 1, totalPages: 1 })))
     const user = userEvent.setup()

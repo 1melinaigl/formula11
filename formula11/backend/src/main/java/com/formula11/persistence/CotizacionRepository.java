@@ -14,6 +14,7 @@ public interface CotizacionRepository extends JpaRepository<Cotizacion, Long>, J
     Optional<LocalDate> findMaxFecha();
     Optional<Cotizacion> findTopByJugadorIdAndEstrategiaAndFechaLessThanEqualOrderByFechaDesc(Long jugadorId, String estrategia, LocalDate fecha);
     List<Cotizacion> findByJugadorIdAndEstrategiaOrderByFechaAsc(Long jugadorId, String estrategia);
+    Optional<Cotizacion> findTopByJugadorIdAndEstrategiaAndFechaLessThanOrderByFechaDesc(Long jugadorId, String estrategia, LocalDate fecha);
     List<Cotizacion> findByFecha(LocalDate fecha);
     List<Cotizacion> findByFechaLessThanOrderByFechaDesc(LocalDate fecha);
     @Query("select c from Cotizacion c where c.jugador.id = :jugadorId and c.estrategia = :estrategia and c.fecha < :fecha order by c.fecha desc")

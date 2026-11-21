@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -72,27 +73,48 @@ public class CotizacionConsultaService {
         return new JugadorDetalleResultado(jugador, actual);
     }
 
+    /**
+     * Página del historial de un jugador. La página 0 tiene las semanas más recientes; dentro de cada página las
+     * cotizaciones van por fecha ascendente.
+     */
     public HistorialCotizacionesResultado historial(long jugadorId, String estrategia, LocalDate desde,
-                                                    LocalDate hasta, boolean superusuario) {
+                                                    LocalDate hasta, int page, int size, boolean superusuario) {
         if (desde != null && hasta != null && desde.isAfter(hasta)) {
             throw new IllegalArgumentException("La fecha desde no puede ser posterior a hasta");
         }
+        validarPaginacion(page, size);
         String codigo = resolverEstrategia(estrategia, superusuario);
         buscarJugador(jugadorId);
         if (codigo == null) {
-            return new HistorialCotizacionesResultado(jugadorId, null, List.of());
+            return new HistorialCotizacionesResultado(jugadorId, null, List.of(), page, size, 0, 0);
         }
-        // La serie completa de una temporada tiene menos de 52 filas: se calcula cada variación contra
-        // la cotización anterior de la serie y recién después se filtra el rango pedido.
+        Page<Cotizacion> pagina = cotizaciones.findAll(especificacionHistorial(jugadorId, codigo, desde, hasta),
+                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "fecha")));
+        List<Cotizacion> ascendentes = new ArrayList<>(pagina.getContent());
+        Collections.reverse(ascendentes);
+        return new HistorialCotizacionesResultado(jugadorId, codigo, conVariacion(jugadorId, codigo, ascendentes),
+                page, size, pagina.getTotalElements(), pagina.getTotalPages());
+    }
+
+    /**
+     * La variación de la cotización más vieja de la página se calcula contra la anterior de la serie, aunque esa
+     * quede fuera de la página o del rango pedido.
+     */
+    private List<CotizacionLeida> conVariacion(long jugadorId, String codigo, List<Cotizacion> ascendentes) {
+        if (ascendentes.isEmpty()) {
+            return List.of();
+        }
+        BigDecimal precioAnterior = cotizaciones
+                .findTopByJugadorIdAndEstrategiaAndFechaLessThanOrderByFechaDesc(
+                        jugadorId, codigo, ascendentes.get(0).getFecha())
+                .map(Cotizacion::getPrecio)
+                .orElse(null);
         List<CotizacionLeida> resultado = new ArrayList<>();
-        BigDecimal precioAnterior = null;
-        for (Cotizacion cotizacion : cotizaciones.findByJugadorIdAndEstrategiaOrderByFechaAsc(jugadorId, codigo)) {
-            if (enRango(cotizacion.getFecha(), desde, hasta)) {
-                resultado.add(CotizacionLeida.de(cotizacion, precioAnterior));
-            }
+        for (Cotizacion cotizacion : ascendentes) {
+            resultado.add(CotizacionLeida.de(cotizacion, precioAnterior));
             precioAnterior = cotizacion.getPrecio();
         }
-        return new HistorialCotizacionesResultado(jugadorId, codigo, resultado);
+        return resultado;
     }
 
     public CotizacionLeida vigente(long jugadorId, String estrategia, LocalDate fecha, boolean superusuario) {
@@ -176,6 +198,22 @@ public class CotizacionConsultaService {
         return precios;
     }
 
+    private static Specification<Cotizacion> especificacionHistorial(long jugadorId, String codigo, LocalDate desde,
+                                                                      LocalDate hasta) {
+        Specification<Cotizacion> especificacion = (root, query, builder) -> builder.and(
+                builder.equal(root.get("jugador").get("id"), jugadorId),
+                builder.equal(root.get("estrategia"), codigo));
+        if (desde != null) {
+            especificacion = especificacion.and((root, query, builder) ->
+                    builder.greaterThanOrEqualTo(root.get("fecha"), desde));
+        }
+        if (hasta != null) {
+            especificacion = especificacion.and((root, query, builder) ->
+                    builder.lessThanOrEqualTo(root.get("fecha"), hasta));
+        }
+        return especificacion;
+    }
+
     private static Specification<Cotizacion> especificacionRanking(String codigo, LocalDate fecha, Liga liga,
                                                                     String posicion) {
         Specification<Cotizacion> especificacion = (root, query, builder) -> builder.and(
@@ -201,9 +239,6 @@ public class CotizacionConsultaService {
         return LocalDate.ofInstant(clock.instant(), ClockConfig.ZONA_NEGOCIO);
     }
 
-    private static boolean enRango(LocalDate fecha, LocalDate desde, LocalDate hasta) {
-        return (desde == null || !fecha.isBefore(desde)) && (hasta == null || !fecha.isAfter(hasta));
-    }
 
     private static void validarPaginacion(int page, int size) {
         if (page < 0) {

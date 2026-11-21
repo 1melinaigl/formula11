@@ -202,6 +202,26 @@ class CotizacionJugadorE2ETest {
 
     @Test
     @WithMockUser(roles = "USUARIO")
+    void historialPaginadoEmpiezaPorLasSemanasMasRecientes() throws Exception {
+        mockMvc.perform(get("/api/jugadores/" + jugador.getId() + "/cotizaciones").param("size", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.cotizaciones.length()").value(1))
+                .andExpect(jsonPath("$.cotizaciones[0].fecha").value("2026-10-25"))
+                .andExpect(jsonPath("$.cotizaciones[0].variacion").value(10.0))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(1))
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.totalPages").value(2));
+        mockMvc.perform(get("/api/jugadores/" + jugador.getId() + "/cotizaciones").param("size", "1").param("page", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.cotizaciones[0].fecha").value("2026-10-18"))
+                .andExpect(jsonPath("$.cotizaciones[0].variacion").value(nullValue()));
+        mockMvc.perform(get("/api/jugadores/" + jugador.getId() + "/cotizaciones").param("size", "0"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(roles = "USUARIO")
     void vigenteDevuelveLaUltimaHastaLaFechaPedida() throws Exception {
         mockMvc.perform(get("/api/jugadores/" + jugador.getId() + "/cotizaciones/vigente").param("fecha", "2026-10-21"))
                 .andExpect(status().isOk())

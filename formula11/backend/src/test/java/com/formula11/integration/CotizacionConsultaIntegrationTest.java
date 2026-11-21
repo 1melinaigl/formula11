@@ -144,7 +144,7 @@ class CotizacionConsultaIntegrationTest {
 
     @Test
     void historialYVigenteLeenLaSerieDelJugador() {
-        HistorialCotizacionesResultado historial = service.historial(zeta.getId(), null, null, null, false);
+        HistorialCotizacionesResultado historial = service.historial(zeta.getId(), null, null, null, 0, 20, false);
         CotizacionLeida vigente = service.vigente(zeta.getId(), null, D2.plusDays(3), false);
 
         assertEquals(List.of(D1, D2, D3), historial.cotizaciones().stream().map(CotizacionLeida::fecha).toList());
