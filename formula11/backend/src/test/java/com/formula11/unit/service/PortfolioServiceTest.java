@@ -1,8 +1,13 @@
 package com.formula11.unit.service;
 
+import com.formula11.service.cotizaciones.CotizacionHistoricaPort;
+import com.formula11.service.cotizaciones.CotizacionVigentePort;
+import com.formula11.service.portfolio.EvolucionPortfolioResultado;
+import com.formula11.service.portfolio.HistorialTransaccionesResultado;
+import com.formula11.service.portfolio.PortfolioResultado;
+import com.formula11.service.portfolio.PortfolioService;
 import com.formula11.model.*;
 import com.formula11.persistence.*;
-import com.formula11.service.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

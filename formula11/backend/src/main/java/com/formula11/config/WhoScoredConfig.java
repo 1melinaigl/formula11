@@ -1,9 +1,9 @@
 package com.formula11.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.formula11.adapter.WhoScoredArchivoAdapter;
-import com.formula11.adapter.WhoScoredPlaywrightAdapter;
-import com.formula11.adapter.WhoScoredPort;
+import com.formula11.adapter.whoscored.WhoScoredArchivoAdapter;
+import com.formula11.adapter.whoscored.WhoScoredPlaywrightAdapter;
+import com.formula11.adapter.whoscored.WhoScoredPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

@@ -1,7 +1,7 @@
 package com.formula11.unit.adapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.formula11.adapter.WhoScoredArchivoAdapter;
+import com.formula11.adapter.whoscored.WhoScoredArchivoAdapter;
 import com.formula11.config.WhoScoredProperties;
 import com.formula11.model.Liga;
 import org.junit.jupiter.api.Test;

@@ -1,13 +1,13 @@
 package com.formula11.unit.service;
 
-import com.formula11.dto.LoginRequest;
+import com.formula11.dto.usuarios.LoginRequest;
 import com.formula11.exception.CredencialesInvalidasException;
 import com.formula11.model.Usuario;
 import com.formula11.persistence.UsuarioRepository;
 import com.formula11.persistence.CuentaRepository;
 import com.formula11.config.MercadoProperties;
 import com.formula11.security.JwtService;
-import com.formula11.service.UsuarioService;
+import com.formula11.service.usuarios.UsuarioService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

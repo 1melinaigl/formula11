@@ -1,7 +1,7 @@
 package com.formula11.unit.adapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.formula11.adapter.WhoScoredHtmlParser;
+import com.formula11.adapter.whoscored.WhoScoredHtmlParser;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

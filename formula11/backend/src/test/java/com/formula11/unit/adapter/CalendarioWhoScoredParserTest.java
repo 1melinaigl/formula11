@@ -1,7 +1,7 @@
 package com.formula11.unit.adapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.formula11.adapter.CalendarioWhoScoredParser;
+import com.formula11.adapter.whoscored.CalendarioWhoScoredParser;
 import com.formula11.model.Liga;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

@@ -1,9 +1,9 @@
 package com.formula11.unit.service;
 
-import com.formula11.adapter.WhoScoredPort;
+import com.formula11.adapter.whoscored.WhoScoredPort;
 import com.formula11.config.WhoScoredProperties;
-import com.formula11.dto.EjecucionMetricasResponse;
-import com.formula11.dto.PendientesPageResponse;
+import com.formula11.dto.metricas.EjecucionMetricasResponse;
+import com.formula11.dto.metricas.PendientesPageResponse;
 import com.formula11.model.EjecucionMetricaLiga;
 import com.formula11.model.EjecucionMetricas;
 import com.formula11.model.Liga;
@@ -11,8 +11,8 @@ import com.formula11.model.PendienteVinculacion;
 import com.formula11.persistence.EjecucionMetricaLigaRepository;
 import com.formula11.persistence.EjecucionMetricasRepository;
 import com.formula11.persistence.PendienteVinculacionRepository;
-import com.formula11.service.CargaMetricasService;
-import com.formula11.service.CargaPartidoService;
+import com.formula11.service.metricas.CargaMetricasService;
+import com.formula11.service.metricas.CargaPartidoService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.PageImpl;

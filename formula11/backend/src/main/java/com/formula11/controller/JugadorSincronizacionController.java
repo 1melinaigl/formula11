@@ -1,7 +1,7 @@
 package com.formula11.controller;
 
-import com.formula11.dto.SincronizacionResponse;
-import com.formula11.service.SincronizacionService;
+import com.formula11.dto.jugadores.SincronizacionResponse;
+import com.formula11.service.jugadores.SincronizacionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.web.bind.annotation.PostMapping;

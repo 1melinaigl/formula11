@@ -1,8 +1,8 @@
 package com.formula11.unit.service;
 
-import com.formula11.adapter.ExternalPlayer;
-import com.formula11.adapter.ExternalTeam;
-import com.formula11.adapter.FootballDataPort;
+import com.formula11.adapter.footballdata.ExternalPlayer;
+import com.formula11.adapter.footballdata.ExternalTeam;
+import com.formula11.adapter.footballdata.FootballDataPort;
 import com.formula11.model.Jugador;
 import com.formula11.model.Liga;
 import com.formula11.model.Rol;
@@ -11,7 +11,7 @@ import com.formula11.persistence.JugadorRepository;
 import com.formula11.persistence.TenenciaRepository;
 import com.formula11.persistence.TransaccionRepository;
 import com.formula11.persistence.UsuarioRepository;
-import com.formula11.service.SincronizacionService;
+import com.formula11.service.jugadores.SincronizacionService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

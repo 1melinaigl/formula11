@@ -7,7 +7,7 @@ import com.formula11.persistence.CotizacionRepository;
 import com.formula11.persistence.EstrategiaRepository;
 import com.formula11.persistence.JugadorRepository;
 import com.formula11.persistence.MetricaPartidoRepository;
-import com.formula11.service.RecalculoSemanaService;
+import com.formula11.service.cotizaciones.RecalculoSemanaService;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 

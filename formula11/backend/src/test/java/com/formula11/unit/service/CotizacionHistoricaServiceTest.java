@@ -5,7 +5,7 @@ import com.formula11.model.Estrategia;
 import com.formula11.model.Jugador;
 import com.formula11.persistence.CotizacionRepository;
 import com.formula11.persistence.EstrategiaRepository;
-import com.formula11.service.CotizacionHistoricaService;
+import com.formula11.service.cotizaciones.CotizacionHistoricaService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

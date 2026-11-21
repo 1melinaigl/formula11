@@ -1,9 +1,9 @@
 package com.formula11.e2e;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.formula11.adapter.ExternalPlayer;
-import com.formula11.adapter.ExternalTeam;
-import com.formula11.adapter.FootballDataPort;
+import com.formula11.adapter.footballdata.ExternalPlayer;
+import com.formula11.adapter.footballdata.ExternalTeam;
+import com.formula11.adapter.footballdata.FootballDataPort;
 import com.formula11.model.Liga;
 import com.formula11.persistence.JugadorRepository;
 import com.formula11.persistence.TenenciaRepository;

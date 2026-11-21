@@ -1,10 +1,10 @@
 package com.formula11.exception;
 
 import com.formula11.dto.ErrorResponse;
-import com.formula11.adapter.FootballDataException;
+import com.formula11.adapter.footballdata.FootballDataException;
 import com.formula11.model.excepciones.CantidadInsuficienteException;
 import com.formula11.model.excepciones.DatoInvalidoException;
-import com.formula11.service.UsuarioService;
+import com.formula11.service.usuarios.UsuarioService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;

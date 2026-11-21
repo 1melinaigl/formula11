@@ -1,9 +1,9 @@
 package com.formula11.unit.service;
 
-import com.formula11.service.ActualizacionMetricasPort;
-import com.formula11.service.CotizacionScheduler;
-import com.formula11.service.NoOpActualizacionMetricasAdapter;
-import com.formula11.service.RecalculoService;
+import com.formula11.service.metricas.ActualizacionMetricasPort;
+import com.formula11.service.cotizaciones.CotizacionScheduler;
+import com.formula11.service.metricas.NoOpActualizacionMetricasAdapter;
+import com.formula11.service.cotizaciones.RecalculoService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

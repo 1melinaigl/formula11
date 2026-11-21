@@ -1,8 +1,8 @@
 package com.formula11.e2e;
 
-import com.formula11.dto.RecalculoResponse;
-import com.formula11.dto.RecalculoRequest;
-import com.formula11.service.RecalculoService;
+import com.formula11.dto.cotizaciones.RecalculoResponse;
+import com.formula11.dto.cotizaciones.RecalculoRequest;
+import com.formula11.service.cotizaciones.RecalculoService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

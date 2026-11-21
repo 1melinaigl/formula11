@@ -2,7 +2,7 @@ package com.formula11.integration;
 
 import com.formula11.model.*;
 import com.formula11.persistence.*;
-import com.formula11.service.RecalculoService;
+import com.formula11.service.cotizaciones.RecalculoService;
 import com.formula11.model.valuacion.CalculadoraPrecio;
 import com.formula11.model.valuacion.ParametrosPrecio;
 import org.junit.jupiter.api.*;
@@ -80,7 +80,7 @@ class RecalculoServiceIntegrationTest {
         }
         metricas.flush();
 
-        var response = recalculo.recalcular(new com.formula11.dto.RecalculoRequest(
+        var response = recalculo.recalcular(new com.formula11.dto.cotizaciones.RecalculoRequest(
                 LocalDate.of(2026, 1, 4), LocalDate.of(2026, 1, 18)));
 
         assertEquals(3, response.semanasCalculadas());

@@ -1,11 +1,11 @@
 package com.formula11.unit.controller;
 
 import com.formula11.controller.MetricasController;
-import com.formula11.dto.EjecucionMetricasResponse;
-import com.formula11.dto.PendientesPageResponse;
+import com.formula11.dto.metricas.EjecucionMetricasResponse;
+import com.formula11.dto.metricas.PendientesPageResponse;
 import com.formula11.model.EjecucionMetricas;
 import com.formula11.persistence.EjecucionMetricaLigaRepository;
-import com.formula11.service.CargaMetricasService;
+import com.formula11.service.metricas.CargaMetricasService;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;

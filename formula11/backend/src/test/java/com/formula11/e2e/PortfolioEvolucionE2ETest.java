@@ -11,7 +11,7 @@ import com.formula11.persistence.JugadorRepository;
 import com.formula11.persistence.TransaccionRepository;
 import com.formula11.persistence.UsuarioRepository;
 import com.formula11.security.JwtService;
-import com.formula11.service.CotizacionHistoricaPort;
+import com.formula11.service.cotizaciones.CotizacionHistoricaPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

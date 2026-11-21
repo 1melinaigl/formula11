@@ -1,7 +1,8 @@
 package com.formula11.controller;
 
-import com.formula11.dto.*;
-import com.formula11.service.RecalculoService;
+import com.formula11.service.cotizaciones.RecalculoService;
+import com.formula11.dto.cotizaciones.RecalculoRequest;
+import com.formula11.dto.cotizaciones.RecalculoResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;

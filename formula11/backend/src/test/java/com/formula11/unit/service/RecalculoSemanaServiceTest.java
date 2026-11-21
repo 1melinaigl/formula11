@@ -2,7 +2,7 @@ package com.formula11.unit.service;
 
 import com.formula11.model.*;
 import com.formula11.persistence.*;
-import com.formula11.service.RecalculoSemanaService;
+import com.formula11.service.cotizaciones.RecalculoSemanaService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;

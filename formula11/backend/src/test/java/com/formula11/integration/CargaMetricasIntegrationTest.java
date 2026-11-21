@@ -2,15 +2,15 @@ package com.formula11.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.formula11.adapter.DatosPartidoWhoScored;
-import com.formula11.adapter.PartidoWhoScoredResumen;
+import com.formula11.adapter.whoscored.DatosPartidoWhoScored;
+import com.formula11.adapter.whoscored.PartidoWhoScoredResumen;
 import com.formula11.config.ClockConfig;
 import com.formula11.model.Jugador;
 import com.formula11.model.Liga;
 import com.formula11.model.MetricaPartido;
 import com.formula11.persistence.JugadorRepository;
 import com.formula11.persistence.MetricaPartidoRepository;
-import com.formula11.service.CargaPartidoService;
+import com.formula11.service.metricas.CargaPartidoService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

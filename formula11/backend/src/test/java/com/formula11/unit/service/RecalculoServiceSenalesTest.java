@@ -1,12 +1,12 @@
 package com.formula11.unit.service;
 
-import com.formula11.dto.RecalculoRequest;
+import com.formula11.dto.cotizaciones.RecalculoRequest;
 import com.formula11.persistence.CotizacionRepository;
 import com.formula11.persistence.EstrategiaRepository;
-import com.formula11.service.CotizacionCacheInvalidator;
-import com.formula11.service.GeneradorSenalesPort;
-import com.formula11.service.RecalculoSemanaService;
-import com.formula11.service.RecalculoService;
+import com.formula11.service.cotizaciones.CotizacionCacheInvalidator;
+import com.formula11.service.senales.GeneradorSenalesPort;
+import com.formula11.service.cotizaciones.RecalculoSemanaService;
+import com.formula11.service.cotizaciones.RecalculoService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.ObjectProvider;

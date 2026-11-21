@@ -1,7 +1,7 @@
 package com.formula11.controller;
 
-import com.formula11.dto.MercadoJugadorResponse;
-import com.formula11.service.MercadoService;
+import com.formula11.dto.mercado.MercadoJugadorResponse;
+import com.formula11.service.mercado.MercadoService;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

@@ -1,7 +1,7 @@
 package com.formula11.controller;
 
-import com.formula11.dto.JugadoresPageResponse;
-import com.formula11.service.JugadorService;
+import com.formula11.dto.jugadores.JugadoresPageResponse;
+import com.formula11.service.jugadores.JugadorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

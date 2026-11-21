@@ -1,8 +1,8 @@
 package com.formula11.controller;
 
-import com.formula11.dto.AciertosResponse;
-import com.formula11.dto.SenalesPageResponse;
-import com.formula11.service.SenalService;
+import com.formula11.dto.senales.AciertosResponse;
+import com.formula11.dto.senales.SenalesPageResponse;
+import com.formula11.service.senales.SenalService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

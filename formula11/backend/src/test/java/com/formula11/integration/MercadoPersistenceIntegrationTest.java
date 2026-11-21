@@ -2,7 +2,7 @@ package com.formula11.integration;
 
 import com.formula11.model.*;
 import com.formula11.persistence.*;
-import com.formula11.service.SuperusuarioInitializer;
+import com.formula11.service.usuarios.SuperusuarioInitializer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;

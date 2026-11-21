@@ -2,7 +2,7 @@ package com.formula11.integration;
 
 import com.formula11.model.*;
 import com.formula11.persistence.*;
-import com.formula11.service.MercadoService;
+import com.formula11.service.mercado.MercadoService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -1,10 +1,10 @@
 package com.formula11.controller;
 
-import com.formula11.dto.CotizacionResponse;
-import com.formula11.dto.HistorialCotizacionesResponse;
-import com.formula11.dto.JugadorDetalleResponse;
-import com.formula11.dto.RankingPageResponse;
-import com.formula11.service.CotizacionConsultaService;
+import com.formula11.dto.cotizaciones.CotizacionResponse;
+import com.formula11.dto.cotizaciones.HistorialCotizacionesResponse;
+import com.formula11.dto.cotizaciones.JugadorDetalleResponse;
+import com.formula11.dto.cotizaciones.RankingPageResponse;
+import com.formula11.service.cotizaciones.CotizacionConsultaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

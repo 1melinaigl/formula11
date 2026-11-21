@@ -1,10 +1,10 @@
 package com.formula11.unit.service;
 
-import com.formula11.dto.NuevaVersionRequest;
+import com.formula11.dto.cotizaciones.NuevaVersionRequest;
 import com.formula11.model.Estrategia;
 import com.formula11.persistence.EstrategiaRepository;
-import com.formula11.service.CotizacionCacheInvalidator;
-import com.formula11.service.EstrategiaService;
+import com.formula11.service.cotizaciones.CotizacionCacheInvalidator;
+import com.formula11.service.cotizaciones.EstrategiaService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;

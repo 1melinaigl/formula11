@@ -1,10 +1,10 @@
 package com.formula11.unit.adapter;
 
-import com.formula11.adapter.ExternalPlayer;
-import com.formula11.adapter.ExternalTeam;
-import com.formula11.adapter.FootballApiProperties;
-import com.formula11.adapter.FootballDataAdapter;
-import com.formula11.adapter.FootballDataException;
+import com.formula11.adapter.footballdata.ExternalPlayer;
+import com.formula11.adapter.footballdata.ExternalTeam;
+import com.formula11.adapter.footballdata.FootballApiProperties;
+import com.formula11.adapter.footballdata.FootballDataAdapter;
+import com.formula11.adapter.footballdata.FootballDataException;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.formula11.model.Liga;
 import org.junit.jupiter.api.BeforeEach;

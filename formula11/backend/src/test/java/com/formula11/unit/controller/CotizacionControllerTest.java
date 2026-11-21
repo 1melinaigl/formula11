@@ -1,8 +1,8 @@
 package com.formula11.unit.controller;
 
 import com.formula11.controller.CotizacionController;
-import com.formula11.dto.*;
-import com.formula11.service.RecalculoService;
+import com.formula11.service.cotizaciones.RecalculoService;
+import com.formula11.dto.cotizaciones.RecalculoResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;

@@ -3,7 +3,7 @@ package com.formula11.unit.service;
 import com.formula11.model.Jugador;
 import com.formula11.model.Liga;
 import com.formula11.persistence.JugadorRepository;
-import com.formula11.service.JugadorService;
+import com.formula11.service.jugadores.JugadorService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.data.domain.PageImpl;
@@ -60,7 +60,7 @@ class JugadorServiceTest {
 
         var resultado = jugadorService.listar(1, 2, "nombre,asc", "La Liga", "Madrid", "medio");
 
-        assertEquals(List.of("Zidane"), resultado.content().stream().map(com.formula11.dto.JugadorResponse::nombre).toList());
+        assertEquals(List.of("Zidane"), resultado.content().stream().map(com.formula11.dto.jugadores.JugadorResponse::nombre).toList());
         assertEquals(1, resultado.page());
         assertEquals(2, resultado.size());
         assertEquals(3, resultado.totalElements());

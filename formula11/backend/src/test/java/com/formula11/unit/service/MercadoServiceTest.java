@@ -1,9 +1,12 @@
 package com.formula11.unit.service;
 
+import com.formula11.service.cotizaciones.CotizacionVigentePort;
+import com.formula11.service.mercado.MercadoJugadorResultado;
+import com.formula11.service.mercado.MercadoService;
+import com.formula11.service.mercado.ResultadoOperacion;
 import com.formula11.exception.*;
 import com.formula11.model.*;
 import com.formula11.persistence.*;
-import com.formula11.service.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

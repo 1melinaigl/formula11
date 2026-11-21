@@ -2,7 +2,7 @@ package com.formula11.config;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.formula11.adapter.FootballApiProperties;
+import com.formula11.adapter.footballdata.FootballApiProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

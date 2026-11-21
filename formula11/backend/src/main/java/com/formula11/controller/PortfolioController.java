@@ -1,14 +1,14 @@
 package com.formula11.controller;
 
-import com.formula11.dto.PortfolioResponse;
-import com.formula11.dto.EvolucionPortfolioResponse;
-import com.formula11.dto.TransaccionesPageResponse;
+import com.formula11.dto.portfolio.PortfolioResponse;
+import com.formula11.dto.portfolio.EvolucionPortfolioResponse;
+import com.formula11.dto.portfolio.TransaccionesPageResponse;
 import com.formula11.model.Transaccion;
-import com.formula11.service.PuntoEvolucionResultado;
+import com.formula11.service.portfolio.PuntoEvolucionResultado;
 import java.time.LocalDate;
 import java.util.List;
-import com.formula11.service.PortfolioService;
-import com.formula11.service.UsuarioService;
+import com.formula11.service.portfolio.PortfolioService;
+import com.formula11.service.usuarios.UsuarioService;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -62,7 +62,7 @@ public class PortfolioController {
         List<PuntoEvolucionResultado> puntos = resultado.puntos();
         return new EvolucionPortfolioResponse(
                 resultado.usuario().getId(),
-                puntos.stream().map(com.formula11.dto.PuntoEvolucionResponse::from).toList());
+                puntos.stream().map(com.formula11.dto.portfolio.PuntoEvolucionResponse::from).toList());
     }
 
     @GetMapping("/transacciones")

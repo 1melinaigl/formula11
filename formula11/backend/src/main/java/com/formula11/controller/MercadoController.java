@@ -1,9 +1,9 @@
 package com.formula11.controller;
 
-import com.formula11.dto.OperacionResponse;
-import com.formula11.dto.OrdenRequest;
-import com.formula11.service.MercadoService;
-import com.formula11.service.UsuarioService;
+import com.formula11.dto.mercado.OperacionResponse;
+import com.formula11.dto.mercado.OrdenRequest;
+import com.formula11.service.mercado.MercadoService;
+import com.formula11.service.usuarios.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;

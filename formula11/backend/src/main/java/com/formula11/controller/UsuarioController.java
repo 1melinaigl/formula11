@@ -1,10 +1,10 @@
 package com.formula11.controller;
 
-import com.formula11.dto.RegistroUsuarioRequest;
-import com.formula11.dto.RegistroUsuarioResponse;
-import com.formula11.dto.LoginRequest;
-import com.formula11.dto.LoginResponse;
-import com.formula11.service.UsuarioService;
+import com.formula11.dto.usuarios.RegistroUsuarioRequest;
+import com.formula11.dto.usuarios.RegistroUsuarioResponse;
+import com.formula11.dto.usuarios.LoginRequest;
+import com.formula11.dto.usuarios.LoginResponse;
+import com.formula11.service.usuarios.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;

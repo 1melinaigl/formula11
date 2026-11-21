@@ -1,6 +1,6 @@
 package com.formula11.unit.service;
 
-import com.formula11.adapter.PartidoWhoScoredResumen;
+import com.formula11.adapter.whoscored.PartidoWhoScoredResumen;
 import com.formula11.model.Jugador;
 import com.formula11.model.Liga;
 import com.formula11.model.MetricaPartido;
@@ -10,8 +10,8 @@ import com.formula11.model.whoscored.MatchCentreParser;
 import com.formula11.persistence.MetricaPartidoRepository;
 import com.formula11.persistence.PartidoExternoRepository;
 import com.formula11.persistence.PendienteVinculacionRepository;
-import com.formula11.service.GuardadoPartidoService;
-import com.formula11.service.JugadorVinculacionService;
+import com.formula11.service.metricas.GuardadoPartidoService;
+import com.formula11.service.metricas.JugadorVinculacionService;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
