@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { endpoints } from '../api/endpoints'
-import { useSesion } from './useSesion'
+import { useConsultaPaginada } from './useConsultaPaginada'
 
 export const LIGAS = ['Premier League', 'Bundesliga', 'La Liga', 'Serie A', 'Ligue 1']
 export const CAMPOS_ORDEN = [
@@ -10,6 +10,7 @@ export const CAMPOS_ORDEN = [
   ['posicion', 'Posición'],
 ]
 const TAMANO_PAGINA = 9
+const FILTROS = ['liga', 'equipo', 'posicion']
 
 const consultaInicial = {
   page: 0,
@@ -21,88 +22,65 @@ const consultaInicial = {
 
 function construirUrl(consulta) {
   const params = new URLSearchParams({ page: String(consulta.page), size: String(TAMANO_PAGINA), sort: consulta.sort })
-  for (const nombre of ['liga', 'equipo', 'posicion']) {
+  for (const nombre of FILTROS) {
     if (consulta[nombre].trim()) params.set(nombre, consulta[nombre].trim())
   }
   return `${endpoints.jugadores}?${params.toString()}`
 }
 
-export function useCatalogo() {
-  const { usuario, solicitarProtegida } = useSesion()
-  const [consulta, setConsulta] = useState(consultaInicial)
-  const [equipoInput, setEquipoInput] = useState('')
-  const [respuesta, setRespuesta] = useState({ content: [], page: 0, totalElements: 0, totalPages: 0 })
-  const [cargando, setCargando] = useState(Boolean(usuario))
-  const [error, setError] = useState(null)
+function normalizarCatalogo(data) {
+  return {
+    content: data?.content ?? [],
+    page: data?.page ?? 0,
+    totalElements: data?.totalElements ?? 0,
+    totalPages: data?.totalPages ?? 0,
+  }
+}
 
+export function useCatalogo() {
+  const { consulta, respuesta, cargando, error, actualizarConsulta } = useConsultaPaginada({
+    consultaInicial,
+    construirUrl,
+    normalizar: normalizarCatalogo,
+  })
+  const [equipoInput, setEquipoInput] = useState('')
+
+  // El equipo se escribe a mano: se espera a que el usuario deje de tipear para consultar. Solo se actualiza la
+  // consulta si el equipo cambió; si no, el efecto de la consulta no correría y quedaría cargando.
   useEffect(() => {
+    if (equipoInput === consulta.equipo) return undefined
     const timer = window.setTimeout(() => {
-      setConsulta((actual) => actual.equipo === equipoInput && actual.page === 0
-        ? actual
-        : { ...actual, equipo: equipoInput, page: 0 })
+      actualizarConsulta((actual) => ({ ...actual, equipo: equipoInput, page: 0 }))
     }, 300)
     return () => window.clearTimeout(timer)
-  }, [equipoInput])
-
-  useEffect(() => {
-    if (!usuario) return undefined
-
-    let activo = true
-
-    solicitarProtegida(construirUrl(consulta))
-      .then((data) => {
-        if (!activo) return
-        const paginaFinal = data.totalPages - 1
-        if (data.content.length === 0 && data.totalElements > 0 && paginaFinal >= 0 && consulta.page >= data.totalPages) {
-          setConsulta((actual) => actual.page === paginaFinal ? actual : { ...actual, page: paginaFinal })
-          return
-        }
-        setRespuesta(data)
-      })
-      .catch((requestError) => {
-        if (activo) setError(requestError)
-      })
-      .finally(() => {
-        if (activo) setCargando(false)
-      })
-
-    return () => { activo = false }
-  }, [consulta, solicitarProtegida, usuario])
+  }, [actualizarConsulta, consulta.equipo, equipoInput])
 
   const actualizarFiltro = useCallback((nombre, valor) => {
-    setCargando(true)
-    setError(null)
     if (nombre === 'equipo') {
       setEquipoInput(valor)
       return
     }
-    setConsulta((actual) => ({ ...actual, [nombre]: valor, page: 0 }))
-  }, [])
+    actualizarConsulta((actual) => ({ ...actual, [nombre]: valor, page: 0 }))
+  }, [actualizarConsulta])
 
   const actualizarOrden = useCallback((campo, direccion) => {
-    setCargando(true)
-    setError(null)
-    setConsulta((actual) => ({ ...actual, sort: `${campo},${direccion}`, page: 0 }))
-  }, [])
+    actualizarConsulta((actual) => ({ ...actual, sort: `${campo},${direccion}`, page: 0 }))
+  }, [actualizarConsulta])
 
   const limpiarFiltros = useCallback(() => {
-    setCargando(true)
-    setError(null)
     setEquipoInput('')
-    setConsulta((actual) => ({ ...actual, liga: '', equipo: '', posicion: '', page: 0 }))
-  }, [])
+    actualizarConsulta((actual) => ({ ...actual, liga: '', equipo: '', posicion: '', page: 0 }))
+  }, [actualizarConsulta])
 
   const cambiarPagina = useCallback((page) => {
-    setCargando(true)
-    setError(null)
-    setConsulta((actual) => ({ ...actual, page }))
-  }, [])
+    actualizarConsulta((actual) => ({ ...actual, page }))
+  }, [actualizarConsulta])
 
   const filtros = useMemo(() => ({ liga: consulta.liga, equipo: equipoInput, posicion: consulta.posicion }), [consulta.liga, consulta.posicion, equipoInput])
   const [campo, direccion] = consulta.sort.split(',')
 
   return {
-    cargando: Boolean(usuario && cargando),
+    cargando,
     error,
     filtros,
     jugadores: respuesta.content,
