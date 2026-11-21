@@ -2,9 +2,10 @@ package com.formula11;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 @SpringBootApplication
-@org.springframework.boot.context.properties.ConfigurationPropertiesScan
+@ConfigurationPropertiesScan
 public class Formula11Application {
     public static void main(String[] args) {
         SpringApplication.run(Formula11Application.class, args);

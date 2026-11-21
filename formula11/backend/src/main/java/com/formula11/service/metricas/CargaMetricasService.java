@@ -11,6 +11,7 @@ import com.formula11.model.PendienteVinculacion;
 import com.formula11.persistence.EjecucionMetricaLigaRepository;
 import com.formula11.persistence.EjecucionMetricasRepository;
 import com.formula11.persistence.PendienteVinculacionRepository;
+import com.formula11.config.CorrelationIdFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -39,7 +40,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Service
 public class CargaMetricasService {
     private static final Logger log = LoggerFactory.getLogger(CargaMetricasService.class);
-    private static final String CORRELATION_ID = "correlationId";
     private static final String EN_CURSO = "EN_CURSO";
     private static final String COMPLETADA = "COMPLETADA";
     private static final String PARCIAL = "PARCIAL";
@@ -117,8 +117,8 @@ public class CargaMetricasService {
 
     @Async("metricasExecutor")
     public void ejecutarAsync(Long ejecucionId, LocalDate desde, String correlationId) {
-        String anterior = MDC.get(CORRELATION_ID);
-        MDC.put(CORRELATION_ID, correlationId);
+        String anterior = MDC.get(CorrelationIdFilter.MDC_KEY);
+        MDC.put(CorrelationIdFilter.MDC_KEY, correlationId);
         try {
             ejecutar(ejecucionId, desde);
         } catch (RuntimeException exception) {
@@ -279,14 +279,14 @@ public class CargaMetricasService {
 
     private static void restaurarMdc(String anterior) {
         if (anterior == null) {
-            MDC.remove(CORRELATION_ID);
+            MDC.remove(CorrelationIdFilter.MDC_KEY);
         } else {
-            MDC.put(CORRELATION_ID, anterior);
+            MDC.put(CorrelationIdFilter.MDC_KEY, anterior);
         }
     }
 
     private static String correlationId() {
-        String actual = MDC.get(CORRELATION_ID);
+        String actual = MDC.get(CorrelationIdFilter.MDC_KEY);
         return actual == null || actual.isBlank() ? UUID.randomUUID().toString() : actual;
     }
 }

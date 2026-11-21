@@ -5,6 +5,7 @@ import com.formula11.model.excepciones.DatoInvalidoException;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.time.Clock;
+import java.util.Locale;
 
 @Entity
 @Table(name = "usuarios")
@@ -43,7 +44,7 @@ public class Usuario {
     }
 
     public static String normalizarEmail(String email) {
-        String normalized = requireText(email, "El email es obligatorio").toLowerCase(java.util.Locale.ROOT);
+        String normalized = requireText(email, "El email es obligatorio").toLowerCase(Locale.ROOT);
         if (!normalized.matches("^[^\\s@]++@[^\\s@.]++[.][^\\s@]++$")) throw new DatoInvalidoException("El email no es válido");
         return normalized;
     }

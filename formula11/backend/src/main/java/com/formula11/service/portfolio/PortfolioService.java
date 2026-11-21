@@ -32,6 +32,8 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import com.formula11.model.AuditoriaMercado;
+import java.util.stream.Collectors;
 
 @Service
 public class PortfolioService {
@@ -191,13 +193,13 @@ public class PortfolioService {
         }
 
         List<Long> ids = transacciones.stream().map(Transaccion::getId).toList();
-        Map<Long, com.formula11.model.AuditoriaMercado> auditorias = auditoriaRepository
+        Map<Long, AuditoriaMercado> auditorias = auditoriaRepository
                 .findByOperacionIdIn(ids).stream()
-                .collect(java.util.stream.Collectors.toMap(
+                .collect(Collectors.toMap(
                         auditoria -> auditoria.getOperacion().getId(),
                         auditoria -> auditoria));
         List<OperacionHistorial> operaciones = transacciones.stream().map(transaccion -> {
-            com.formula11.model.AuditoriaMercado auditoria = auditorias.get(transaccion.getId());
+            AuditoriaMercado auditoria = auditorias.get(transaccion.getId());
             if (auditoria == null) {
                 throw new IllegalStateException(
                         "No existe auditoría para la operación " + transaccion.getId());

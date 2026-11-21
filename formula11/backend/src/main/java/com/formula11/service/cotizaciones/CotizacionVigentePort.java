@@ -4,6 +4,7 @@ import com.formula11.model.Jugador;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.math.RoundingMode;
 
 public interface CotizacionVigentePort {
     CotizacionVigente vigente(Jugador jugador, Instant fecha);
@@ -13,7 +14,7 @@ public interface CotizacionVigentePort {
             if (precio == null || precio.signum() <= 0) {
                 throw new IllegalArgumentException("La cotización debe ser positiva");
             }
-            precio = precio.setScale(4, java.math.RoundingMode.HALF_UP);
+            precio = precio.setScale(4, RoundingMode.HALF_UP);
         }
     }
 }

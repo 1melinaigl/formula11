@@ -5,6 +5,7 @@ import com.formula11.adapter.footballdata.FootballDataException;
 import com.formula11.model.excepciones.CantidadInsuficienteException;
 import com.formula11.model.excepciones.DatoInvalidoException;
 import com.formula11.service.usuarios.UsuarioService;
+import com.formula11.config.CorrelationIdFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import jakarta.validation.ConstraintViolationException;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.time.Instant;
+import java.util.NoSuchElementException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -25,8 +27,8 @@ public class GlobalExceptionHandler {
         return responder(HttpStatus.FORBIDDEN, "No tiene permisos para realizar esta operación", request);
     }
 
-    @ExceptionHandler(java.util.NoSuchElementException.class)
-    public ResponseEntity<ErrorResponse> noEncontrado(java.util.NoSuchElementException exception, HttpServletRequest request) {
+    @ExceptionHandler(NoSuchElementException.class)
+    public ResponseEntity<ErrorResponse> noEncontrado(NoSuchElementException exception, HttpServletRequest request) {
         return responder(HttpStatus.NOT_FOUND, exception.getMessage(), request);
     }
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -125,6 +127,6 @@ public class GlobalExceptionHandler {
     }
 
     private ResponseEntity<ErrorResponse> responder(HttpStatus status, String mensaje, HttpServletRequest request) {
-        return ResponseEntity.status(status).body(new ErrorResponse(mensaje, Instant.now(), MDC.get("correlationId")));
+        return ResponseEntity.status(status).body(new ErrorResponse(mensaje, Instant.now(), MDC.get(CorrelationIdFilter.MDC_KEY)));
     }
 }

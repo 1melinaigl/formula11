@@ -13,6 +13,7 @@ import com.formula11.persistence.UsuarioRepository;
 import com.formula11.model.Rol;
 import com.formula11.model.Tenencia;
 import com.formula11.model.Usuario;
+import com.formula11.config.CorrelationIdFilter;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,7 +73,7 @@ public class SincronizacionService {
         }
         String estado = exitosas == Liga.values().length ? "COMPLETADA" : "PARCIAL";
         return new SincronizacionResultado(estado, resultados, totales.creados(), totales.actualizados(),
-                totales.omitidos(), MDC.get("correlationId"));
+                totales.omitidos(), MDC.get(CorrelationIdFilter.MDC_KEY));
     }
 
     /** Los jugadores del seed inicial se reemplazan por los del proveedor, salvo que alguien ya haya operado con ellos. */

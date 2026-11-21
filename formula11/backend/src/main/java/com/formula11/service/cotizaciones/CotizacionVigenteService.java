@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import com.formula11.model.Cotizacion;
 
 @Service
 public class CotizacionVigenteService implements CotizacionVigentePort {
@@ -30,7 +31,7 @@ public class CotizacionVigenteService implements CotizacionVigentePort {
         CotizacionVigentePort.CotizacionVigente cached = cache.getIfPresent(key);
         if (cached != null) return cached;
         String codigo = estrategias.findByActivaTrue().map(Estrategia::getCodigo).orElse(null);
-        com.formula11.model.Cotizacion value = codigo == null ? null :
+        Cotizacion value = codigo == null ? null :
                 cotizaciones.findTopByJugadorIdAndEstrategiaAndFechaLessThanEqualOrderByFechaDesc(
                         jugador.getId(), codigo, fechaLocal).orElse(null);
         CotizacionVigentePort.CotizacionVigente result = value == null
@@ -40,7 +41,7 @@ public class CotizacionVigenteService implements CotizacionVigentePort {
         return result;
     }
 
-    private CotizacionVigentePort.CotizacionVigente toCotizacion(com.formula11.model.Cotizacion cotizacion) {
+    private CotizacionVigentePort.CotizacionVigente toCotizacion(Cotizacion cotizacion) {
         return new CotizacionVigentePort.CotizacionVigente(cotizacion.getPrecio(), cotizacion.getEstrategia(),
                 cotizacion.getVersion(), cotizacion.getFecha());
     }

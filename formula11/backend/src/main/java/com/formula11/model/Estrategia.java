@@ -16,6 +16,10 @@ import java.util.stream.Collectors;
 @Entity
 @Table(name = "estrategia", uniqueConstraints = @UniqueConstraint(name = "ux_estrategia_codigo_version", columnNames = {"codigo", "version"}))
 public class Estrategia {
+    public static final String RENDIMIENTO_POSICION = "RENDIMIENTO_POSICION";
+    public static final String CONSISTENCIA = "CONSISTENCIA";
+    public static final List<String> CODIGOS = List.of(RENDIMIENTO_POSICION, CONSISTENCIA);
+
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false) private String codigo;

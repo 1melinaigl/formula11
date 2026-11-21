@@ -2,15 +2,17 @@ package com.formula11.dto.portfolio;
 
 import com.formula11.service.portfolio.PortfolioResultado;
 import java.util.List;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public record PortfolioResponse(
         Long usuarioId,
-        java.time.LocalDate fechaValuacion,
-        java.math.BigDecimal saldo,
-        java.math.BigDecimal invertido,
-        java.math.BigDecimal valorTenencias,
-        java.math.BigDecimal ganancia,
-        java.math.BigDecimal gananciaPorcentaje,
+        LocalDate fechaValuacion,
+        BigDecimal saldo,
+        BigDecimal invertido,
+        BigDecimal valorTenencias,
+        BigDecimal ganancia,
+        BigDecimal gananciaPorcentaje,
         List<PosicionPortfolioResponse> posiciones) {
     public static PortfolioResponse from(PortfolioResultado resultado) {
         return new PortfolioResponse(

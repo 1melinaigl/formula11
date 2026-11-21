@@ -38,13 +38,13 @@ public class RecalculoSemanaService {
         List<MetricaPartidoInput> semana = todas.stream()
                 .filter(m -> !m.fecha().isBefore(lunes)).toList();
         Map<Long, List<MetricaPartidoInput>> porJugador = semana.stream()
-                .collect(java.util.stream.Collectors.groupingBy(MetricaPartidoInput::jugadorId));
+                .collect(Collectors.groupingBy(MetricaPartidoInput::jugadorId));
         List<Estrategia> configuraciones = Estrategia.vigentes(estrategias.findAll());
         Map<String, ResultadoValuacion> resultados = new HashMap<>();
         for (Estrategia estrategia : configuraciones) {
-            List<MetricaPartidoInput> entradasEstrategia = "CONSISTENCIA".equals(estrategia.getCodigo())
+            List<MetricaPartidoInput> entradasEstrategia = Estrategia.CONSISTENCIA.equals(estrategia.getCodigo())
                     ? todas : semana;
-            EstrategiaValuacion calculadora = "CONSISTENCIA".equals(estrategia.getCodigo())
+            EstrategiaValuacion calculadora = Estrategia.CONSISTENCIA.equals(estrategia.getCodigo())
                     ? new Consistencia() : new RendimientoPosicion();
             resultados.put(estrategia.getCodigo(), calculadora.calcular(entradasEstrategia, domingo,
                     parametros(estrategia)));

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.stream.StreamSupport;
 
 public final class MatchCentreParser {
     private static final String PLAYER_ID = "playerId";
@@ -139,7 +140,7 @@ public final class MatchCentreParser {
     }
 
     private static int countAssists(JsonNode events, JsonNode eventTypes) {
-        return (int) java.util.stream.StreamSupport.stream(events.spliterator(), false)
+        return (int) StreamSupport.stream(events.spliterator(), false)
                 .filter(event -> isAssist(event, eventTypes)).count();
     }
 

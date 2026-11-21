@@ -5,6 +5,7 @@ import com.formula11.service.mercado.ResultadoOperacion;
 import com.formula11.dto.jugadores.JugadorResponse;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.math.RoundingMode;
 
 public record OperacionResponse(
         Long id,
@@ -31,7 +32,7 @@ public record OperacionResponse(
                 transaccion.getCantidad(),
                 transaccion.getPrecioUnitario(),
                 transaccion.getTotal(),
-                saldoPosterior.setScale(4, java.math.RoundingMode.HALF_UP),
+                saldoPosterior.setScale(4, RoundingMode.HALF_UP),
                 "superusuario",
                 transaccion.getFecha(),
                 transaccion.getEstrategia(),

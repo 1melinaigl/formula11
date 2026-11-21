@@ -4,6 +4,7 @@ import com.formula11.config.ClockConfig;
 import com.formula11.model.Estrategia;
 import com.formula11.persistence.EstrategiaRepository;
 import com.formula11.service.senales.GeneradorSenalesPort;
+import com.formula11.config.CorrelationIdFilter;
 import org.slf4j.*;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Service;
 import java.time.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import com.formula11.persistence.CotizacionRepository;
+import java.time.temporal.TemporalAdjusters;
 
 @Service
 public class RecalculoService {
@@ -18,21 +21,21 @@ public class RecalculoService {
     private final Clock clock;
     private final RecalculoSemanaService semanas;
     private final EstrategiaRepository estrategias;
-    private final com.formula11.persistence.CotizacionRepository cotizaciones;
+    private final CotizacionRepository cotizaciones;
     private final CotizacionCacheInvalidator cache;
     private final AtomicBoolean ejecutando = new AtomicBoolean();
     /** 010: generadores de señales que se invocan después de cada semana; puede ser null. */
     private final ObjectProvider<GeneradorSenalesPort> generadoresSenales;
 
     public RecalculoService(Clock clock, RecalculoSemanaService semanas, EstrategiaRepository estrategias,
-                            com.formula11.persistence.CotizacionRepository cotizaciones,
+                            CotizacionRepository cotizaciones,
                             CotizacionCacheInvalidator cache) {
         this(clock, semanas, estrategias, cotizaciones, cache, null);
     }
 
     @Autowired
     public RecalculoService(Clock clock, RecalculoSemanaService semanas, EstrategiaRepository estrategias,
-                            com.formula11.persistence.CotizacionRepository cotizaciones,
+                            CotizacionRepository cotizaciones,
                             CotizacionCacheInvalidator cache,
                             ObjectProvider<GeneradorSenalesPort> generadoresSenales) {
         this.clock = clock; this.semanas = semanas; this.estrategias = estrategias;
@@ -59,7 +62,7 @@ public class RecalculoService {
                 weeks++; players += result.jugadoresCotizados(); noMetricas += result.jugadoresSinMetricas();
             }
             cache.invalidate();
-            String correlationId = Optional.ofNullable(org.slf4j.MDC.get("correlationId")).orElse(UUID.randomUUID().toString());
+            String correlationId = Optional.ofNullable(MDC.get(CorrelationIdFilter.MDC_KEY)).orElse(UUID.randomUUID().toString());
             List<RecalculoResultado.EstrategiaVersion> versions = Estrategia.vigentes(estrategias.findAll()).stream()
                     .map(e -> new RecalculoResultado.EstrategiaVersion(e.getCodigo(), e.getVersion())).toList();
             return new RecalculoResultado("COMPLETADO", weeks, players, noMetricas, versions, inicio, clock.instant(), correlationId);
@@ -100,7 +103,7 @@ public class RecalculoService {
 
     private LocalDate ultimaSemanaCerrada() {
         return LocalDate.ofInstant(clock.instant(), ClockConfig.ZONA_NEGOCIO).minusDays(1)
-                .with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.SUNDAY));
+                .with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
     }
-    private LocalDate domingoDeSemana(LocalDate fecha) { return fecha.with(java.time.DayOfWeek.SUNDAY); }
+    private LocalDate domingoDeSemana(LocalDate fecha) { return fecha.with(DayOfWeek.SUNDAY); }
 }

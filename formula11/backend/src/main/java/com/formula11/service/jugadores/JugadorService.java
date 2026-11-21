@@ -13,13 +13,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 @Service
 public class JugadorService {
     private static final int MAX_SIZE = 100;
     private static final Set<String> SORT_FIELDS = Set.of("id", "nombre", "equipo", "liga", "posicion");
-    private static final Map<String, Liga> LIGAS = java.util.Arrays.stream(Liga.values())
-            .collect(java.util.stream.Collectors.toUnmodifiableMap(
+    private static final Map<String, Liga> LIGAS = Arrays.stream(Liga.values())
+            .collect(Collectors.toUnmodifiableMap(
                     liga -> liga.getNombreLegible().toLowerCase(Locale.ROOT), liga -> liga));
 
     private final JugadorRepository jugadorRepository;

@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/estrategias")
@@ -26,15 +28,15 @@ public class EstrategiaController {
     }
     @Operation(summary = "Crea una versión de estrategia")
     @PostMapping("/{codigo}/versiones") @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('SUPERUSUARIO')")
-    @ResponseStatus(org.springframework.http.HttpStatus.CREATED)
+    @PreAuthorize("hasRole('SUPERUSUARIO')")
+    @ResponseStatus(HttpStatus.CREATED)
     public EstrategiaResponse crear(@PathVariable String codigo, @Valid @RequestBody NuevaVersionRequest request) {
         return EstrategiaResponse.from(
                 service.crearVersion(codigo, new NuevaVersion(request.pesos(), request.parametros())));
     }
     @Operation(summary = "Activa una estrategia")
     @PostMapping("/{codigo}/activar")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('SUPERUSUARIO')")
+    @PreAuthorize("hasRole('SUPERUSUARIO')")
     public EstrategiaResponse activar(@PathVariable String codigo) {
         return EstrategiaResponse.from(service.activar(codigo));
     }

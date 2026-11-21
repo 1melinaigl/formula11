@@ -2,6 +2,7 @@ package com.formula11.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.formula11.dto.ErrorResponse;
+import com.formula11.config.CorrelationIdFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpMethod;
@@ -44,11 +45,11 @@ public class SecurityConfig {
 
     /** El filtro de correlation id puede no haber corrido todavía: se usa el del MDC, el del header o uno nuevo. */
     private static String correlationId(HttpServletRequest request) {
-        String delMdc = MDC.get("correlationId");
+        String delMdc = MDC.get(CorrelationIdFilter.MDC_KEY);
         if (delMdc != null && !delMdc.isBlank()) {
             return delMdc;
         }
-        String delHeader = request.getHeader("X-Correlation-Id");
+        String delHeader = request.getHeader(CorrelationIdFilter.HEADER);
         if (delHeader != null && !delHeader.isBlank()) {
             return delHeader;
         }

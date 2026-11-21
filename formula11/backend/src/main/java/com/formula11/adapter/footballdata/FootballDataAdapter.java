@@ -18,22 +18,23 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import com.github.benmanes.caffeine.cache.Cache;
 
 @Component
 public class FootballDataAdapter implements FootballDataPort {
     private static final Logger log = LoggerFactory.getLogger(FootballDataAdapter.class);
     private final FootballApiProperties properties;
     private final RestClient restClient;
-    private final com.github.benmanes.caffeine.cache.Cache<String, Object> cache;
+    private final Cache<String, Object> cache;
     private long nextRequestNanos;
 
     @Autowired
-    public FootballDataAdapter(FootballApiProperties properties, com.github.benmanes.caffeine.cache.Cache<String, Object> cache) {
+    public FootballDataAdapter(FootballApiProperties properties, Cache<String, Object> cache) {
         this(properties, cache, crearRestClient(properties));
     }
 
     public FootballDataAdapter(FootballApiProperties properties,
-                               com.github.benmanes.caffeine.cache.Cache<String, Object> cache,
+                               Cache<String, Object> cache,
                                RestClient restClient) {
         this.properties = properties;
         this.cache = cache;

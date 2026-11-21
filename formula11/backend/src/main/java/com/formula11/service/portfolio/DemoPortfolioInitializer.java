@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import com.formula11.model.Usuario;
 
 @Component
 @Profile("local")
@@ -93,6 +94,6 @@ public class DemoPortfolioInitializer implements ApplicationRunner {
     }
 
     private static String normalizar(String email) {
-        return com.formula11.model.Usuario.normalizarEmail(email);
+        return Usuario.normalizarEmail(email);
     }
 }

@@ -12,7 +12,7 @@ public interface JugadorRepository extends JpaRepository<Jugador, Long>, JpaSpec
     Optional<Jugador> findByExternalProviderAndExternalId(String externalProvider, String externalId);
     void deleteAllByOrigen(String origen);
     List<Jugador> findAllByOrigen(String origen);
-    java.util.Optional<Jugador> findByWhoscoredId(String whoscoredId);
+    Optional<Jugador> findByWhoscoredId(String whoscoredId);
     List<Jugador> findByLigaAndNombreIgnoreCase(Liga liga, String nombre);
     List<Jugador> findByLiga(Liga liga);
 }

@@ -7,6 +7,7 @@ import com.formula11.exception.SuperusuarioNoOperaException;
 import com.formula11.service.cotizaciones.CotizacionVigentePort;
 import com.formula11.model.*;
 import com.formula11.persistence.*;
+import com.formula11.config.CorrelationIdFilter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
@@ -134,7 +135,7 @@ public class MercadoService {
         auditoriaRepository.save(new AuditoriaMercado(operacion.usuario(), transaccion, antes, despues, operacion.fecha()));
         log.info("mercado_operacion_confirmada tipo={} usuarioId={} jugadorId={} cantidad={} correlationId={}",
                 tipo, operacion.usuario().getId(), operacion.jugador().getId(), operacion.cantidad(),
-                MDC.get("correlationId"));
+                MDC.get(CorrelationIdFilter.MDC_KEY));
         return new ResultadoOperacion(transaccion, operacion.cuenta().getSaldo());
     }
 

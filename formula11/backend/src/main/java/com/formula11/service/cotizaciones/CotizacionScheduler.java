@@ -1,6 +1,7 @@
 package com.formula11.service.cotizaciones;
 
 import com.formula11.service.metricas.ActualizacionMetricasPort;
+import com.formula11.config.CorrelationIdFilter;
 import org.slf4j.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -17,7 +18,7 @@ public class CotizacionScheduler {
     @Scheduled(cron = "${app.cotizacion.cron}", zone = "America/Argentina/Buenos_Aires")
     public void ejecutar() {
         String correlationId = UUID.randomUUID().toString();
-        MDC.put("correlationId", correlationId);
+        MDC.put(CorrelationIdFilter.MDC_KEY, correlationId);
         try {
             try {
                 actualizacion.actualizar();
@@ -25,6 +26,6 @@ public class CotizacionScheduler {
             }
             catch (RuntimeException exception) { log.warn("No se pudieron actualizar las métricas; se usarán datos locales", exception); }
             recalculo.recalcular(null);
-        } finally { MDC.remove("correlationId"); }
+        } finally { MDC.remove(CorrelationIdFilter.MDC_KEY); }
     }
 }

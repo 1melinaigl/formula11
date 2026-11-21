@@ -18,6 +18,11 @@ import org.springframework.validation.annotation.Validated;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import com.formula11.dto.portfolio.PuntoEvolucionResponse;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @Validated
@@ -54,15 +59,15 @@ public class PortfolioController {
     @ApiResponse(responseCode = "403", description = "La evolución es de otro usuario, o quien la pide es el superusuario")
     @ApiResponse(responseCode = "404", description = "Usuario o cuenta inexistente")
     public EvolucionPortfolioResponse evolucion(@PathVariable Long usuarioId,
-                                                @org.springframework.web.bind.annotation.RequestParam(required = false) LocalDate desde,
-                                                @org.springframework.web.bind.annotation.RequestParam(required = false) LocalDate hasta,
+                                                @RequestParam(required = false) LocalDate desde,
+                                                @RequestParam(required = false) LocalDate hasta,
                                                 Authentication authentication) {
         Long solicitanteId = usuarioService.obtenerIdPorEmail(authentication.getName());
         var resultado = portfolioService.evolucion(solicitanteId, usuarioId, desde, hasta);
         List<PuntoEvolucionResultado> puntos = resultado.puntos();
         return new EvolucionPortfolioResponse(
                 resultado.usuario().getId(),
-                puntos.stream().map(com.formula11.dto.portfolio.PuntoEvolucionResponse::from).toList());
+                puntos.stream().map(PuntoEvolucionResponse::from).toList());
     }
 
     @GetMapping("/transacciones")
@@ -76,13 +81,13 @@ public class PortfolioController {
     @ApiResponse(responseCode = "404", description = "Usuario inexistente")
     public TransaccionesPageResponse historial(
             @PathVariable Long usuarioId,
-            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "0")
-            @jakarta.validation.constraints.Min(0) int page,
-            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "20")
-            @jakarta.validation.constraints.Min(1) @jakarta.validation.constraints.Max(100) int size,
-            @org.springframework.web.bind.annotation.RequestParam(required = false) Transaccion.Tipo tipo,
-            @org.springframework.web.bind.annotation.RequestParam(required = false)
-            @jakarta.validation.constraints.Positive Long jugadorId,
+            @RequestParam(defaultValue = "0")
+            @Min(0) int page,
+            @RequestParam(defaultValue = "20")
+            @Min(1) @Max(100) int size,
+            @RequestParam(required = false) Transaccion.Tipo tipo,
+            @RequestParam(required = false)
+            @Positive Long jugadorId,
             Authentication authentication) {
         Long solicitanteId = usuarioService.obtenerIdPorEmail(authentication.getName());
         return TransaccionesPageResponse.from(

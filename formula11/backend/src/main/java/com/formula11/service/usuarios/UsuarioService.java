@@ -11,6 +11,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.formula11.config.MercadoProperties;
+import com.formula11.exception.RecursoNoEncontradoException;
 
 @Service
 public class UsuarioService {
@@ -18,11 +20,11 @@ public class UsuarioService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final CuentaRepository cuentaRepository;
-    private final com.formula11.config.MercadoProperties mercadoProperties;
+    private final MercadoProperties mercadoProperties;
     private final Clock clock;
 
     public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
-                          CuentaRepository cuentaRepository, com.formula11.config.MercadoProperties mercadoProperties,
+                          CuentaRepository cuentaRepository, MercadoProperties mercadoProperties,
                           Clock clock) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
@@ -58,7 +60,7 @@ public class UsuarioService {
 
     public Long obtenerIdPorEmail(String email) {
         return usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new com.formula11.exception.RecursoNoEncontradoException("El usuario no existe"))
+                .orElseThrow(() -> new RecursoNoEncontradoException("El usuario no existe"))
                 .getId();
     }
 
