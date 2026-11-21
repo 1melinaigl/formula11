@@ -247,6 +247,11 @@ public class CargaMetricasService {
                 .orElseThrow(() -> new NoSuchElementException("Ejecución no encontrada"));
     }
 
+    /** Estado de una ejecución con el resumen de cada liga procesada. */
+    public EjecucionMetricasResponse estado(Long ejecucionId) {
+        return response(obtener(ejecucionId), ligaRepository.findByEjecucionId(ejecucionId));
+    }
+
     public PendientesPageResponse pendientes(Pageable pageable) {
         Page<com.formula11.model.PendienteVinculacion> page = pendienteRepository.findByResueltoFalse(pageable);
         List<PendienteVinculacion> content = page.getContent().stream()

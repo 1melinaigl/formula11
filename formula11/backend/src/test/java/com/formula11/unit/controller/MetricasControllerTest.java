@@ -4,7 +4,6 @@ import com.formula11.controller.MetricasController;
 import com.formula11.dto.metricas.EjecucionMetricasResponse;
 import com.formula11.dto.metricas.PendientesPageResponse;
 import com.formula11.model.EjecucionMetricas;
-import com.formula11.persistence.EjecucionMetricaLigaRepository;
 import com.formula11.service.metricas.CargaMetricasService;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MockMvc;
@@ -40,8 +39,7 @@ class MetricasControllerTest {
         CargaMetricasService service = mock(CargaMetricasService.class);
         EjecucionMetricas ejecucion = new EjecucionMetricas("COMPLETADA",
                 Instant.parse("2026-10-28T00:00:00Z"), "corr");
-        when(service.obtener(7L)).thenReturn(ejecucion);
-        when(service.response(any(), anyList())).thenReturn(
+        when(service.estado(7L)).thenReturn(
                 new EjecucionMetricasResponse(7L, "COMPLETADA", ejecucion.getInicio(),
                         null, List.of(), "corr"));
         when(service.pendientes(any())).thenReturn(new PendientesPageResponse(List.of(), 0, 20, 0, 0));
@@ -56,8 +54,7 @@ class MetricasControllerTest {
     }
 
     private static MockMvc mvc(CargaMetricasService service) {
-        return MockMvcBuilders.standaloneSetup(new MetricasController(service,
-                mock(EjecucionMetricaLigaRepository.class))).build();
+        return MockMvcBuilders.standaloneSetup(new MetricasController(service)).build();
     }
 
     private static final class EjecucionMetricasRepositoryFixture {

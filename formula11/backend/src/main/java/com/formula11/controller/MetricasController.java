@@ -1,7 +1,6 @@
 package com.formula11.controller;
 
 import com.formula11.model.EjecucionMetricas;
-import com.formula11.persistence.EjecucionMetricaLigaRepository;
 import com.formula11.service.metricas.CargaMetricasService;
 import com.formula11.dto.metricas.EjecucionMetricasResponse;
 import com.formula11.dto.metricas.PendientesPageResponse;
@@ -23,11 +22,9 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public class MetricasController {
     private final CargaMetricasService service;
-    private final EjecucionMetricaLigaRepository ligaRepository;
 
-    public MetricasController(CargaMetricasService service, EjecucionMetricaLigaRepository ligaRepository) {
+    public MetricasController(CargaMetricasService service) {
         this.service = service;
-        this.ligaRepository = ligaRepository;
     }
 
     @PostMapping("/sincronizacion")
@@ -42,8 +39,7 @@ public class MetricasController {
     @GetMapping("/sincronizacion/{ejecucionId}")
     @Operation(summary = "Consulta el estado de una carga de métricas")
     public EjecucionMetricasResponse estado(@PathVariable Long ejecucionId) {
-        EjecucionMetricas ejecucion = service.obtener(ejecucionId);
-        return service.response(ejecucion, ligaRepository.findByEjecucionId(ejecucionId));
+        return service.estado(ejecucionId);
     }
 
     @GetMapping("/pendientes")
