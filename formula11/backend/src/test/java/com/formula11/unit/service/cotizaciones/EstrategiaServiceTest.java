@@ -1,0 +1,124 @@
+package com.formula11.unit.service.cotizaciones;
+
+import com.formula11.model.cotizaciones.Estrategia;
+import com.formula11.persistence.cotizaciones.EstrategiaRepository;
+import com.formula11.service.cotizaciones.CotizacionCacheInvalidator;
+import com.formula11.service.cotizaciones.EstrategiaService;
+import com.formula11.service.cotizaciones.NuevaVersion;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.*;
+
+import java.time.*;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(org.mockito.junit.jupiter.MockitoExtension.class)
+class EstrategiaServiceTest {
+    @Mock EstrategiaRepository repository;
+    @Mock CotizacionCacheInvalidator invalidator;
+    private final Clock clock = Clock.fixed(Instant.parse("2026-01-05T12:00:00Z"), ZoneOffset.UTC);
+
+    @Test
+    void listaEstrategiasYVersionesEnOrdenDescendente() {
+        Estrategia rendimiento = estrategia("RENDIMIENTO_POSICION", 1, true);
+        Estrategia consistencia = estrategia("CONSISTENCIA", 1, false);
+        when(repository.findAll()).thenReturn(List.of(consistencia, rendimiento));
+        when(repository.findByCodigoOrderByVersionDesc("RENDIMIENTO_POSICION"))
+                .thenReturn(List.of(estrategia("RENDIMIENTO_POSICION", 2, false), rendimiento));
+
+        var service = new EstrategiaService(repository, clock, invalidator);
+
+        assertEquals(List.of("CONSISTENCIA", "RENDIMIENTO_POSICION"),
+                service.listar().stream().map(r -> r.codigo()).toList());
+        assertEquals(List.of(2, 1), service.versiones("RENDIMIENTO_POSICION")
+                .stream().map(r -> r.version()).toList());
+    }
+
+    @Test
+    void creaVersionInmutableConVersionIncrementada() {
+        Estrategia actual = estrategia("RENDIMIENTO_POSICION", 1, true);
+        when(repository.findTopByCodigoOrderByVersionDesc(actual.getCodigo())).thenReturn(Optional.of(actual));
+        NuevaVersion request = request();
+        when(repository.save(any(Estrategia.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var result = new EstrategiaService(repository, clock, invalidator)
+                .crearVersion(actual.getCodigo(), request);
+
+        assertEquals(2, result.version());
+        assertFalse(result.activa());
+        assertEquals(clock.instant(), result.creadaEn());
+        verify(repository).save(argThat(e -> e.getVersion() == 2 && !e.isActiva()));
+        assertTrue(actual.isActiva());
+    }
+
+    @Test
+    void activaLaVersionMasNuevaEInvalidaLaCache() {
+        Estrategia activa = estrategia("RENDIMIENTO_POSICION", 1, true);
+        Estrategia nueva = estrategia("CONSISTENCIA", 2, false);
+        when(repository.findTopByCodigoOrderByVersionDesc("CONSISTENCIA")).thenReturn(Optional.of(nueva));
+        when(repository.findByActivaTrue()).thenReturn(Optional.of(activa));
+        when(repository.save(any(Estrategia.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var result = new EstrategiaService(repository, clock, invalidator).activar("CONSISTENCIA");
+
+        assertTrue(result.activa());
+        assertFalse(activa.isActiva());
+        verify(invalidator).invalidate();
+    }
+
+    @Test
+    void rechazaVersionSinPesosOParametros() {
+        Estrategia actual = estrategia("RENDIMIENTO_POSICION", 1, true);
+        when(repository.findTopByCodigoOrderByVersionDesc(actual.getCodigo())).thenReturn(Optional.of(actual));
+        var service = new EstrategiaService(repository, clock, invalidator);
+
+        String codigo = actual.getCodigo();
+        var vacia = new NuevaVersion(Map.of(), Map.of());
+
+        assertThrows(IllegalArgumentException.class, () -> service.crearVersion(codigo, vacia));
+    }
+
+    @Test
+    void rechazaParametroDePrecioNegativoYcodigoDesconocido() {
+        Estrategia actual = estrategia("RENDIMIENTO_POSICION", 1, true);
+        when(repository.findTopByCodigoOrderByVersionDesc(actual.getCodigo())).thenReturn(Optional.of(actual));
+        var service = new EstrategiaService(repository, clock, invalidator);
+
+        String codigo = actual.getCodigo();
+        var precioNegativo = new NuevaVersion(Map.of("DEL", Map.of("goles", 1d)),
+                Map.of("k", -0.1d, "topeVariacion", 0.2d, "piso", 0.1d));
+
+        assertThrows(IllegalArgumentException.class, () -> service.crearVersion(codigo, precioNegativo));
+        when(repository.findTopByCodigoOrderByVersionDesc("NO_EXISTE")).thenReturn(Optional.empty());
+        assertThrows(NoSuchElementException.class, () -> service.activar("NO_EXISTE"));
+    }
+
+    @Test
+    void rechazaMetricaYPosicionDesconocidas() {
+        Estrategia actual = estrategia("RENDIMIENTO_POSICION", 1, true);
+        when(repository.findTopByCodigoOrderByVersionDesc(actual.getCodigo())).thenReturn(Optional.of(actual));
+        var service = new EstrategiaService(repository, clock, invalidator);
+
+        String codigo = actual.getCodigo();
+        var posicionDesconocida = new NuevaVersion(Map.of("ATAQUE", Map.of("goles", 1d)), request().parametros());
+        var metricaDesconocida = new NuevaVersion(Map.of("DEL", Map.of("posesiones", 1d)), request().parametros());
+
+        assertAll(
+                () -> assertThrows(IllegalArgumentException.class, () -> service.crearVersion(codigo, posicionDesconocida)),
+                () -> assertThrows(IllegalArgumentException.class, () -> service.crearVersion(codigo, metricaDesconocida)));
+    }
+
+    private static NuevaVersion request() {
+        return new NuevaVersion(Map.of("DEL", Map.of("goles", 1d)),
+                Map.of("k", 0.4d, "topeVariacion", 0.2d, "piso", 0.1d));
+    }
+
+    private static Estrategia estrategia(String codigo, int version, boolean activa) {
+        return new Estrategia(codigo, codigo, version, Map.of("DEL", Map.of("goles", 1d)),
+                Map.of("k", 0.4d, "topeVariacion", 0.2d, "piso", 0.1d), activa,
+                Instant.parse("2026-01-01T00:00:00Z"));
+    }
+}
