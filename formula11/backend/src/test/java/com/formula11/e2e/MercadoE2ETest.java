@@ -2,7 +2,6 @@ package com.formula11.e2e;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.formula11.model.*;
 import com.formula11.security.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.junit.jupiter.api.*;
@@ -25,6 +24,12 @@ import com.formula11.persistence.mercado.CuentaRepository;
 import com.formula11.persistence.mercado.TenenciaRepository;
 import com.formula11.persistence.mercado.TransaccionRepository;
 import com.formula11.persistence.usuarios.UsuarioRepository;
+import com.formula11.model.jugadores.Jugador;
+import com.formula11.model.jugadores.Liga;
+import com.formula11.model.mercado.Cuenta;
+import com.formula11.model.mercado.Tenencia;
+import com.formula11.model.usuarios.Rol;
+import com.formula11.model.usuarios.Usuario;
 
 @SpringBootTest
 @AutoConfigureMockMvc

@@ -1,4 +1,4 @@
-package com.formula11.model;
+package com.formula11.model.cotizaciones;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;

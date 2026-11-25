@@ -1,6 +1,6 @@
 package com.formula11.adapter.footballdata;
 
-import com.formula11.model.Liga;
+import com.formula11.model.jugadores.Liga;
 import java.util.List;
 
 public interface FootballDataPort {

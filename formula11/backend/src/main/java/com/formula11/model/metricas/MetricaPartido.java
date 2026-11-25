@@ -1,8 +1,9 @@
-package com.formula11.model;
+package com.formula11.model.metricas;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import com.formula11.model.jugadores.Jugador;
 
 @Entity
 @Table(name = "metrica_partido")

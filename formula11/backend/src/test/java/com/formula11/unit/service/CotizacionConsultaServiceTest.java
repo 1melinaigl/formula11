@@ -2,10 +2,10 @@ package com.formula11.unit.service;
 
 import com.formula11.exception.RecursoNoEncontradoException;
 import com.formula11.exception.SoloSuperusuarioException;
-import com.formula11.model.Cotizacion;
-import com.formula11.model.Estrategia;
-import com.formula11.model.Jugador;
-import com.formula11.model.Liga;
+import com.formula11.model.cotizaciones.Cotizacion;
+import com.formula11.model.cotizaciones.Estrategia;
+import com.formula11.model.jugadores.Jugador;
+import com.formula11.model.jugadores.Liga;
 import com.formula11.persistence.cotizaciones.CotizacionRepository;
 import com.formula11.persistence.cotizaciones.EstrategiaRepository;
 import com.formula11.persistence.jugadores.JugadorRepository;

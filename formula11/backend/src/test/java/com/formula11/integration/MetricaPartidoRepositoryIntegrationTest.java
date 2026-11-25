@@ -1,6 +1,5 @@
 package com.formula11.integration;
 
-import com.formula11.model.*;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -15,6 +14,9 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.*;
 import com.formula11.persistence.jugadores.JugadorRepository;
 import com.formula11.persistence.metricas.MetricaPartidoRepository;
+import com.formula11.model.jugadores.Jugador;
+import com.formula11.model.jugadores.Liga;
+import com.formula11.model.metricas.MetricaPartido;
 
 @DataJpaTest
 @Testcontainers

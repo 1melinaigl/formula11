@@ -1,6 +1,6 @@
 package com.formula11.persistence.mercado;
 
-import com.formula11.model.Cuenta;
+import com.formula11.model.mercado.Cuenta;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;

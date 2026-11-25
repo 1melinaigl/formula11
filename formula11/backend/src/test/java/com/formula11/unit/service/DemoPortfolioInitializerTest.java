@@ -1,9 +1,9 @@
 package com.formula11.unit.service;
 
 import com.formula11.config.MercadoProperties;
-import com.formula11.model.Jugador;
-import com.formula11.model.Liga;
-import com.formula11.model.Usuario;
+import com.formula11.model.jugadores.Jugador;
+import com.formula11.model.jugadores.Liga;
+import com.formula11.model.usuarios.Usuario;
 import com.formula11.persistence.jugadores.JugadorRepository;
 import com.formula11.persistence.usuarios.UsuarioRepository;
 import com.formula11.service.portfolio.DemoPortfolioInitializer;

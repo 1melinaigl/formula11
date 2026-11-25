@@ -1,7 +1,7 @@
 package com.formula11.service.senales;
 
-import com.formula11.model.Jugador;
-import com.formula11.model.Senal;
+import com.formula11.model.jugadores.Jugador;
+import com.formula11.model.senales.Senal;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

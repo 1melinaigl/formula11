@@ -2,8 +2,8 @@ package com.formula11.service.portfolio;
 
 import com.formula11.config.MercadoProperties;
 import com.formula11.exception.RecursoNoEncontradoException;
-import com.formula11.model.Jugador;
-import com.formula11.model.Liga;
+import com.formula11.model.jugadores.Jugador;
+import com.formula11.model.jugadores.Liga;
 import com.formula11.persistence.jugadores.JugadorRepository;
 import com.formula11.persistence.usuarios.UsuarioRepository;
 import com.formula11.service.mercado.MercadoService;
@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import com.formula11.model.Usuario;
+import com.formula11.model.usuarios.Usuario;
 
 @Component
 @Profile("local")

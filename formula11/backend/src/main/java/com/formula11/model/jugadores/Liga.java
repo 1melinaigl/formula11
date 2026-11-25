@@ -1,4 +1,4 @@
-package com.formula11.model;
+package com.formula11.model.jugadores;
 
 public enum Liga {
     PREMIER_LEAGUE("Premier League"),

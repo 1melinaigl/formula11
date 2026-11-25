@@ -1,7 +1,7 @@
 package com.formula11.persistence.metricas;
 
-import com.formula11.model.Liga;
-import com.formula11.model.PendienteVinculacion;
+import com.formula11.model.jugadores.Liga;
+import com.formula11.model.metricas.PendienteVinculacion;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

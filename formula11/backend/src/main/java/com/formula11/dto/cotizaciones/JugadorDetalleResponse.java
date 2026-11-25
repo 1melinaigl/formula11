@@ -1,6 +1,6 @@
 package com.formula11.dto.cotizaciones;
 
-import com.formula11.model.Jugador;
+import com.formula11.model.jugadores.Jugador;
 import com.formula11.service.cotizaciones.JugadorDetalleResultado;
 
 /** Esquema {@code JugadorDetalleResponse}: los campos de {@code JugadorResponse} más la cotización actual. */

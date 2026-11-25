@@ -1,7 +1,7 @@
 package com.formula11.service.usuarios;
 
-import com.formula11.model.Rol;
-import com.formula11.model.Usuario;
+import com.formula11.model.usuarios.Rol;
+import com.formula11.model.usuarios.Usuario;
 
 import java.time.Instant;
 

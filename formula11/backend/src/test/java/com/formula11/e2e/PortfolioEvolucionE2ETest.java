@@ -1,11 +1,11 @@
 package com.formula11.e2e;
 
-import com.formula11.model.Cuenta;
-import com.formula11.model.Jugador;
-import com.formula11.model.Liga;
-import com.formula11.model.Rol;
-import com.formula11.model.Transaccion;
-import com.formula11.model.Usuario;
+import com.formula11.model.mercado.Cuenta;
+import com.formula11.model.jugadores.Jugador;
+import com.formula11.model.jugadores.Liga;
+import com.formula11.model.usuarios.Rol;
+import com.formula11.model.mercado.Transaccion;
+import com.formula11.model.usuarios.Usuario;
 import com.formula11.persistence.mercado.CuentaRepository;
 import com.formula11.persistence.jugadores.JugadorRepository;
 import com.formula11.persistence.mercado.TransaccionRepository;

@@ -1,6 +1,6 @@
 package com.formula11.security;
 
-import com.formula11.model.Rol;
+import com.formula11.model.usuarios.Rol;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;

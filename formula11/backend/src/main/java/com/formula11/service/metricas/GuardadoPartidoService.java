@@ -1,10 +1,10 @@
 package com.formula11.service.metricas;
 
 import com.formula11.adapter.whoscored.PartidoWhoScoredResumen;
-import com.formula11.model.Jugador;
-import com.formula11.model.MetricaPartido;
-import com.formula11.model.PartidoExterno;
-import com.formula11.model.PendienteVinculacion;
+import com.formula11.model.jugadores.Jugador;
+import com.formula11.model.metricas.MetricaPartido;
+import com.formula11.model.metricas.PartidoExterno;
+import com.formula11.model.metricas.PendienteVinculacion;
 import com.formula11.model.whoscored.MatchCentreParser;
 import com.formula11.persistence.metricas.MetricaPartidoRepository;
 import com.formula11.persistence.metricas.PartidoExternoRepository;

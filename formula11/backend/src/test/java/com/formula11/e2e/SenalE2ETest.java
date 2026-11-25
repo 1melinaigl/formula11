@@ -1,8 +1,8 @@
 package com.formula11.e2e;
 
-import com.formula11.model.Jugador;
-import com.formula11.model.Liga;
-import com.formula11.model.Senal;
+import com.formula11.model.jugadores.Jugador;
+import com.formula11.model.jugadores.Liga;
+import com.formula11.model.senales.Senal;
 import com.formula11.persistence.jugadores.JugadorRepository;
 import com.formula11.persistence.senales.SenalRepository;
 import org.junit.jupiter.api.AfterEach;

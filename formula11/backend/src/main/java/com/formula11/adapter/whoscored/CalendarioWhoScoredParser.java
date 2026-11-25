@@ -2,7 +2,7 @@ package com.formula11.adapter.whoscored;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.formula11.model.Liga;
+import com.formula11.model.jugadores.Liga;
 
 import java.io.IOException;
 import java.time.LocalDateTime;

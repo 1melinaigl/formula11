@@ -1,6 +1,6 @@
 package com.formula11.persistence.cotizaciones;
 
-import com.formula11.model.Cotizacion;
+import com.formula11.model.cotizaciones.Cotizacion;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;

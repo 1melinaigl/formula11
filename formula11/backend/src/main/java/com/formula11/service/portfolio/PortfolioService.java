@@ -2,11 +2,11 @@ package com.formula11.service.portfolio;
 
 import com.formula11.exception.AccesoPortfolioDenegadoException;
 import com.formula11.exception.RecursoNoEncontradoException;
-import com.formula11.model.Cuenta;
-import com.formula11.model.Jugador;
-import com.formula11.model.Tenencia;
-import com.formula11.model.Transaccion;
-import com.formula11.model.Usuario;
+import com.formula11.model.mercado.Cuenta;
+import com.formula11.model.jugadores.Jugador;
+import com.formula11.model.mercado.Tenencia;
+import com.formula11.model.mercado.Transaccion;
+import com.formula11.model.usuarios.Usuario;
 import com.formula11.persistence.mercado.CuentaRepository;
 import com.formula11.persistence.mercado.AuditoriaMercadoRepository;
 import com.formula11.persistence.mercado.TenenciaRepository;
@@ -32,7 +32,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import com.formula11.model.AuditoriaMercado;
+import com.formula11.model.mercado.AuditoriaMercado;
 import java.util.stream.Collectors;
 
 @Service

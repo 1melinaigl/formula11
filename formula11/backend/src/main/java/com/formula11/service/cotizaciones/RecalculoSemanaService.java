@@ -1,6 +1,5 @@
 package com.formula11.service.cotizaciones;
 
-import com.formula11.model.*;
 import com.formula11.model.valuacion.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +14,10 @@ import com.formula11.persistence.cotizaciones.CotizacionRepository;
 import com.formula11.persistence.cotizaciones.EstrategiaRepository;
 import com.formula11.persistence.jugadores.JugadorRepository;
 import com.formula11.persistence.metricas.MetricaPartidoRepository;
+import com.formula11.model.cotizaciones.Cotizacion;
+import com.formula11.model.cotizaciones.Estrategia;
+import com.formula11.model.jugadores.Jugador;
+import com.formula11.model.metricas.MetricaPartido;
 
 @Service
 public class RecalculoSemanaService {

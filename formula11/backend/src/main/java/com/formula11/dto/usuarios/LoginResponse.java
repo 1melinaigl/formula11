@@ -1,6 +1,6 @@
 package com.formula11.dto.usuarios;
 
-import com.formula11.model.Rol;
+import com.formula11.model.usuarios.Rol;
 import com.formula11.service.usuarios.UsuarioAutenticado;
 
 public record LoginResponse(Long id, String nombre, String email, Rol rol, String token) {

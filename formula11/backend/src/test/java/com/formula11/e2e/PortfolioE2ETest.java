@@ -1,11 +1,11 @@
 package com.formula11.e2e;
 
-import com.formula11.model.Cuenta;
-import com.formula11.model.Jugador;
-import com.formula11.model.Liga;
-import com.formula11.model.Tenencia;
-import com.formula11.model.Rol;
-import com.formula11.model.Usuario;
+import com.formula11.model.mercado.Cuenta;
+import com.formula11.model.jugadores.Jugador;
+import com.formula11.model.jugadores.Liga;
+import com.formula11.model.mercado.Tenencia;
+import com.formula11.model.usuarios.Rol;
+import com.formula11.model.usuarios.Usuario;
 import com.formula11.security.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

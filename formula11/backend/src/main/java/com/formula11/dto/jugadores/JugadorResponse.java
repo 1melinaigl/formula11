@@ -1,6 +1,6 @@
 package com.formula11.dto.jugadores;
 
-import com.formula11.model.Jugador;
+import com.formula11.model.jugadores.Jugador;
 
 public record JugadorResponse(Long id, String nombre, String equipo, String liga, String posicion) {
     public static JugadorResponse from(Jugador jugador) {

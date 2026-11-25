@@ -1,10 +1,10 @@
 package com.formula11.service.usuarios;
 
 import com.formula11.exception.CredencialesInvalidasException;
-import com.formula11.model.Usuario;
+import com.formula11.model.usuarios.Usuario;
 import com.formula11.persistence.usuarios.UsuarioRepository;
 import com.formula11.persistence.mercado.CuentaRepository;
-import com.formula11.model.Cuenta;
+import com.formula11.model.mercado.Cuenta;
 import java.time.Clock;
 import com.formula11.security.JwtService;
 import org.springframework.dao.DataIntegrityViolationException;

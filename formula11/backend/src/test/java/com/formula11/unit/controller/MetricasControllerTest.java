@@ -1,7 +1,7 @@
 package com.formula11.unit.controller;
 
 import com.formula11.controller.metricas.MetricasController;
-import com.formula11.model.EjecucionMetricas;
+import com.formula11.model.metricas.EjecucionMetricas;
 import com.formula11.service.metricas.CargaMetricasService;
 import com.formula11.service.metricas.PaginaPendientes;
 import com.formula11.service.metricas.ResumenEjecucion;

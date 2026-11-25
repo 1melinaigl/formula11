@@ -1,7 +1,7 @@
 package com.formula11.adapter.footballdata;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.formula11.model.Liga;
+import com.formula11.model.jugadores.Liga;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBufferLimitException;

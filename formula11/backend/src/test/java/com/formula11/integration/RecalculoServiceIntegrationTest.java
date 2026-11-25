@@ -1,6 +1,5 @@
 package com.formula11.integration;
 
-import com.formula11.model.*;
 import com.formula11.service.cotizaciones.RecalculoService;
 import com.formula11.model.valuacion.CalculadoraPrecio;
 import com.formula11.model.valuacion.ParametrosPrecio;
@@ -21,6 +20,11 @@ import com.formula11.persistence.cotizaciones.CotizacionRepository;
 import com.formula11.persistence.cotizaciones.EstrategiaRepository;
 import com.formula11.persistence.jugadores.JugadorRepository;
 import com.formula11.persistence.metricas.MetricaPartidoRepository;
+import com.formula11.model.cotizaciones.Cotizacion;
+import com.formula11.model.cotizaciones.Estrategia;
+import com.formula11.model.jugadores.Jugador;
+import com.formula11.model.jugadores.Liga;
+import com.formula11.model.metricas.MetricaPartido;
 
 @SpringBootTest
 @Testcontainers

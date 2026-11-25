@@ -1,6 +1,6 @@
 package com.formula11.unit.model;
 
-import com.formula11.model.Estrategia;
+import com.formula11.model.cotizaciones.Estrategia;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;

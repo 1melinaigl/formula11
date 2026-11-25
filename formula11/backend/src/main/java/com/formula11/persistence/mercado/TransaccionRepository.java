@@ -1,6 +1,6 @@
 package com.formula11.persistence.mercado;
 
-import com.formula11.model.Transaccion;
+import com.formula11.model.mercado.Transaccion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -1,4 +1,4 @@
-package com.formula11.model;
+package com.formula11.model.usuarios;
 
 import com.formula11.model.excepciones.DatoInvalidoException;
 

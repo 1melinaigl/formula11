@@ -1,7 +1,7 @@
 package com.formula11.unit.service;
 
-import com.formula11.model.Jugador;
-import com.formula11.model.Liga;
+import com.formula11.model.jugadores.Jugador;
+import com.formula11.model.jugadores.Liga;
 import com.formula11.model.whoscored.MatchCentreParser;
 import com.formula11.persistence.jugadores.JugadorRepository;
 import com.formula11.service.metricas.JugadorVinculacionService;

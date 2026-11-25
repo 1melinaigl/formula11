@@ -1,7 +1,7 @@
 package com.formula11.persistence.metricas;
 
-import com.formula11.model.Liga;
-import com.formula11.model.PartidoExterno;
+import com.formula11.model.jugadores.Liga;
+import com.formula11.model.metricas.PartidoExterno;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.time.LocalDate;
 import java.util.List;

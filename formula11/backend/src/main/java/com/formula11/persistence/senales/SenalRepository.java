@@ -1,6 +1,6 @@
 package com.formula11.persistence.senales;
 
-import com.formula11.model.Senal;
+import com.formula11.model.senales.Senal;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;

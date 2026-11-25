@@ -1,6 +1,6 @@
 package com.formula11.service.mercado;
 
-import com.formula11.model.Transaccion;
+import com.formula11.model.mercado.Transaccion;
 import java.math.BigDecimal;
 
 

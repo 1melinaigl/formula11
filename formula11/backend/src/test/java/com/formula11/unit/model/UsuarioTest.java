@@ -2,7 +2,7 @@ package com.formula11.unit.model;
 
 import com.formula11.model.excepciones.DatoInvalidoException;
 
-import com.formula11.model.Usuario;
+import com.formula11.model.usuarios.Usuario;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 

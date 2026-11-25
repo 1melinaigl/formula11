@@ -1,7 +1,7 @@
 package com.formula11.service.cotizaciones;
 
-import com.formula11.model.Cotizacion;
-import com.formula11.model.VariacionCotizacion;
+import com.formula11.model.cotizaciones.Cotizacion;
+import com.formula11.model.cotizaciones.VariacionCotizacion;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

@@ -1,6 +1,6 @@
 package com.formula11.service.cotizaciones;
 
-import com.formula11.model.Jugador;
+import com.formula11.model.jugadores.Jugador;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;

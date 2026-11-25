@@ -1,7 +1,8 @@
-package com.formula11.model;
+package com.formula11.model.metricas;
 
 import jakarta.persistence.*;
 import java.time.Instant;
+import com.formula11.model.jugadores.Liga;
 
 @Entity
 @Table(name = "pendiente_vinculacion")

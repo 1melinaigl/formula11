@@ -1,4 +1,4 @@
-package com.formula11.model;
+package com.formula11.model.senales;
 
 import com.formula11.model.excepciones.DatoInvalidoException;
 
@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
+import com.formula11.model.jugadores.Jugador;
 
 /** Señal de jugador subvaluado detectada en una semana. Única por jugador, fecha y tipo. */
 @Entity

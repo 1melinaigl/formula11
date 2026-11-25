@@ -1,4 +1,4 @@
-package com.formula11.model;
+package com.formula11.model.mercado;
 
 import com.formula11.model.excepciones.DatoInvalidoException;
 
@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import java.time.Instant;
+import com.formula11.model.usuarios.Usuario;
 
 @Entity
 @Table(name = "auditoria_mercado")

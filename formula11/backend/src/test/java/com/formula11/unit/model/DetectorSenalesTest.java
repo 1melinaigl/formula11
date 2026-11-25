@@ -2,7 +2,7 @@ package com.formula11.unit.model;
 
 import com.formula11.model.excepciones.DatoInvalidoException;
 
-import com.formula11.model.Senal;
+import com.formula11.model.senales.Senal;
 import com.formula11.model.senales.DetectorSenales;
 import com.formula11.model.senales.DetectorSenales.Candidato;
 import com.formula11.model.senales.DetectorSenales.Detectada;

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.formula11.config.ClockConfig;
 import com.formula11.config.WhoScoredProperties;
-import com.formula11.model.Liga;
+import com.formula11.model.jugadores.Liga;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,6 +1,6 @@
 package com.formula11.persistence.metricas;
 
-import com.formula11.model.EjecucionMetricaLiga;
+import com.formula11.model.metricas.EjecucionMetricaLiga;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 

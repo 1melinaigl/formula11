@@ -1,6 +1,6 @@
 package com.formula11.service.cotizaciones;
 
-import com.formula11.model.Estrategia;
+import com.formula11.model.cotizaciones.Estrategia;
 import com.formula11.persistence.cotizaciones.EstrategiaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,7 +1,7 @@
 package com.formula11.integration;
 
 import com.formula11.security.JwtService;
-import com.formula11.model.Rol;
+import com.formula11.model.usuarios.Rol;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

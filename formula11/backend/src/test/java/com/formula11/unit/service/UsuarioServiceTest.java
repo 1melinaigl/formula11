@@ -1,6 +1,6 @@
 package com.formula11.unit.service;
 
-import com.formula11.model.Usuario;
+import com.formula11.model.usuarios.Usuario;
 import com.formula11.persistence.usuarios.UsuarioRepository;
 import com.formula11.persistence.mercado.CuentaRepository;
 import com.formula11.config.MercadoProperties;

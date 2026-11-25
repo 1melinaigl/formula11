@@ -1,6 +1,6 @@
 package com.formula11.controller.metricas;
 
-import com.formula11.model.EjecucionMetricas;
+import com.formula11.model.metricas.EjecucionMetricas;
 import com.formula11.service.metricas.CargaMetricasService;
 import com.formula11.dto.metricas.EjecucionMetricasResponse;
 import com.formula11.dto.metricas.PendientesPageResponse;

@@ -6,7 +6,7 @@ import com.formula11.adapter.footballdata.FootballApiProperties;
 import com.formula11.adapter.footballdata.FootballDataAdapter;
 import com.formula11.adapter.footballdata.FootballDataException;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.formula11.model.Liga;
+import com.formula11.model.jugadores.Liga;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestClient;

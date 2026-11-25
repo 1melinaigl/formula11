@@ -1,6 +1,6 @@
 package com.formula11.persistence.cotizaciones;
 
-import com.formula11.model.Estrategia;
+import com.formula11.model.cotizaciones.Estrategia;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;

@@ -1,6 +1,6 @@
 package com.formula11.config;
 
-import com.formula11.model.Liga;
+import com.formula11.model.jugadores.Liga;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;

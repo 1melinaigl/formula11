@@ -1,6 +1,6 @@
 package com.formula11.service.portfolio;
 
-import com.formula11.model.Jugador;
+import com.formula11.model.jugadores.Jugador;
 import java.math.BigDecimal;
 
 public record PosicionPortfolioResultado(

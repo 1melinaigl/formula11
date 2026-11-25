@@ -1,6 +1,6 @@
 package com.formula11.service.cotizaciones;
 
-import com.formula11.model.Estrategia;
+import com.formula11.model.cotizaciones.Estrategia;
 
 import java.time.Instant;
 import java.util.Map;

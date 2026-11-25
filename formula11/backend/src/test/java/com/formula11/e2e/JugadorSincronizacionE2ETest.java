@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.formula11.adapter.footballdata.ExternalPlayer;
 import com.formula11.adapter.footballdata.ExternalTeam;
 import com.formula11.adapter.footballdata.FootballDataPort;
-import com.formula11.model.Liga;
+import com.formula11.model.jugadores.Liga;
 import com.formula11.persistence.jugadores.JugadorRepository;
 import com.formula11.persistence.mercado.TenenciaRepository;
 import org.junit.jupiter.api.BeforeEach;

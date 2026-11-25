@@ -3,7 +3,7 @@ package com.formula11.controller.portfolio;
 import com.formula11.dto.portfolio.PortfolioResponse;
 import com.formula11.dto.portfolio.EvolucionPortfolioResponse;
 import com.formula11.dto.portfolio.TransaccionesPageResponse;
-import com.formula11.model.Transaccion;
+import com.formula11.model.mercado.Transaccion;
 import com.formula11.service.portfolio.PuntoEvolucionResultado;
 import java.time.LocalDate;
 import java.util.List;

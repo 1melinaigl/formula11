@@ -2,10 +2,10 @@ package com.formula11.unit.service;
 
 import com.formula11.adapter.whoscored.WhoScoredPort;
 import com.formula11.config.WhoScoredProperties;
-import com.formula11.model.EjecucionMetricaLiga;
-import com.formula11.model.EjecucionMetricas;
-import com.formula11.model.Liga;
-import com.formula11.model.PendienteVinculacion;
+import com.formula11.model.metricas.EjecucionMetricaLiga;
+import com.formula11.model.metricas.EjecucionMetricas;
+import com.formula11.model.jugadores.Liga;
+import com.formula11.model.metricas.PendienteVinculacion;
 import com.formula11.persistence.metricas.EjecucionMetricaLigaRepository;
 import com.formula11.persistence.metricas.EjecucionMetricasRepository;
 import com.formula11.persistence.metricas.PendienteVinculacionRepository;

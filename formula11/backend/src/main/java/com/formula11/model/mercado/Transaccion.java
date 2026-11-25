@@ -1,4 +1,4 @@
-package com.formula11.model;
+package com.formula11.model.mercado;
 
 import com.formula11.model.excepciones.DatoInvalidoException;
 
@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
+import com.formula11.model.jugadores.Jugador;
+import com.formula11.model.usuarios.Usuario;
 
 @Entity
 @Table(name = "transacciones")

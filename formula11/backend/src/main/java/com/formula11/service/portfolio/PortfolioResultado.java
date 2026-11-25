@@ -1,6 +1,6 @@
 package com.formula11.service.portfolio;
 
-import com.formula11.model.Usuario;
+import com.formula11.model.usuarios.Usuario;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;

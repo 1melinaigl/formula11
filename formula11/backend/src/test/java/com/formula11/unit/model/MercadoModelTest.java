@@ -3,10 +3,14 @@ package com.formula11.unit.model;
 import com.formula11.model.excepciones.DatoInvalidoException;
 import com.formula11.model.excepciones.CantidadInsuficienteException;
 
-import com.formula11.model.*;
 import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import static org.junit.jupiter.api.Assertions.*;
+import com.formula11.model.jugadores.Jugador;
+import com.formula11.model.jugadores.Liga;
+import com.formula11.model.mercado.Cuenta;
+import com.formula11.model.mercado.Tenencia;
+import com.formula11.model.usuarios.Usuario;
 
 class MercadoModelTest {
     private final Usuario usuario = new Usuario("Ana", "ana-model@example.com", "hash");

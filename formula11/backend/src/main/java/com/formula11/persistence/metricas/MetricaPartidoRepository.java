@@ -1,6 +1,6 @@
 package com.formula11.persistence.metricas;
 
-import com.formula11.model.MetricaPartido;
+import com.formula11.model.metricas.MetricaPartido;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

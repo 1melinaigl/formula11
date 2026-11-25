@@ -1,4 +1,4 @@
-package com.formula11.model;
+package com.formula11.model.cotizaciones;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
+import com.formula11.model.jugadores.Jugador;
 
 @Entity
 @Table(name = "cotizacion", uniqueConstraints = @UniqueConstraint(name = "ux_cotizacion_jugador_estrategia_fecha", columnNames = {"jugador_id", "estrategia", "fecha"}))

@@ -1,6 +1,6 @@
 package com.formula11.integration;
 
-import com.formula11.model.Usuario;
+import com.formula11.model.usuarios.Usuario;
 import com.formula11.persistence.usuarios.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

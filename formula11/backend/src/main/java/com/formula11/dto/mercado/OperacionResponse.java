@@ -1,6 +1,6 @@
 package com.formula11.dto.mercado;
 
-import com.formula11.model.Transaccion;
+import com.formula11.model.mercado.Transaccion;
 import com.formula11.service.mercado.ResultadoOperacion;
 import com.formula11.dto.jugadores.JugadorResponse;
 import java.math.BigDecimal;

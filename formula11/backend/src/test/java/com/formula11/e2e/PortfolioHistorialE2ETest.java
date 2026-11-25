@@ -1,10 +1,10 @@
 package com.formula11.e2e;
 
-import com.formula11.model.AuditoriaMercado;
-import com.formula11.model.Jugador;
-import com.formula11.model.Liga;
-import com.formula11.model.Transaccion;
-import com.formula11.model.Usuario;
+import com.formula11.model.mercado.AuditoriaMercado;
+import com.formula11.model.jugadores.Jugador;
+import com.formula11.model.jugadores.Liga;
+import com.formula11.model.mercado.Transaccion;
+import com.formula11.model.usuarios.Usuario;
 import com.formula11.persistence.mercado.AuditoriaMercadoRepository;
 import com.formula11.persistence.jugadores.JugadorRepository;
 import com.formula11.persistence.mercado.TransaccionRepository;
@@ -137,6 +137,6 @@ class PortfolioHistorialE2ETest {
     }
 
     private String token(Usuario usuario) {
-        return jwtService.generarToken(usuario.getId(), usuario.getEmail(), com.formula11.model.Rol.USUARIO);
+        return jwtService.generarToken(usuario.getId(), usuario.getEmail(), com.formula11.model.usuarios.Rol.USUARIO);
     }
 }

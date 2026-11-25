@@ -6,7 +6,7 @@ import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.WaitUntilState;
 import com.formula11.config.ClockConfig;
 import com.formula11.config.WhoScoredProperties;
-import com.formula11.model.Liga;
+import com.formula11.model.jugadores.Liga;
 
 import java.nio.file.Path;
 import java.time.LocalDateTime;

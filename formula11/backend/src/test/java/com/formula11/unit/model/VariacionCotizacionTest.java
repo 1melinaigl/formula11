@@ -2,7 +2,7 @@ package com.formula11.unit.model;
 
 import com.formula11.model.excepciones.DatoInvalidoException;
 
-import com.formula11.model.VariacionCotizacion;
+import com.formula11.model.cotizaciones.VariacionCotizacion;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;

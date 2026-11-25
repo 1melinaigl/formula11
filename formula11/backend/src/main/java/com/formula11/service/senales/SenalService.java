@@ -1,10 +1,10 @@
 package com.formula11.service.senales;
 
 import com.formula11.config.SenalesProperties;
-import com.formula11.model.Cotizacion;
-import com.formula11.model.Estrategia;
-import com.formula11.model.Jugador;
-import com.formula11.model.Senal;
+import com.formula11.model.cotizaciones.Cotizacion;
+import com.formula11.model.cotizaciones.Estrategia;
+import com.formula11.model.jugadores.Jugador;
+import com.formula11.model.senales.Senal;
 import com.formula11.model.senales.DetectorSenales;
 import com.formula11.model.senales.MedidorAciertos;
 import com.formula11.persistence.cotizaciones.CotizacionRepository;
