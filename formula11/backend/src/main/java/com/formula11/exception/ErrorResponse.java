@@ -1,4 +1,4 @@
-package com.formula11.dto;
+package com.formula11.exception;
 
 import java.time.Instant;
 

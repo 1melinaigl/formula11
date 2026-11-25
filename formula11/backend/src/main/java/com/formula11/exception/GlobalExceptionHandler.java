@@ -1,6 +1,5 @@
 package com.formula11.exception;
 
-import com.formula11.dto.ErrorResponse;
 import com.formula11.adapter.footballdata.FootballDataException;
 import com.formula11.model.excepciones.CantidadInsuficienteException;
 import com.formula11.model.excepciones.DatoInvalidoException;

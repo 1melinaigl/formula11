@@ -1,7 +1,7 @@
 package com.formula11.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.formula11.dto.ErrorResponse;
+import com.formula11.exception.ErrorResponse;
 import com.formula11.config.CorrelationIdFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
