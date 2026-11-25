@@ -1,0 +1,15 @@
+package com.formula11.dto.cotizaciones;
+
+import com.formula11.service.cotizaciones.HistorialCotizacionesResultado;
+
+import java.util.List;
+
+/** Esquema {@code HistorialCotizacionesResponse}. */
+public record HistorialCotizacionesResponse(Long jugadorId, String estrategia, List<CotizacionResponse> cotizaciones,
+                                            int page, int size, long totalElements, int totalPages) {
+    public static HistorialCotizacionesResponse from(HistorialCotizacionesResultado resultado) {
+        return new HistorialCotizacionesResponse(resultado.jugadorId(), resultado.estrategia(),
+                resultado.cotizaciones().stream().map(CotizacionResponse::from).toList(),
+                resultado.page(), resultado.size(), resultado.totalElements(), resultado.totalPages());
+    }
+}

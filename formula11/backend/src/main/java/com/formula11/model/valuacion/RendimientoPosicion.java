@@ -86,13 +86,20 @@ public final class RendimientoPosicion implements EstrategiaValuacion {
         return partes[partes.length - 1];
     }
 
+    /** Las métricas que no aplican al partido vienen como NaN y no cuentan para el promedio. */
+    private static void acumularMetricas(MetricaPartidoInput value, Map<String, List<Double>> valuesByMetric) {
+        for (var metric : METRICS.entrySet()) {
+            double number = metric.getValue().applyAsDouble(value);
+            if (!Double.isNaN(number)) {
+                valuesByMetric.computeIfAbsent(metric.getKey(), k -> new ArrayList<>()).add(number);
+            }
+        }
+    }
+
     private static Map<String, Double> promedios(List<MetricaPartidoInput> values) {
         Map<String, List<Double>> valuesByMetric = new HashMap<>();
         for (var value : values) {
-            for (var metric : METRICS.entrySet()) {
-                double number = metric.getValue().applyAsDouble(value);
-                if (!Double.isNaN(number)) valuesByMetric.computeIfAbsent(metric.getKey(), k -> new ArrayList<>()).add(number);
-            }
+            acumularMetricas(value, valuesByMetric);
         }
         return valuesByMetric.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
                 e -> e.getValue().stream().mapToDouble(Double::doubleValue).average().orElse(0)));

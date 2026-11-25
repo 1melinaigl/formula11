@@ -1,7 +1,7 @@
 package com.formula11.unit.config;
 
 import com.formula11.config.WhoScoredProperties;
-import com.formula11.model.Liga;
+import com.formula11.model.jugadores.Liga;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;

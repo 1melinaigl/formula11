@@ -1,6 +1,6 @@
 package com.formula11.config;
 
-import com.formula11.model.Liga;
+import com.formula11.model.jugadores.Liga;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Arrays;
 
 @Validated
 @ConfigurationProperties(prefix = "app.whoscored")
@@ -80,7 +81,7 @@ public class WhoScoredProperties {
     @AssertTrue(message = "app.whoscored.ligas debe contener las cinco ligas con stage IDs positivos")
     public boolean isLigasCompletas() {
         return ligas != null && ligas.size() == Liga.values().length
-                && java.util.Arrays.stream(Liga.values()).allMatch(liga -> {
+                && Arrays.stream(Liga.values()).allMatch(liga -> {
                     Long stageId = ligas.get(liga);
                     return stageId != null && stageId > 0;
                 });

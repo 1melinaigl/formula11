@@ -6,7 +6,12 @@ export const endpoints = {
   estrategias: '/api/estrategias',
   activarEstrategia: (codigo) => `/api/estrategias/${encodeURIComponent(codigo)}/activar`,
   jugador: (id) => `/api/jugadores/${encodeURIComponent(id)}`,
-  cotizacionesJugador: (id, estrategia) => `/api/jugadores/${encodeURIComponent(id)}/cotizaciones${estrategia ? `?estrategia=${estrategia}` : ''}`,
+  cotizacionesJugador: (id, { estrategia, page = 0, size } = {}) => {
+    const params = new URLSearchParams({ page: String(page) })
+    if (estrategia) params.set('estrategia', estrategia)
+    if (size) params.set('size', String(size))
+    return `/api/jugadores/${encodeURIComponent(id)}/cotizaciones?${params.toString()}`
+  },
   cotizacionAFecha: (id, fecha) => `/api/jugadores/${encodeURIComponent(id)}/cotizaciones/vigente?fecha=${encodeURIComponent(fecha)}`,
   mercadoJugador: (id) => `/api/jugadores/${encodeURIComponent(id)}/mercado`,
   comprar: '/api/ordenes/compra',

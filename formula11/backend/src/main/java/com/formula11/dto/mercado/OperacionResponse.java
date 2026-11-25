@@ -1,0 +1,41 @@
+package com.formula11.dto.mercado;
+
+import com.formula11.model.mercado.Transaccion;
+import com.formula11.service.mercado.ResultadoOperacion;
+import com.formula11.dto.jugadores.JugadorResponse;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.math.RoundingMode;
+
+public record OperacionResponse(
+        Long id,
+        String tipo,
+        JugadorResponse jugador,
+        int cantidad,
+        BigDecimal precioUnitario,
+        BigDecimal total,
+        BigDecimal saldoPosterior,
+        String contraparte,
+        Instant fecha,
+        String estrategia,
+        Integer version
+) {
+    public static OperacionResponse from(ResultadoOperacion resultado) {
+        return from(resultado.transaccion(), resultado.saldoPosterior());
+    }
+
+    public static OperacionResponse from(Transaccion transaccion, BigDecimal saldoPosterior) {
+        return new OperacionResponse(
+                transaccion.getId(),
+                transaccion.getTipo().name(),
+                JugadorResponse.from(transaccion.getJugador()),
+                transaccion.getCantidad(),
+                transaccion.getPrecioUnitario(),
+                transaccion.getTotal(),
+                saldoPosterior.setScale(4, RoundingMode.HALF_UP),
+                "superusuario",
+                transaccion.getFecha(),
+                transaccion.getEstrategia(),
+                transaccion.getVersionCotizacion());
+    }
+}

@@ -2,8 +2,7 @@ package com.formula11.model.senales;
 
 import com.formula11.model.excepciones.DatoInvalidoException;
 
-import com.formula11.model.Senal;
-import com.formula11.model.VariacionCotizacion;
+import com.formula11.model.cotizaciones.VariacionCotizacion;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

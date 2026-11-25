@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import PaginacionCatalogo from '../components/catalogo/PaginacionCatalogo'
 import PosicionJugador from '../components/catalogo/PosicionJugador'
 import { posiciones } from '../components/catalogo/posiciones'
 import AvisoError from '../components/comun/AvisoError'
@@ -16,24 +17,40 @@ import { useMercado } from '../hooks/useMercado'
 import { useSesion } from '../hooks/useSesion'
 import AccesoDenegadoPage from './AccesoDenegadoPage'
 
-function PanelCotizaciones({ cotizaciones, error, estrategiaActiva, puedeComparar }) {
+function PanelCotizaciones({ detalle }) {
+  const { actuales, cotizaciones, errorCotizaciones: error, estrategiaActiva, puedeComparar } = detalle
   if (error && cotizaciones.length === 0) return <AvisoError error={error} />
   if (cotizaciones.length === 0) return <EstadoVacio titulo="Sin cotizaciones" detalle="Este jugador todavía no tiene cotizaciones calculadas." />
   return (
     <>
       {error && <AvisoError error={error} />}
       <ResumenCotizacion
-        resumen={resumenPorEstrategia(cotizaciones, puedeComparar ? Object.keys(ESTRATEGIAS) : undefined)}
+        resumen={resumenPorEstrategia(actuales, puedeComparar ? Object.keys(ESTRATEGIAS) : undefined)}
         estrategiaActiva={estrategiaActiva}
       />
-      <GraficoEvolucion cotizaciones={cotizaciones} estrategiaActiva={estrategiaActiva} />
-      <TablaCotizaciones cotizaciones={cotizaciones} />
+      {detalle.cargandoPagina
+        ? <EstadoCarga mensaje="Cargando cotizaciones..." />
+        : (
+          <>
+            <GraficoEvolucion cotizaciones={cotizaciones} estrategiaActiva={estrategiaActiva} />
+            <TablaCotizaciones cotizaciones={cotizaciones} />
+          </>
+        )}
+      <PaginacionCatalogo
+        page={detalle.page}
+        totalPages={detalle.totalPages}
+        cambiarPagina={detalle.cambiarPagina}
+        etiqueta="Paginación de las cotizaciones"
+        textoAnterior="Más recientes"
+        textoSiguiente="Más antiguas"
+      />
     </>
   )
 }
 
 function DetalleJugador({ id, operacionInicial, puedeOperar }) {
-  const { jugador, cotizaciones, cargando, error, errorCotizaciones, estrategiaActiva, puedeComparar } = useDetalleJugador(id)
+  const detalle = useDetalleJugador(id)
+  const { jugador, cargando, error } = detalle
   const mercado = useMercado(id, { habilitado: puedeOperar })
 
   if (cargando) return <EstadoCarga mensaje="Cargando jugador..." />
@@ -55,7 +72,7 @@ function DetalleJugador({ id, operacionInicial, puedeOperar }) {
       </div>
       <section className="player-card quote-panel" aria-labelledby="titulo-cotizaciones">
         <div className="player-card-heading"><span id="titulo-cotizaciones">Evolución de la cotización</span></div>
-        <PanelCotizaciones cotizaciones={cotizaciones} error={errorCotizaciones} estrategiaActiva={estrategiaActiva} puedeComparar={puedeComparar} />
+        <PanelCotizaciones detalle={detalle} />
         <CotizacionAFecha jugadorId={id} />
       </section>
     </div>
