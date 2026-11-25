@@ -1,4 +1,4 @@
-package com.formula11.controller;
+package com.formula11.controller.cotizaciones;
 
 import com.formula11.service.cotizaciones.EstrategiaService;
 import com.formula11.service.cotizaciones.NuevaVersion;

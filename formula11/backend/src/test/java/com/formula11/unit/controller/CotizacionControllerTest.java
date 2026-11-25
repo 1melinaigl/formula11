@@ -1,6 +1,6 @@
 package com.formula11.unit.controller;
 
-import com.formula11.controller.CotizacionController;
+import com.formula11.controller.cotizaciones.CotizacionController;
 import com.formula11.service.cotizaciones.RecalculoService;
 import com.formula11.service.cotizaciones.RecalculoResultado;
 import org.junit.jupiter.api.Test;

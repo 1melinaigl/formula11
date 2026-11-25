@@ -1,4 +1,4 @@
-package com.formula11.controller;
+package com.formula11.controller.jugadores;
 
 import com.formula11.dto.jugadores.JugadoresPageResponse;
 import com.formula11.service.jugadores.JugadorService;

@@ -1,4 +1,4 @@
-package com.formula11.controller;
+package com.formula11.controller.cotizaciones;
 
 import com.formula11.dto.cotizaciones.CotizacionResponse;
 import com.formula11.dto.cotizaciones.HistorialCotizacionesResponse;

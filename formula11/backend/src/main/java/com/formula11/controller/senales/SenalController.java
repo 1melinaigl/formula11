@@ -1,4 +1,4 @@
-package com.formula11.controller;
+package com.formula11.controller.senales;
 
 import com.formula11.dto.senales.AciertosResponse;
 import com.formula11.dto.senales.SenalesPageResponse;

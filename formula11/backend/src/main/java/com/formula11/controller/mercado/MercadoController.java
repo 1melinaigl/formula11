@@ -1,4 +1,4 @@
-package com.formula11.controller;
+package com.formula11.controller.mercado;
 
 import com.formula11.dto.mercado.OperacionResponse;
 import com.formula11.dto.mercado.OrdenRequest;

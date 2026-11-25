@@ -1,4 +1,4 @@
-package com.formula11.controller;
+package com.formula11.controller.portfolio;
 
 import com.formula11.dto.portfolio.PortfolioResponse;
 import com.formula11.dto.portfolio.EvolucionPortfolioResponse;

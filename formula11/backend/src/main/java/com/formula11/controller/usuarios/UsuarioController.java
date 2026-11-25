@@ -1,4 +1,4 @@
-package com.formula11.controller;
+package com.formula11.controller.usuarios;
 
 import com.formula11.dto.usuarios.RegistroUsuarioRequest;
 import com.formula11.dto.usuarios.RegistroUsuarioResponse;

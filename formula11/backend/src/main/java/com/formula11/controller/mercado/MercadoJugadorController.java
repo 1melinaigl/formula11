@@ -1,4 +1,4 @@
-package com.formula11.controller;
+package com.formula11.controller.mercado;
 
 import com.formula11.dto.mercado.MercadoJugadorResponse;
 import com.formula11.service.mercado.MercadoService;
