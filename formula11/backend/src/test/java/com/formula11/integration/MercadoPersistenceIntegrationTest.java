@@ -1,7 +1,6 @@
 package com.formula11.integration;
 
 import com.formula11.model.*;
-import com.formula11.persistence.*;
 import com.formula11.service.usuarios.SuperusuarioInitializer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +14,12 @@ import java.math.BigDecimal;
 import static org.junit.jupiter.api.Assertions.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.formula11.model.AuditoriaMercado;
+import com.formula11.persistence.jugadores.JugadorRepository;
+import com.formula11.persistence.mercado.AuditoriaMercadoRepository;
+import com.formula11.persistence.mercado.CuentaRepository;
+import com.formula11.persistence.mercado.TenenciaRepository;
+import com.formula11.persistence.mercado.TransaccionRepository;
+import com.formula11.persistence.usuarios.UsuarioRepository;
 
 @SpringBootTest
 @Testcontainers

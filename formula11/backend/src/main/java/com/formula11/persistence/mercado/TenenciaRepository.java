@@ -1,4 +1,4 @@
-package com.formula11.persistence;
+package com.formula11.persistence.mercado;
 
 import com.formula11.model.Tenencia;
 import jakarta.persistence.LockModeType;

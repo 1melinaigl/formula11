@@ -1,7 +1,7 @@
 package com.formula11.integration;
 
 import com.formula11.model.Estrategia;
-import com.formula11.persistence.EstrategiaRepository;
+import com.formula11.persistence.cotizaciones.EstrategiaRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;

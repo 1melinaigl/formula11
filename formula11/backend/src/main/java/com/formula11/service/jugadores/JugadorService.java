@@ -2,7 +2,7 @@ package com.formula11.service.jugadores;
 
 import com.formula11.model.Jugador;
 import com.formula11.model.Liga;
-import com.formula11.persistence.JugadorRepository;
+import com.formula11.persistence.jugadores.JugadorRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

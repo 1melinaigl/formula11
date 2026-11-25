@@ -1,7 +1,6 @@
 package com.formula11.integration;
 
 import com.formula11.model.*;
-import com.formula11.persistence.*;
 import com.formula11.service.cotizaciones.RecalculoService;
 import com.formula11.model.valuacion.CalculadoraPrecio;
 import com.formula11.model.valuacion.ParametrosPrecio;
@@ -18,6 +17,10 @@ import java.time.*;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import com.formula11.persistence.cotizaciones.CotizacionRepository;
+import com.formula11.persistence.cotizaciones.EstrategiaRepository;
+import com.formula11.persistence.jugadores.JugadorRepository;
+import com.formula11.persistence.metricas.MetricaPartidoRepository;
 
 @SpringBootTest
 @Testcontainers

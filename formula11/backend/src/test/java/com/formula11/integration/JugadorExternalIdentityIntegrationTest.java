@@ -2,7 +2,7 @@ package com.formula11.integration;
 
 import com.formula11.model.Jugador;
 import com.formula11.model.Liga;
-import com.formula11.persistence.JugadorRepository;
+import com.formula11.persistence.jugadores.JugadorRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

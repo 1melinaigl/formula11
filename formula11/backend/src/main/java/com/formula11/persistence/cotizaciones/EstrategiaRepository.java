@@ -1,4 +1,4 @@
-package com.formula11.persistence;
+package com.formula11.persistence.cotizaciones;
 
 import com.formula11.model.Estrategia;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -2,7 +2,7 @@ package com.formula11.unit.service;
 
 import com.formula11.model.Jugador;
 import com.formula11.model.Liga;
-import com.formula11.persistence.JugadorRepository;
+import com.formula11.persistence.jugadores.JugadorRepository;
 import com.formula11.service.jugadores.JugadorService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

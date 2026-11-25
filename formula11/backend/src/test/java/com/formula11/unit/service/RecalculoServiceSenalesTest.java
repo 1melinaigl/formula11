@@ -1,8 +1,8 @@
 package com.formula11.unit.service;
 
 import com.formula11.service.cotizaciones.RangoRecalculo;
-import com.formula11.persistence.CotizacionRepository;
-import com.formula11.persistence.EstrategiaRepository;
+import com.formula11.persistence.cotizaciones.CotizacionRepository;
+import com.formula11.persistence.cotizaciones.EstrategiaRepository;
 import com.formula11.service.cotizaciones.CotizacionCacheInvalidator;
 import com.formula11.service.senales.GeneradorSenalesPort;
 import com.formula11.service.cotizaciones.RecalculoSemanaService;

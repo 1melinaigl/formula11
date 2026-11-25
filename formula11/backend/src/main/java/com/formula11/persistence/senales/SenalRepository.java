@@ -1,4 +1,4 @@
-package com.formula11.persistence;
+package com.formula11.persistence.senales;
 
 import com.formula11.model.Senal;
 import org.springframework.data.domain.Page;

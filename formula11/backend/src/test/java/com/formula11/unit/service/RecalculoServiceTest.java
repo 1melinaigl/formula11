@@ -2,7 +2,7 @@ package com.formula11.unit.service;
 
 import com.formula11.service.cotizaciones.RangoRecalculo;
 import com.formula11.model.Estrategia;
-import com.formula11.persistence.EstrategiaRepository;
+import com.formula11.persistence.cotizaciones.EstrategiaRepository;
 import com.formula11.service.cotizaciones.CotizacionCacheInvalidator;
 import com.formula11.service.cotizaciones.RecalculoSemanaService;
 import com.formula11.service.cotizaciones.RecalculoService;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.*;
 class RecalculoServiceTest {
     @Mock RecalculoSemanaService semanas;
     @Mock EstrategiaRepository estrategias;
-    @Mock com.formula11.persistence.CotizacionRepository cotizaciones;
+    @Mock com.formula11.persistence.cotizaciones.CotizacionRepository cotizaciones;
     @Mock CotizacionCacheInvalidator cache;
 
     @Test

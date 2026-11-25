@@ -1,7 +1,7 @@
 package com.formula11.integration;
 
 import com.formula11.model.Usuario;
-import com.formula11.persistence.UsuarioRepository;
+import com.formula11.persistence.usuarios.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

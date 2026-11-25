@@ -6,7 +6,6 @@ import com.formula11.model.Liga;
 import com.formula11.model.Tenencia;
 import com.formula11.model.Rol;
 import com.formula11.model.Usuario;
-import com.formula11.persistence.*;
 import com.formula11.security.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +26,10 @@ import java.math.BigDecimal;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.formula11.persistence.jugadores.JugadorRepository;
+import com.formula11.persistence.mercado.CuentaRepository;
+import com.formula11.persistence.mercado.TenenciaRepository;
+import com.formula11.persistence.usuarios.UsuarioRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc

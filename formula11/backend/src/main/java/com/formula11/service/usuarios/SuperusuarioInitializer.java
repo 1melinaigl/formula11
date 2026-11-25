@@ -2,7 +2,6 @@ package com.formula11.service.usuarios;
 
 import com.formula11.config.MercadoProperties;
 import com.formula11.model.*;
-import com.formula11.persistence.*;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -11,6 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.core.annotation.Order;
 import java.math.BigDecimal;
 import java.time.Clock;
+import com.formula11.persistence.jugadores.JugadorRepository;
+import com.formula11.persistence.mercado.TenenciaRepository;
+import com.formula11.persistence.usuarios.UsuarioRepository;
 
 @Component
 @Order(1)

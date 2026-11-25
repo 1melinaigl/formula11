@@ -4,7 +4,7 @@ import com.formula11.model.Jugador;
 import com.formula11.model.Liga;
 import com.formula11.model.whoscored.MatchCentreParser;
 import com.formula11.model.whoscored.NormalizadorNombre;
-import com.formula11.persistence.JugadorRepository;
+import com.formula11.persistence.jugadores.JugadorRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

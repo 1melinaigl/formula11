@@ -1,4 +1,4 @@
-package com.formula11.persistence;
+package com.formula11.persistence.usuarios;
 
 import com.formula11.model.Usuario;
 import com.formula11.model.Rol;

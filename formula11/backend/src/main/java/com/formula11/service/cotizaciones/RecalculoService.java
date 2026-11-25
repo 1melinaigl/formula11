@@ -2,7 +2,7 @@ package com.formula11.service.cotizaciones;
 
 import com.formula11.config.ClockConfig;
 import com.formula11.model.Estrategia;
-import com.formula11.persistence.EstrategiaRepository;
+import com.formula11.persistence.cotizaciones.EstrategiaRepository;
 import com.formula11.service.senales.GeneradorSenalesPort;
 import com.formula11.config.CorrelationIdFilter;
 import org.slf4j.*;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import com.formula11.persistence.CotizacionRepository;
+import com.formula11.persistence.cotizaciones.CotizacionRepository;
 import java.time.temporal.TemporalAdjusters;
 
 @Service

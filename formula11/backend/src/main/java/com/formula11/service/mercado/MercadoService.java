@@ -6,7 +6,6 @@ import com.formula11.exception.RecursoNoEncontradoException;
 import com.formula11.exception.SuperusuarioNoOperaException;
 import com.formula11.service.cotizaciones.CotizacionVigentePort;
 import com.formula11.model.*;
-import com.formula11.persistence.*;
 import com.formula11.config.CorrelationIdFilter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +17,12 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.Instant;
+import com.formula11.persistence.jugadores.JugadorRepository;
+import com.formula11.persistence.mercado.AuditoriaMercadoRepository;
+import com.formula11.persistence.mercado.CuentaRepository;
+import com.formula11.persistence.mercado.TenenciaRepository;
+import com.formula11.persistence.mercado.TransaccionRepository;
+import com.formula11.persistence.usuarios.UsuarioRepository;
 
 @Service
 public class MercadoService {

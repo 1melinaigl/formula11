@@ -4,12 +4,13 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.formula11.config.ClockConfig;
 import com.formula11.model.Estrategia;
 import com.formula11.model.Jugador;
-import com.formula11.persistence.*;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import com.formula11.model.Cotizacion;
+import com.formula11.persistence.cotizaciones.CotizacionRepository;
+import com.formula11.persistence.cotizaciones.EstrategiaRepository;
 
 @Service
 public class CotizacionVigenteService implements CotizacionVigentePort {

@@ -1,4 +1,4 @@
-package com.formula11.persistence;
+package com.formula11.persistence.cotizaciones;
 
 import com.formula11.model.Cotizacion;
 import org.springframework.data.domain.Page;

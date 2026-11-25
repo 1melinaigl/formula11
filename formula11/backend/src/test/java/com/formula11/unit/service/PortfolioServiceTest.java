@@ -7,7 +7,6 @@ import com.formula11.service.portfolio.HistorialTransaccionesResultado;
 import com.formula11.service.portfolio.PortfolioResultado;
 import com.formula11.service.portfolio.PortfolioService;
 import com.formula11.model.*;
-import com.formula11.persistence.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +26,11 @@ import org.springframework.data.domain.Pageable;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import com.formula11.persistence.mercado.AuditoriaMercadoRepository;
+import com.formula11.persistence.mercado.CuentaRepository;
+import com.formula11.persistence.mercado.TenenciaRepository;
+import com.formula11.persistence.mercado.TransaccionRepository;
+import com.formula11.persistence.usuarios.UsuarioRepository;
 
 @ExtendWith(MockitoExtension.class)
 // El @BeforeEach prepara al usuario y su cuenta; los casos de acceso denegado cortan antes de usarlos.

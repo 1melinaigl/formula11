@@ -1,4 +1,4 @@
-package com.formula11.persistence;
+package com.formula11.persistence.jugadores;
 
 import com.formula11.model.Jugador;
 import org.springframework.data.jpa.repository.JpaRepository;

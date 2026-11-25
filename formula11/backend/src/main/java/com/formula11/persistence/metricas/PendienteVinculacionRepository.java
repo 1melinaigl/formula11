@@ -1,4 +1,4 @@
-package com.formula11.persistence;
+package com.formula11.persistence.metricas;
 
 import com.formula11.model.Liga;
 import com.formula11.model.PendienteVinculacion;

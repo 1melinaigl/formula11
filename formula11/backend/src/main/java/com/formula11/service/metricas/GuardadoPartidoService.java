@@ -6,9 +6,9 @@ import com.formula11.model.MetricaPartido;
 import com.formula11.model.PartidoExterno;
 import com.formula11.model.PendienteVinculacion;
 import com.formula11.model.whoscored.MatchCentreParser;
-import com.formula11.persistence.MetricaPartidoRepository;
-import com.formula11.persistence.PartidoExternoRepository;
-import com.formula11.persistence.PendienteVinculacionRepository;
+import com.formula11.persistence.metricas.MetricaPartidoRepository;
+import com.formula11.persistence.metricas.PartidoExternoRepository;
+import com.formula11.persistence.metricas.PendienteVinculacionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

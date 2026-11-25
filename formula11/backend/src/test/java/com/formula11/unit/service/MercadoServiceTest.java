@@ -6,7 +6,6 @@ import com.formula11.service.mercado.MercadoService;
 import com.formula11.service.mercado.ResultadoOperacion;
 import com.formula11.exception.*;
 import com.formula11.model.*;
-import com.formula11.persistence.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +17,12 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import com.formula11.persistence.jugadores.JugadorRepository;
+import com.formula11.persistence.mercado.AuditoriaMercadoRepository;
+import com.formula11.persistence.mercado.CuentaRepository;
+import com.formula11.persistence.mercado.TenenciaRepository;
+import com.formula11.persistence.mercado.TransaccionRepository;
+import com.formula11.persistence.usuarios.UsuarioRepository;
 
 @ExtendWith(org.mockito.junit.jupiter.MockitoExtension.class)
 // El @BeforeEach prepara el escenario completo de compra; los casos de rechazo cortan antes y no usan todos los stubs.

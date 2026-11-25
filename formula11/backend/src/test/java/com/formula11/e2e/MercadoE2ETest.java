@@ -3,7 +3,6 @@ package com.formula11.e2e;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.formula11.model.*;
-import com.formula11.persistence.*;
 import com.formula11.security.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.junit.jupiter.api.*;
@@ -20,6 +19,12 @@ import java.math.BigDecimal;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import com.formula11.persistence.jugadores.JugadorRepository;
+import com.formula11.persistence.mercado.AuditoriaMercadoRepository;
+import com.formula11.persistence.mercado.CuentaRepository;
+import com.formula11.persistence.mercado.TenenciaRepository;
+import com.formula11.persistence.mercado.TransaccionRepository;
+import com.formula11.persistence.usuarios.UsuarioRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc

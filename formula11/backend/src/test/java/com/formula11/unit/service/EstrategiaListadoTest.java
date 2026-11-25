@@ -1,7 +1,7 @@
 package com.formula11.unit.service;
 
 import com.formula11.model.Estrategia;
-import com.formula11.persistence.EstrategiaRepository;
+import com.formula11.persistence.cotizaciones.EstrategiaRepository;
 import com.formula11.service.cotizaciones.CotizacionCacheInvalidator;
 import com.formula11.service.cotizaciones.EstrategiaResultado;
 import com.formula11.service.cotizaciones.EstrategiaService;

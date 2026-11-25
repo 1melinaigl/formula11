@@ -2,8 +2,8 @@ package com.formula11.service.usuarios;
 
 import com.formula11.exception.CredencialesInvalidasException;
 import com.formula11.model.Usuario;
-import com.formula11.persistence.UsuarioRepository;
-import com.formula11.persistence.CuentaRepository;
+import com.formula11.persistence.usuarios.UsuarioRepository;
+import com.formula11.persistence.mercado.CuentaRepository;
 import com.formula11.model.Cuenta;
 import java.time.Clock;
 import com.formula11.security.JwtService;

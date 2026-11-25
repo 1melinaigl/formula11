@@ -2,7 +2,6 @@ package com.formula11.service.cotizaciones;
 
 import com.formula11.model.*;
 import com.formula11.model.valuacion.*;
-import com.formula11.persistence.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -12,6 +11,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+import com.formula11.persistence.cotizaciones.CotizacionRepository;
+import com.formula11.persistence.cotizaciones.EstrategiaRepository;
+import com.formula11.persistence.jugadores.JugadorRepository;
+import com.formula11.persistence.metricas.MetricaPartidoRepository;
 
 @Service
 public class RecalculoSemanaService {

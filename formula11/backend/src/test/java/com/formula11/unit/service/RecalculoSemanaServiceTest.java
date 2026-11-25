@@ -1,7 +1,6 @@
 package com.formula11.unit.service;
 
 import com.formula11.model.*;
-import com.formula11.persistence.*;
 import com.formula11.service.cotizaciones.RecalculoSemanaService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
+import com.formula11.persistence.cotizaciones.CotizacionRepository;
+import com.formula11.persistence.cotizaciones.EstrategiaRepository;
+import com.formula11.persistence.jugadores.JugadorRepository;
+import com.formula11.persistence.metricas.MetricaPartidoRepository;
 
 @ExtendWith(org.mockito.junit.jupiter.MockitoExtension.class)
 class RecalculoSemanaServiceTest {
