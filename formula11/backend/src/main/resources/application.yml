@@ -20,7 +20,9 @@ management:
         include: health,info,metrics
   endpoint:
     health:
+      # Sin sesión o sin ser superusuario se ve solo el estado; el detalle es para el superusuario.
       show-details: when_authorized
+      roles: SUPERUSUARIO
 server:
   error:
     include-message: never

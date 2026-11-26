@@ -29,6 +29,7 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -242,6 +243,12 @@ public class CargaMetricasService {
     public EjecucionMetricas obtener(Long id) {
         return ejecucionRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Ejecución no encontrada"));
+    }
+
+    /** La última carga terminada (completada, parcial o fallida); las que siguen en curso no cuentan. */
+    public Optional<EjecucionMetricas> ultimaTerminada() {
+        return ejecucionRepository.findFirstByEstadoInAndFinNotNullOrderByFinDescIdDesc(
+                List.of(COMPLETADA, PARCIAL, FALLIDA));
     }
 
     /** Estado de una ejecución con el resumen de cada liga procesada. */

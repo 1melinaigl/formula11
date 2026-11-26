@@ -39,8 +39,9 @@ description: "Tareas para implementar Actuator y Prometheus"
 
 **Purpose**: baseline y dependencia.
 
-- [ ] T001 Registrar el baseline: correr `mvn verify` en `formula11/backend` y anotar el resultado debajo de esta tarea (se espera 358 tests, 0 fallas, después del merge de la 014 y el fix de Sonar).
-- [ ] T002 Agregar `<dependency><groupId>io.micrometer</groupId><artifactId>micrometer-registry-prometheus</artifactId><scope>runtime</scope></dependency>` en `pom.xml`, sin versión (la maneja el parent 3.5.5), junto a `spring-boot-starter-actuator`.
+- [X] T001 Registrar el baseline: correr `mvn verify` en `formula11/backend` y anotar el resultado debajo de esta tarea (se espera 358 tests, 0 fallas, después del merge de la 014 y el fix de Sonar).
+  - Baseline 2026-11-26 sobre `entrega3-observabilidad` (4fa9bf2, con la 014 mergeada): `mvn verify` con 358 tests, 0 fallas, 0 errores.
+- [X] T002 Agregar `<dependency><groupId>io.micrometer</groupId><artifactId>micrometer-registry-prometheus</artifactId><scope>runtime</scope></dependency>` en `pom.xml`, sin versión (la maneja el parent 3.5.5), junto a `spring-boot-starter-actuator`.
 
 ---
 
@@ -61,17 +62,17 @@ No hay tareas bloqueantes compartidas aparte de T002: cada historia agrega lo su
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T003 [P] [US1] `CargaMetricasHealthIndicatorTest` en `src/test/java/com/formula11/unit/observabilidad/CargaMetricasHealthIndicatorTest.java`, con `CargaMetricasService` mockeado. Cubre los casos de [data-model.md](data-model.md):
+- [X] T003 [P] [US1] `CargaMetricasHealthIndicatorTest` en `src/test/java/com/formula11/unit/observabilidad/CargaMetricasHealthIndicatorTest.java`, con `CargaMetricasService` mockeado. Cubre los casos de [data-model.md](data-model.md):
   - sin cargas → `UP` con `detalle=Sin cargas de métricas`;
   - `COMPLETADA` → `UP` con `estado`, `fin` y `ejecucionId`;
   - `PARCIAL` → `UP` con `estado=PARCIAL`;
   - `FALLIDA` → `DOWN` con `error`.
-- [ ] T004 [P] [US1] `CargaMetricasUltimaTerminadaTest` en `src/test/java/com/formula11/unit/service/metricas/CargaMetricasUltimaTerminadaTest.java` (clase nueva, no tocar `CargaMetricasServiceTest`). Construye `CargaMetricasService` con mocks, como el test existente, y verifica que `ultimaTerminada()` pide a `EjecucionMetricasRepository.findFirstByEstadoInOrderByIdDesc` los estados `COMPLETADA`, `PARCIAL` y `FALLIDA` (sin `EN_CURSO`) y devuelve lo que trae el repositorio.
-- [ ] T005 [US1] `CargaMetricasHealthIntegrationTest` en `src/test/java/com/formula11/integration/observabilidad/CargaMetricasHealthIntegrationTest.java` (`@SpringBootTest`, perfil `test`, Testcontainers como los demás de integración):
+- [X] T004 [P] [US1] `CargaMetricasUltimaTerminadaTest` en `src/test/java/com/formula11/unit/service/metricas/CargaMetricasUltimaTerminadaTest.java` (clase nueva, no tocar `CargaMetricasServiceTest`). Construye `CargaMetricasService` con mocks, como el test existente, y verifica que `ultimaTerminada()` pide a `EjecucionMetricasRepository.findFirstByEstadoInAndFinNotNullOrderByFinDescIdDesc` los estados `COMPLETADA`, `PARCIAL` y `FALLIDA` (sin `EN_CURSO`) y devuelve lo que trae el repositorio.
+- [X] T005 [US1] `CargaMetricasHealthIntegrationTest` en `src/test/java/com/formula11/integration/observabilidad/CargaMetricasHealthIntegrationTest.java` (`@SpringBootTest`, perfil `test`, Testcontainers como los demás de integración):
   - guarda una `EjecucionMetricas` `FALLIDA`, después una `EN_CURSO`, y el bean `cargaMetricasHealthIndicator` da `DOWN` (la `EN_CURSO` se ignora);
   - después guarda una `COMPLETADA` y da `UP`;
   - borra las ejecuciones que creó en `@AfterEach`.
-- [ ] T006 [US1] `ActuatorHealthE2ETest` en `src/test/java/com/formula11/e2e/observabilidad/ActuatorHealthE2ETest.java` (`@SpringBootTest` + `@AutoConfigureMockMvc`, perfil `e2e`):
+- [X] T006 [US1] `ActuatorHealthE2ETest` en `src/test/java/com/formula11/e2e/observabilidad/ActuatorHealthE2ETest.java` (`@SpringBootTest` + `@AutoConfigureMockMvc`, perfil `e2e`):
   - `GET /actuator/health` sin sesión → 200, cuerpo con `status=UP` y sin `components`;
   - con usuario común, tampoco hay `components`;
   - con superusuario hay `components.cargaMetricas.status`;
@@ -79,11 +80,11 @@ No hay tareas bloqueantes compartidas aparte de T002: cada historia agrega lo su
 
 ### Implementation for User Story 1
 
-- [ ] T007 [P] [US1] En `src/main/java/com/formula11/persistence/metricas/EjecucionMetricasRepository.java`, agregar `Optional<EjecucionMetricas> findFirstByEstadoInOrderByIdDesc(Collection<String> estados);`.
-- [ ] T008 [US1] En `src/main/java/com/formula11/service/metricas/CargaMetricasService.java`, agregar `public Optional<EjecucionMetricas> ultimaTerminada()`, que usa la consulta de T007 con las constantes `COMPLETADA`, `PARCIAL` y `FALLIDA` que ya existen. No cambia el constructor. Depende de T007.
-- [ ] T009 [US1] `CargaMetricasHealthIndicator` en `src/main/java/com/formula11/observabilidad/CargaMetricasHealthIndicator.java` (`@Component`, `implements HealthIndicator`). Llama a `CargaMetricasService.ultimaTerminada()` y arma `Health.up()` o `Health.down()` con los detalles de [contracts/actuator.md](contracts/actuator.md): `estado`, `fin`, `ejecucionId`, `error` solo si falló, o `detalle` si no hay cargas. Depende de T008.
-- [ ] T010 [US1] En `src/main/resources/application.yml`, agregar `roles: SUPERUSUARIO` debajo de `management.endpoint.health.show-details: when_authorized`.
-- [ ] T011 [US1] Correr T003 a T006 y dejarlos en verde.
+- [X] T007 [P] [US1] En `src/main/java/com/formula11/persistence/metricas/EjecucionMetricasRepository.java`, agregar `Optional<EjecucionMetricas> findFirstByEstadoInAndFinNotNullOrderByFinDescIdDesc(Collection<String> estados);`.
+- [X] T008 [US1] En `src/main/java/com/formula11/service/metricas/CargaMetricasService.java`, agregar `public Optional<EjecucionMetricas> ultimaTerminada()`, que usa la consulta de T007 con las constantes `COMPLETADA`, `PARCIAL` y `FALLIDA` que ya existen. No cambia el constructor. Depende de T007.
+- [X] T009 [US1] `CargaMetricasHealthIndicator` en `src/main/java/com/formula11/observabilidad/CargaMetricasHealthIndicator.java` (`@Component`, `implements HealthIndicator`). Llama a `CargaMetricasService.ultimaTerminada()` y arma `Health.up()` o `Health.down()` con los detalles de [contracts/actuator.md](contracts/actuator.md): `estado`, `fin`, `ejecucionId`, `error` solo si falló, o `detalle` si no hay cargas. Depende de T008.
+- [X] T010 [US1] En `src/main/resources/application.yml`, agregar `roles: SUPERUSUARIO` debajo de `management.endpoint.health.show-details: when_authorized`.
+- [X] T011 [US1] Correr T003 a T006 y dejarlos en verde.
 
 **Checkpoint**: la US1 funciona sola. `health` ya era público, así que no hace falta tocar `SecurityConfig` todavía.
 

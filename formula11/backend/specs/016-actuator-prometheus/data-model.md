@@ -9,12 +9,12 @@ lee una entidad que ya existe.
 
 | Campo | Uso en esta feature |
 |---|---|
-| `id` | Orden para elegir la última carga terminada; va en el detalle del health como `ejecucionId`. |
+| `id` | Va en el detalle del health como `ejecucionId`; desempata si dos cargas tienen el mismo `fin`. |
 | `estado` | `EN_CURSO` se ignora. `FALLIDA` → `DOWN`; `COMPLETADA` y `PARCIAL` → `UP`. |
-| `fin` | Va en el detalle del health. |
+| `fin` | Orden para elegir la última carga terminada (las que no tienen `fin` no cuentan); va en el detalle del health. |
 | `error` | Va en el detalle si el estado es `FALLIDA`. |
 
-Consulta nueva: `EjecucionMetricasRepository.findFirstByEstadoInOrderByIdDesc(Collection<String> estados)`.
+Consulta nueva: `EjecucionMetricasRepository.findFirstByEstadoInAndFinNotNullOrderByFinDescIdDesc(Collection<String> estados)`.
 Service nuevo: `CargaMetricasService.ultimaTerminada(): Optional<EjecucionMetricas>`.
 
 ## Estado del componente `cargaMetricas`

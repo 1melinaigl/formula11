@@ -27,7 +27,7 @@ sus tests. Opcional: un docker-compose con un Prometheus local.
   MockMvc en `e2e` con `@AutoConfigureObservability` para Prometheus.
 - **Target Platform**: el mismo backend. Docker solo para el Prometheus local opcional.
 - **Performance Goals**: un incremento de contador por operación y una muestra de timer por
-  recálculo; el health hace una consulta por id sobre una tabla chica.
+  recálculo; el health hace una consulta ordenada por fecha de fin sobre una tabla chica.
 - **Constraints**: no cambiar respuestas de la API (SC-005). Las métricas nunca rompen una
   operación (FR-009). No se modifican tests existentes.
 - **Scale/Scope**: 5 endpoints de Actuator, 2 métricas de negocio y 1 health indicator.
@@ -123,7 +123,7 @@ GET /actuator/health (público)
   → HealthEndpoint agrega: db, diskSpace, ping, ..., cargaMetricas
       cargaMetricas → CargaMetricasHealthIndicator.health()
                         → CargaMetricasService.ultimaTerminada()
-                            → EjecucionMetricasRepository.findFirstByEstadoInOrderByIdDesc([COMPLETADA, PARCIAL, FALLIDA])
+                            → EjecucionMetricasRepository.findFirstByEstadoInAndFinNotNullOrderByFinDescIdDesc([COMPLETADA, PARCIAL, FALLIDA])
                         FALLIDA → DOWN ; otro / vacío → UP  (+ detalles)
   → sin superusuario: {"status":"UP|DOWN"} ; superusuario: + components con details
 ```

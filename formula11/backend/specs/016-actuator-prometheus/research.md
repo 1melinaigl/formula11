@@ -51,12 +51,16 @@
   `com.formula11.observabilidad`; el nombre del bean da el componente `cargaMetricas`. Le
   pide a `CargaMetricasService.ultimaTerminada()` (método nuevo) la última ejecución en
   `COMPLETADA`, `PARCIAL` o `FALLIDA`, por la consulta derivada
-  `EjecucionMetricasRepository.findFirstByEstadoInOrderByIdDesc(...)`. `FALLIDA` da
+  `EjecucionMetricasRepository.findFirstByEstadoInAndFinNotNullOrderByFinDescIdDesc(...)`. `FALLIDA` da
   `DOWN`, y el resto o la ausencia de ejecuciones, `UP`. Los detalles son `estado`, `fin`
   y `ejecucionId`, más `error` si falló. Si no hay ejecuciones, `detalle: "Sin cargas de métricas"`.
 - **Rationale**: El indicador expone información, igual que un controller, así que pasa por
-  el service y no lee el repositorio. Ordenar por `id` evita depender de `fin`: los ids
-  crecen con cada carga. `EN_CURSO` no cuenta (caso borde de la spec). Si la consulta
+  el service y no lee el repositorio. Se ordena por `fin` y no por `id`, porque la
+  secuencia de `ejecucion_metricas` tiene `allocationSize = 50`. Con varios contextos de
+  Spring en la misma base (como en la suite de tests), un id más alto no garantiza una carga
+  más nueva. Las que no tienen `fin` quedan afuera, porque PostgreSQL pone los `NULL`
+  primero en un orden descendente, y `id` desempata. `EN_CURSO` no cuenta (caso borde de
+  la spec). Si la consulta
   falla, Spring Boot ya convierte la excepción en `DOWN` con el error, sin romper el health.
 - **Alternatives considered**: `OUT_OF_SERVICE` o un estado propio `DEGRADED`. Se descartan:
   el ejemplo de la consigna es "si falló la última sincronización", y `DOWN` es lo que
