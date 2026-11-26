@@ -106,14 +106,14 @@ No hay tareas bloqueantes compartidas aparte de T002: cada historia agrega lo su
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T015 [US3] `AuditoriaWebServicesE2ETest` en `src/test/java/com/formula11/e2e/observabilidad/AuditoriaWebServicesE2ETest.java` (`@SpringBootTest` + `@AutoConfigureMockMvc`, perfil `e2e`, como los demás E2E): `POST /api/usuarios/login` con header `X-Correlation-Id` único y una contraseña conocida; leer `target/auditoria-e2e/auditoria.log`, filtrar por `[corr:<id>]` y verificar exactamente una línea con `operacion=UsuarioController.login`, `usuario=anónimo` y `"password":"****"`, y que la contraseña no aparece en el archivo.
+- [X] T015 [US3] `AuditoriaWebServicesE2ETest` en `src/test/java/com/formula11/e2e/observabilidad/AuditoriaWebServicesE2ETest.java` (`@SpringBootTest` + `@AutoConfigureMockMvc`, perfil `e2e`, como los demás E2E): `POST /api/usuarios/login` con header `X-Correlation-Id` único y una contraseña conocida; leer `target/auditoria-e2e/auditoria.log`, filtrar por `[corr:<id>]` y verificar exactamente una línea con `operacion=UsuarioController.login`, `usuario=anónimo` y `"password":"****"`, y que la contraseña no aparece en el archivo.
 
 ### Implementation for User Story 3
 
-- [ ] T016 [P] [US3] En `src/main/resources/application.yml`, agregar `app.auditoria.directorio: ${APP_AUDITORIA_DIRECTORIO:logs}` dentro del bloque `app:` existente.
-- [ ] T017 [P] [US3] En `src/test/resources/application-test.yml` y `src/test/resources/application-e2e.yml`, agregar `app.auditoria.directorio` con `target/auditoria-test` y `target/auditoria-e2e`.
-- [ ] T018 [US3] Crear `src/main/resources/logback-spring.xml`: incluir `org/springframework/boot/logging/logback/defaults.xml` y `console-appender.xml` con root INFO en `CONSOLE`; `<springProperty name="AUDITORIA_DIR" source="app.auditoria.directorio" defaultValue="logs"/>`; `RollingFileAppender` `AUDITORIA_FILE` en `${AUDITORIA_DIR}/auditoria.log` con `TimeBasedRollingPolicy` (`${AUDITORIA_DIR}/auditoria.%d{yyyy-MM-dd}.log`, `maxHistory` 30) y patrón `%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} [corr:%X{correlationId}] %msg%n`; logger `AUDITORIA` en INFO con `additivity="false"`. El encoder del archivo con `<charset>UTF-8</charset>`, para que `anónimo` no salga mal en Windows. Depende de T016.
-- [ ] T019 [US3] Verificar que la consola sigue mostrando `[corr:...]` como antes (respeta `logging.pattern.level`) y que los niveles de `application-e2e.yml` (`root: WARN`, `com.formula11: INFO`) siguen aplicando. Correr T015 y dejarlo en verde.
+- [X] T016 [P] [US3] En `src/main/resources/application.yml`, agregar `app.auditoria.directorio: ${APP_AUDITORIA_DIRECTORIO:logs}` dentro del bloque `app:` existente.
+- [X] T017 [P] [US3] En `src/test/resources/application-test.yml` y `src/test/resources/application-e2e.yml`, agregar `app.auditoria.directorio` con `target/auditoria-test` y `target/auditoria-e2e`.
+- [X] T018 [US3] Crear `src/main/resources/logback-spring.xml`: incluir `org/springframework/boot/logging/logback/defaults.xml` y `console-appender.xml` con root INFO en `CONSOLE`; `<springProperty name="AUDITORIA_DIR" source="app.auditoria.directorio" defaultValue="logs"/>`; `RollingFileAppender` `AUDITORIA_FILE` en `${AUDITORIA_DIR}/auditoria.log` con `TimeBasedRollingPolicy` (`${AUDITORIA_DIR}/auditoria.%d{yyyy-MM-dd}.log`, `maxHistory` 30) y patrón `%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} [corr:%X{correlationId}] %msg%n`; logger `AUDITORIA` en INFO con `additivity="false"`. El encoder del archivo con `<charset>UTF-8</charset>`, para que `anónimo` no salga mal en Windows. Depende de T016.
+- [X] T019 [US3] Verificar que la consola sigue mostrando `[corr:...]` como antes (respeta `logging.pattern.level`) y que los niveles de `application-e2e.yml` (`root: WARN`, `com.formula11: INFO`) siguen aplicando. Correr T015 y dejarlo en verde.
 
 **Checkpoint**: las tres historias funcionan; se puede seguir el [quickstart.md](quickstart.md).
 

@@ -25,6 +25,9 @@ server:
   error:
     include-message: never
 app:
+  auditoria:
+    # Carpeta de logs/auditoria.log (una línea por llamada a la API, rotación diaria).
+    directorio: ${APP_AUDITORIA_DIRECTORIO:logs}
   clock:
     fecha-fija: ${APP_CLOCK_FECHA_FIJA:}
   cotizacion:

@@ -18,6 +18,8 @@ logging:
     root: WARN
     com.formula11: INFO
 app:
+  auditoria:
+    directorio: target/auditoria-e2e
   whoscored:
     modo: archivos
     carpeta-paginas: src/test/resources/whoscored
