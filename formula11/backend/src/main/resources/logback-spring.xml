@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Consola igual que antes: los defaults de Spring Boot respetan logging.pattern.level
+         de application.yml, que agrega [corr:<correlationId>] a cada línea. -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <!-- Auditoría de web services: una línea por llamada a la API en un archivo propio. -->
+    <springProperty scope="context" name="AUDITORIA_DIR" source="app.auditoria.directorio" defaultValue="logs"/>
+
+    <appender name="AUDITORIA_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${AUDITORIA_DIR}/auditoria.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${AUDITORIA_DIR}/auditoria.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} [corr:%X{correlationId}] %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- additivity=false: las líneas de auditoría no se repiten en la consola. -->
+    <logger name="AUDITORIA" level="INFO" additivity="false">
+        <appender-ref ref="AUDITORIA_FILE"/>
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>

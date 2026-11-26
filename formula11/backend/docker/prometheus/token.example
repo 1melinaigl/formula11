@@ -1,0 +1,1 @@
+Copiar el JWT del superusuario (el campo "token" del login) en un archivo "token" en esta carpeta, sin salto de línea. Ese archivo no se versiona. Vence según app.jwt.expiration (una hora por defecto): se reemplaza el contenido y Prometheus lo toma en el scrape siguiente.

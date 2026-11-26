@@ -10,6 +10,8 @@ spring:
     enabled: true
     out-of-order: true
 app:
+  auditoria:
+    directorio: target/auditoria-test
   whoscored:
     modo: archivos
     carpeta-paginas: src/test/resources/whoscored
