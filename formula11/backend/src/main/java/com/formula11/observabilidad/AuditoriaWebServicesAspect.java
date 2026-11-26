@@ -23,8 +23,8 @@ public class AuditoriaWebServicesAspect {
     public static final String LOGGER_AUDITORIA = "AUDITORIA";
     public static final String ANONIMO = "anónimo";
 
+    // Un único logger: las fallas al registrar también quedan en el archivo de auditoría.
     private static final Logger AUDITORIA = LoggerFactory.getLogger(LOGGER_AUDITORIA);
-    private static final Logger LOG = LoggerFactory.getLogger(AuditoriaWebServicesAspect.class);
 
     private final EnmascaradorParametros enmascarador;
 
@@ -47,14 +47,18 @@ public class AuditoriaWebServicesAspect {
     }
 
     private void registrar(ProceedingJoinPoint joinPoint, long duracionMs, String resultado) {
+        if (!AUDITORIA.isInfoEnabled()) {
+            return;
+        }
         String operacion = null;
         try {
             MethodSignature firma = (MethodSignature) joinPoint.getSignature();
             operacion = firma.getDeclaringType().getSimpleName() + "." + firma.getName();
             String parametros = enmascarador.enmascarar(firma.getParameterNames(), joinPoint.getArgs());
-            AUDITORIA.info(new LineaAuditoria(usuarioActual(), operacion, parametros, duracionMs, resultado).formatear());
+            String linea = new LineaAuditoria(usuarioActual(), operacion, parametros, duracionMs, resultado).formatear();
+            AUDITORIA.info(linea);
         } catch (RuntimeException e) {
-            LOG.warn("No se pudo registrar la auditoría de {}: {}", operacion, e.getMessage());
+            AUDITORIA.warn("No se pudo registrar la auditoría de {}: {}", operacion, e.getMessage());
         }
     }
 

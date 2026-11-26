@@ -27,14 +27,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class AuditoriaWebServicesAspectTest {
     private final Logger loggerAuditoria = (Logger) LoggerFactory.getLogger(AuditoriaWebServicesAspect.LOGGER_AUDITORIA);
-    private final Logger loggerAspecto = (Logger) LoggerFactory.getLogger(AuditoriaWebServicesAspect.class);
     private final ListAppender<ILoggingEvent> lineas = new ListAppender<>();
     private Level nivelAnterior;
-    private final ListAppender<ILoggingEvent> avisos = new ListAppender<>();
 
     private final ProceedingJoinPoint joinPoint = mock(ProceedingJoinPoint.class);
     private final MethodSignature firma = mock(MethodSignature.class);
@@ -46,12 +45,10 @@ class AuditoriaWebServicesAspectTest {
     @BeforeEach
     void preparar() {
         lineas.start();
-        avisos.start();
         loggerAuditoria.addAppender(lineas);
         // Otros tests de la misma JVM (perfil e2e) dejan el root en WARN: el test fija su nivel.
         nivelAnterior = loggerAuditoria.getLevel();
         loggerAuditoria.setLevel(Level.INFO);
-        loggerAspecto.addAppender(avisos);
         aspecto = new AuditoriaWebServicesAspect(
                 new EnmascaradorParametros(JsonMapper.builder().findAndAddModules().build()));
 
@@ -66,7 +63,6 @@ class AuditoriaWebServicesAspectTest {
     void limpiar() {
         loggerAuditoria.detachAppender(lineas);
         loggerAuditoria.setLevel(nivelAnterior);
-        loggerAspecto.detachAppender(avisos);
         SecurityContextHolder.clearContext();
     }
 
@@ -130,8 +126,23 @@ class AuditoriaWebServicesAspectTest {
         Object respuesta = aspecto.auditar(joinPoint);
 
         assertEquals("respuesta", respuesta);
+        assertEquals(1, lineas.list.size());
+        ILoggingEvent aviso = lineas.list.get(0);
+        assertEquals(Level.WARN, aviso.getLevel());
+        assertTrue(aviso.getFormattedMessage().startsWith("No se pudo registrar la auditoría de EjemploController.listar"),
+                aviso.getFormattedMessage());
+    }
+
+    @Test
+    void conLaAuditoriaApagadaNoArmaLaLinea() throws Throwable {
+        EnmascaradorParametros enmascarador = mock(EnmascaradorParametros.class);
+        aspecto = new AuditoriaWebServicesAspect(enmascarador);
+        loggerAuditoria.setLevel(Level.WARN);
+        when(joinPoint.proceed()).thenReturn("respuesta");
+
+        assertEquals("respuesta", aspecto.auditar(joinPoint));
+
         assertTrue(lineas.list.isEmpty());
-        assertEquals(1, avisos.list.size());
-        assertEquals(Level.WARN, avisos.list.get(0).getLevel());
+        verifyNoInteractions(enmascarador);
     }
 }
