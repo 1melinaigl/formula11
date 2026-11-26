@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: formula11
+    metrics_path: /actuator/prometheus
+    # /actuator/prometheus pide superusuario: el JWT se lee del archivo en cada scrape,
+    # así que al renovarlo no hace falta reiniciar Prometheus.
+    authorization:
+      type: Bearer
+      credentials_file: /etc/prometheus/token
+    static_configs:
+      - targets: ["host.docker.internal:8080"]

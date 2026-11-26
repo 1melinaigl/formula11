@@ -169,18 +169,22 @@ No hay tareas bloqueantes compartidas aparte de T002: cada historia agrega lo su
 
 **Independent Test**: el paso 7 de [quickstart.md](quickstart.md). El objetivo `formula11` aparece `UP` en `http://localhost:9090/targets`.
 
-- [ ] T024 [P] [US4] Crear `docker/prometheus/docker-compose.yml`:
+- [X] T024 [P] [US4] Crear `docker/prometheus/docker-compose.yml`:
   - servicio `prometheus` con `prom/prometheus` en una versión fija y publicada hace más de dos semanas;
   - puerto `9090:9090`;
   - montajes de solo lectura de `prometheus.yml` y `token`;
   - `extra_hosts: ["host.docker.internal:host-gateway"]`.
-- [ ] T025 [P] [US4] Crear `docker/prometheus/prometheus.yml` con `scrape_interval: 15s` y un job `formula11`:
+- [X] T025 [P] [US4] Crear `docker/prometheus/prometheus.yml` con `scrape_interval: 15s` y un job `formula11`:
   - `metrics_path: /actuator/prometheus` y `targets: ["host.docker.internal:8080"]`;
   - `authorization: { type: Bearer, credentials_file: /etc/prometheus/token }`.
 
   Crear también `docker/prometheus/token.example`, con una línea que explica qué va en `token`.
-- [ ] T026 [US4] En `.gitignore` (raíz del repo), agregar `formula11/backend/docker/prometheus/token`.
-- [ ] T027 [US4] Seguir el paso 7 del quickstart con el backend en perfil `local` y anotar el resultado debajo de esta tarea.
+- [X] T026 [US4] En `.gitignore` (raíz del repo), agregar `formula11/backend/docker/prometheus/token`.
+- [X] T027 [US4] Seguir el paso 7 del quickstart con el backend en perfil `local` y anotar el resultado debajo de esta tarea.
+  - 2026-11-26, backend `local` en 8080 contra un Postgres descartable y `prom/prometheus:v2.53.3`:
+    - el target `formula11` quedó `up`, sin `lastError`;
+    - la consulta `formula11_mercado_operaciones_total` devuelve `compra=21`, `venta=0` y `p2p=0`. Las 20 compras de más son las del `DemoPortfolioInitializer`, que compra por `MercadoService` al arrancar el perfil `local`.
+    - Después se bajó todo y se borró el token.
 
 ---
 
@@ -194,6 +198,16 @@ No hay tareas bloqueantes compartidas aparte de T002: cada historia agrega lo su
   - las dos métricas de negocio;
   - cómo levantar el Prometheus local.
 - [ ] T031 Seguir los pasos 2 a 6 de [quickstart.md](quickstart.md) con el perfil `local`, contra un Postgres descartable.
+  - Adelantado junto con T027:
+    - health público `{"status":"UP"}`;
+    - `info` da 401 sin sesión, 403 al demo y nombre y versión al superusuario;
+    - `cargaMetricas` en `UP` sin cargas;
+    - `/actuator/env` da 500 al superusuario (confirma el contrato);
+    - la compra suma uno;
+    - el recálculo deja `formula11_cotizaciones_recalculo_seconds_count{resultado="ok"} 1`;
+    - con `AUDITORIA` en `WARN` no hay línea y con `INFO` sí.
+
+    Falta el paso 4 con una carga fallida real.
 - [ ] T032 Actualizar la descripción del PR de `entrega3-observabilidad` con la línea de "Release notes" del [plan.md](plan.md). Pasarle a A el contrato de [contracts/metricas-negocio.md](contracts/metricas-negocio.md) para el P2P.
 
 ---

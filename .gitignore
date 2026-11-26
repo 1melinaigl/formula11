@@ -10,3 +10,6 @@ Thumbs.db
 *.swp
 .vscode/
 .idea/
+
+# Token del superusuario para el Prometheus local (016)
+formula11/backend/docker/prometheus/token

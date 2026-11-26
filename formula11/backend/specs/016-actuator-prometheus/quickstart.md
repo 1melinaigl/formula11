@@ -70,7 +70,8 @@ con `status` en `DOWN`.
 (Invoke-WebRequest http://localhost:8080/actuator/prometheus -Headers @{Authorization="Bearer $super"}).Content -split "`n" | Select-String formula11_
 ```
 
-Esperado: `formula11_mercado_operaciones_total{tipo="compra"}` sube en 1; `venta` y `p2p`
+Esperado: `formula11_mercado_operaciones_total{tipo="compra"}` sube en 1. Con el perfil `local` no arranca en 0: el
+`DemoPortfolioInitializer` hace compras reales para los usuarios demo al arrancar, y cuentan. `venta` y `p2p`
 aparecen aunque estén en 0. Después de `POST /api/cotizaciones/recalcular` (superusuario),
 aparece `formula11_cotizaciones_recalculo_seconds_count{resultado="ok"}`.
 
