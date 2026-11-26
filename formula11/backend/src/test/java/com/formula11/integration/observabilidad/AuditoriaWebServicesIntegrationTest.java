@@ -6,6 +6,8 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import com.formula11.controller.cotizaciones.CotizacionJugadorController;
 import com.formula11.controller.jugadores.JugadorController;
+import com.formula11.controller.usuarios.UsuarioController;
+import com.formula11.dto.usuarios.RegistroUsuarioRequest;
 import com.formula11.exception.RecursoNoEncontradoException;
 import com.formula11.observabilidad.AuditoriaWebServicesAspect;
 import org.junit.jupiter.api.AfterEach;
@@ -23,6 +25,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -50,6 +53,8 @@ class AuditoriaWebServicesIntegrationTest {
     private JugadorController jugadorController;
     @Autowired
     private CotizacionJugadorController cotizacionJugadorController;
+    @Autowired
+    private UsuarioController usuarioController;
 
     private final Logger loggerAuditoria = (Logger) LoggerFactory.getLogger(AuditoriaWebServicesAspect.LOGGER_AUDITORIA);
     private final ListAppender<ILoggingEvent> lineas = new ListAppender<>();
@@ -85,6 +90,22 @@ class AuditoriaWebServicesIntegrationTest {
         assertTrue(linea.startsWith("usuario=anónimo operacion=JugadorController.listar parametros={page=0, size=20, "
                 + "sort=null, liga=La Liga, equipo=null, posicion=null, parametros={}} duracionMs="), linea);
         assertTrue(linea.endsWith(" resultado=OK"), linea);
+    }
+
+    @Test
+    void elRegistroQuedaAuditadoSinLaContrasena() {
+        String sufijo = UUID.randomUUID().toString().substring(0, 8);
+        String email = "auditoria-" + sufijo + "@mail.com";
+        String contrasena = "Clave-" + sufijo;
+
+        usuarioController.registrar(new RegistroUsuarioRequest("Ana", email, contrasena));
+
+        assertEquals(1, lineas.list.size());
+        String linea = lineas.list.get(0).getFormattedMessage();
+        assertTrue(linea.contains("operacion=UsuarioController.registrar"), linea);
+        assertTrue(linea.contains("\"email\":\"" + email + "\""), linea);
+        assertTrue(linea.contains("\"password\":\"****\""), linea);
+        assertTrue(lineas.list.stream().noneMatch(evento -> evento.getFormattedMessage().contains(contrasena)));
     }
 
     @Test

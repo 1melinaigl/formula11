@@ -2,6 +2,8 @@ package com.formula11.observabilidad;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -9,17 +11,26 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 
 import java.security.Principal;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.StringJoiner;
 
 /**
  * Convierte los argumentos de un endpoint en el texto {@code {nombre=valor, ...}} de la línea de
- * auditoría. Omite los argumentos de infraestructura y recorta el resultado para que una línea
+ * auditoría. Omite los argumentos de infraestructura, reemplaza por {@value #MASCARA} las
+ * contraseñas y credenciales (a cualquier profundidad) y recorta el resultado para que una línea
  * no crezca sin límite.
  */
 @Component
 public class EnmascaradorParametros {
     public static final int LARGO_MAXIMO = 500;
     public static final String MARCA_RECORTE = "…(recortado)";
+    public static final String MASCARA = "****";
+
+    /** Nombres de campo (en minúsculas) que nunca se escriben: contraseñas y credenciales. */
+    private static final Set<String> CAMPOS_SENSIBLES =
+            Set.of("password", "contrasena", "token", "accesstoken", "refreshtoken", "secret");
 
     private final ObjectMapper objectMapper;
 
@@ -35,7 +46,7 @@ public class EnmascaradorParametros {
                 continue;
             }
             String nombre = nombres != null && i < nombres.length ? nombres[i] : "arg" + i;
-            parametros.add(nombre + "=" + mostrar(valor));
+            parametros.add(nombre + "=" + (esSensible(nombre) ? MASCARA : mostrar(valor)));
         }
         return recortar(parametros.toString());
     }
@@ -58,7 +69,29 @@ public class EnmascaradorParametros {
         } catch (IllegalArgumentException e) {
             return String.valueOf(valor);
         }
-        return nodo.isValueNode() ? nodo.asText() : nodo.toString();
+        if (nodo.isValueNode()) {
+            return nodo.asText();
+        }
+        enmascararCampos(nodo);
+        return nodo.toString();
+    }
+
+    private static void enmascararCampos(JsonNode nodo) {
+        if (nodo instanceof ObjectNode objeto) {
+            for (Map.Entry<String, JsonNode> campo : objeto.properties()) {
+                if (esSensible(campo.getKey())) {
+                    campo.setValue(TextNode.valueOf(MASCARA));
+                } else {
+                    enmascararCampos(campo.getValue());
+                }
+            }
+        } else if (nodo.isArray()) {
+            nodo.forEach(EnmascaradorParametros::enmascararCampos);
+        }
+    }
+
+    private static boolean esSensible(String nombre) {
+        return nombre != null && CAMPOS_SENSIBLES.contains(nombre.toLowerCase(Locale.ROOT));
     }
 
     private static String recortar(String texto) {

@@ -2,6 +2,8 @@ package com.formula11.unit.observabilidad;
 
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.formula11.dto.usuarios.LoginRequest;
+import com.formula11.dto.usuarios.RegistroUsuarioRequest;
 import com.formula11.observabilidad.EnmascaradorParametros;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
@@ -12,6 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
@@ -83,5 +86,61 @@ class EnmascaradorParametrosTest {
                 parametros.length());
         assertTrue(parametros.endsWith(EnmascaradorParametros.MARCA_RECORTE));
         assertTrue(parametros.startsWith("{texto=xxx"));
+    }
+
+    record Credenciales(String usuario, String PASSWORD, String Contrasena, String secret) { }
+
+    record Sesion(String accessToken, String refreshToken, int tokensDisponibles) { }
+
+    record Envoltorio(Credenciales credenciales, List<Sesion> sesiones) { }
+
+    @Test
+    void enmascaraLaContrasenaDelLogin() {
+        String parametros = enmascarador.enmascarar(
+                new String[]{"request"}, new Object[]{new LoginRequest("ana@mail.com", "Secreta123")});
+
+        assertEquals("{request={\"email\":\"ana@mail.com\",\"password\":\"****\"}}", parametros);
+    }
+
+    @Test
+    void enmascaraLaContrasenaDelRegistro() {
+        String parametros = enmascarador.enmascarar(
+                new String[]{"request"}, new Object[]{new RegistroUsuarioRequest("Ana", "ana@mail.com", "Secreta123")});
+
+        assertEquals("{request={\"nombre\":\"Ana\",\"email\":\"ana@mail.com\",\"password\":\"****\"}}", parametros);
+    }
+
+    @Test
+    void enmascaraLosCamposSensiblesSinDistinguirMayusculasYAnidados() {
+        Envoltorio envoltorio = new Envoltorio(
+                new Credenciales("ana", "clave1", "clave2", "clave3"),
+                List.of(new Sesion("tok-a", "tok-r", 5)));
+
+        String parametros = enmascarador.enmascarar(new String[]{"envoltorio"}, new Object[]{envoltorio});
+
+        assertFalse(parametros.contains("clave"), parametros);
+        assertFalse(parametros.contains("tok-"), parametros);
+        assertTrue(parametros.contains("\"usuario\":\"ana\""), parametros);
+        assertTrue(parametros.contains("\"PASSWORD\":\"****\""), parametros);
+        assertTrue(parametros.contains("\"Contrasena\":\"****\""), parametros);
+        assertTrue(parametros.contains("\"secret\":\"****\""), parametros);
+        assertTrue(parametros.contains("\"accessToken\":\"****\""), parametros);
+        assertTrue(parametros.contains("\"refreshToken\":\"****\""), parametros);
+    }
+
+    @Test
+    void noEnmascaraCamposQueSoloContienenLaPalabraToken() {
+        String parametros = enmascarador.enmascarar(
+                new String[]{"sesion"}, new Object[]{new Sesion("tok-a", "tok-r", 5)});
+
+        assertTrue(parametros.contains("\"tokensDisponibles\":5"), parametros);
+    }
+
+    @Test
+    void enmascaraEnteroUnArgumentoConNombreSensible() {
+        String parametros = enmascarador.enmascarar(
+                new String[]{"token", "usuarioId"}, new Object[]{"eyJhbGciOi", 3L});
+
+        assertEquals("{token=****, usuarioId=3}", parametros);
     }
 }

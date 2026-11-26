@@ -86,13 +86,13 @@ No hay tareas bloqueantes compartidas aparte de T002: cada historia agrega lo su
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T011 [P] [US2] Sumar a `src/test/java/com/formula11/unit/observabilidad/EnmascaradorParametrosTest.java` (clase nueva de esta feature) los casos sensibles: `LoginRequest` y `RegistroUsuarioRequest` muestran `"password":"****"` y conservan `email` y `nombre`; los campos `password`, `contrasena`, `token`, `accessToken`, `refreshToken` y `secret` se enmascaran sin distinguir mayúsculas y a cualquier profundidad (objeto anidado y lista); un argumento llamado `token` se enmascara entero; un campo `tokensDisponibles` no se enmascara.
-- [ ] T012 [US2] Sumar a `src/test/java/com/formula11/integration/observabilidad/AuditoriaWebServicesIntegrationTest.java` un caso que llama a `UsuarioController.registrar` con una contraseña única y verifica que la línea tiene el email y `****`, y que la contraseña no aparece en ninguna línea capturada (SC-002).
+- [X] T011 [P] [US2] Sumar a `src/test/java/com/formula11/unit/observabilidad/EnmascaradorParametrosTest.java` (clase nueva de esta feature) los casos sensibles: `LoginRequest` y `RegistroUsuarioRequest` muestran `"password":"****"` y conservan `email` y `nombre`; los campos `password`, `contrasena`, `token`, `accessToken`, `refreshToken` y `secret` se enmascaran sin distinguir mayúsculas y a cualquier profundidad (objeto anidado y lista); un argumento llamado `token` se enmascara entero; un campo `tokensDisponibles` no se enmascara.
+- [X] T012 [US2] Sumar a `src/test/java/com/formula11/integration/observabilidad/AuditoriaWebServicesIntegrationTest.java` un caso que llama a `UsuarioController.registrar` con una contraseña única y verifica que la línea tiene el email y `****`, y que la contraseña no aparece en ninguna línea capturada (SC-002).
 
 ### Implementation for User Story 2
 
-- [ ] T013 [US2] En `src/main/java/com/formula11/observabilidad/EnmascaradorParametros.java`, recorrer el árbol JSON y reemplazar por `****` los campos llamados `password`, `contrasena`, `token`, `accessToken`, `refreshToken` o `secret` (sin distinguir mayúsculas, a cualquier profundidad, nombres exactos), y enmascarar entero el argumento cuyo nombre sea uno de esos.
-- [ ] T014 [US2] Correr T011 y T012, y otra vez T003 a T006, y dejarlos en verde.
+- [X] T013 [US2] En `src/main/java/com/formula11/observabilidad/EnmascaradorParametros.java`, recorrer el árbol JSON y reemplazar por `****` los campos llamados `password`, `contrasena`, `token`, `accessToken`, `refreshToken` o `secret` (sin distinguir mayúsculas, a cualquier profundidad, nombres exactos), y enmascarar entero el argumento cuyo nombre sea uno de esos.
+- [X] T014 [US2] Correr T011 y T012, y otra vez T003 a T006, y dejarlos en verde.
 
 **Checkpoint**: US1 y US2 funcionan juntas; el contenido de la línea es definitivo.
 
