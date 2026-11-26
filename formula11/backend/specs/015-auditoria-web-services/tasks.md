@@ -121,9 +121,9 @@ No hay tareas bloqueantes compartidas aparte de T002: cada historia agrega lo su
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T020 Correr `mvn verify` completo y compararlo con el baseline de T001: ningún test existente cambia de resultado (SC-004).
-- [ ] T021 [P] En `README.md` (raíz del repo), agregar `observabilidad/` al árbol de la sección "Arquitectura" como paquete transversal ("auditoría de web services y métricas") y una línea que explique que cada llamada queda en `logs/auditoria.log`.
-- [ ] T022 Seguir la prueba manual de [quickstart.md](quickstart.md) con el perfil `local` y confirmar el formato de [contracts/linea-auditoria.md](contracts/linea-auditoria.md).
+- [X] T020 Correr `mvn verify` completo y compararlo con el baseline de T001: ningún test existente cambia de resultado (SC-004).
+- [X] T021 [P] En `README.md` (raíz del repo), agregar `observabilidad/` al árbol de la sección "Arquitectura" como paquete transversal ("auditoría de web services y métricas") y una línea que explique que cada llamada queda en `logs/auditoria.log`.
+- [X] T022 Seguir la prueba manual de [quickstart.md](quickstart.md) con el perfil `local` y confirmar el formato de [contracts/linea-auditoria.md](contracts/linea-auditoria.md).
 - [ ] T023 Abrir el PR contra `dev` con la sección "Release notes" del [plan.md](plan.md) y avisar a C que `com.formula11.observabilidad` es un paquete transversal para `ArquitecturaTest`.
 
 ---

@@ -19,6 +19,7 @@ com.formula11
 ├── adapter/       integraciones externas (football-data, WhoScored)
 ├── config/        configuración (transversal)
 ├── exception/     errores y su traducción a HTTP (transversal)
+├── observabilidad/ auditoría de web services y métricas (transversal)
 └── security/      autenticación con JWT (transversal)
 ```
 
@@ -37,3 +38,7 @@ Las áreas funcionales se repiten en cada capa:
 Por ejemplo, la compra de tokens recorre `controller/mercado` → `service/mercado` → `persistence/mercado`, sobre las entidades de `model/mercado`. Las dependencias van siempre hacia abajo: los controllers no usan repositorios, y el modelo no depende de los controllers ni de los DTOs.
 
 Los tests siguen la misma estructura: `unit/<capa>/<área>`, `integration/<área>` y `e2e/<área>`.
+
+## Auditoría
+
+Cada llamada a la API deja una línea en `logs/auditoria.log` (dentro de `formula11/backend`), con fecha, correlation ID, usuario (o `anónimo`), operación, parámetros, duración en ms y resultado. Las contraseñas y los tokens se enmascaran con `****`. El archivo rota por día y guarda 30 días; la carpeta se cambia con `APP_AUDITORIA_DIRECTORIO`.
