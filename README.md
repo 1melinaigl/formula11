@@ -34,6 +34,6 @@ Las áreas funcionales se repiten en cada capa:
 | `portfolio` | portfolio, evolución e historial de operaciones del usuario |
 | `senales` | detección de jugadores subvaluados |
 
-Por ejemplo, la compra de tokens recorre `controller/mercado` → `service/mercado` → `persistence/mercado`, sobre las entidades de `model/mercado`. Las dependencias van siempre hacia abajo: los controllers no usan repositorios, y el modelo no depende de los controllers ni de los DTOs.
+Por ejemplo, la compra de tokens recorre `controller/mercado` → `service/mercado` → `persistence/mercado`, sobre las entidades de `model/mercado`. Entre las capas funcionales, las dependencias van hacia abajo: los controllers no usan repositorios, y el modelo no depende de controller, service, persistence ni DTOs. El test `ArquitecturaTest` hace cumplir estas reglas automáticamente.
 
 Los tests siguen la misma estructura: `unit/<capa>/<área>`, `integration/<área>` y `e2e/<área>`.
