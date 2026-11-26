@@ -17,12 +17,21 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        # health es público; el resto solo lo ve el superusuario (SecurityConfig).
+        include: health,info,metrics,prometheus,loggers
   endpoint:
     health:
       # Sin sesión o sin ser superusuario se ve solo el estado; el detalle es para el superusuario.
       show-details: when_authorized
       roles: SUPERUSUARIO
+  info:
+    env:
+      enabled: true
+# /actuator/info: la versión la completa Maven desde el pom.xml al compilar.
+info:
+  app:
+    nombre: Formula11
+    version: '@project.version@'
 server:
   error:
     include-message: never

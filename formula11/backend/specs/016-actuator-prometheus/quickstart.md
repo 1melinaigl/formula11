@@ -81,7 +81,7 @@ Invoke-RestMethod -Method Post http://localhost:8080/actuator/loggers/AUDITORIA 
 ```
 
 Esperado: las llamadas siguientes no agregan líneas a `logs/auditoria.log`. Se vuelve con
-`{"configuredLevel":null}`.
+`{"configuredLevel":"INFO"}`.
 
 ## 7. Prometheus local (opcional)
 

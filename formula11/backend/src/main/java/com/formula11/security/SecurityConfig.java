@@ -5,6 +5,8 @@ import com.formula11.exception.ErrorResponse;
 import com.formula11.config.CorrelationIdFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
+import org.springframework.boot.actuate.health.HealthEndpoint;
 import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.UUID;
 import org.slf4j.MDC;
@@ -31,16 +34,28 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/usuarios/registro").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/usuarios/login").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/actuator/health").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                        // Actuator (B, entrega 3): health público (solo el estado), el resto solo el superusuario.
+                        .requestMatchers(EndpointRequest.to(HealthEndpoint.class)).permitAll()
+                        .requestMatchers(EndpointRequest.toAnyEndpoint()).hasRole("SUPERUSUARIO")
                         .anyRequest().authenticated())
-                .exceptionHandling(errors -> errors.authenticationEntryPoint((request, response, exception) -> {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.setContentType("application/json");
-                    response.getWriter().write(objectMapper.writeValueAsString(
-                            new ErrorResponse("La autenticación es requerida", Instant.now(), correlationId(request))));
-                }))
+                .exceptionHandling(errors -> errors
+                        .authenticationEntryPoint((request, response, exception) -> escribirError(response,
+                                HttpServletResponse.SC_UNAUTHORIZED, "La autenticación es requerida", request, objectMapper))
+                        // Las rutas que piden un rol (hoy, Actuator) responden 403 con el mismo formato de error.
+                        .accessDeniedHandler((request, response, exception) -> escribirError(response,
+                                HttpServletResponse.SC_FORBIDDEN, "No tiene permisos para realizar esta operación",
+                                request, objectMapper)))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
+    }
+
+    private static void escribirError(HttpServletResponse response, int estado, String mensaje,
+                                      HttpServletRequest request, ObjectMapper objectMapper) throws IOException {
+        response.setStatus(estado);
+        response.setContentType("application/json");
+        response.getWriter().write(objectMapper.writeValueAsString(
+                new ErrorResponse(mensaje, Instant.now(), correlationId(request))));
     }
 
     /** El filtro de correlation id puede no haber corrido todavía: se usa el del MDC, el del header o uno nuevo. */

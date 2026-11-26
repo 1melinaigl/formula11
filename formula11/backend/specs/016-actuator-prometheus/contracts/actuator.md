@@ -12,8 +12,10 @@ Base: `/actuator`. Autenticación: JWT del login (`Authorization: Bearer <token>
 | `/actuator/loggers/{nombre}` | POST | 401 | 403 | 204 |
 
 Los endpoints que no están en la lista (`env`, `beans`, `configprops`, `heapdump`, etc.) no se
-exponen y responden 404 al superusuario. Sin sesión, responden 401, como cualquier ruta que
-no es pública.
+exponen y no devuelven sus datos a nadie. Sin sesión responden 401, como cualquier ruta que no
+es pública. Para un usuario autenticado son una ruta inexistente: hoy `GlobalExceptionHandler`
+convierte esas rutas en un 500 genérico, igual que cualquier URL desconocida de la API. Esta
+feature no cambia ese comportamiento, que es previo.
 
 ## Errores
 
@@ -77,4 +79,5 @@ Content-Type: application/json
 { "configuredLevel": "WARN" }
 ```
 
-Con `"configuredLevel": null` se vuelve al nivel de `logback-spring.xml` (`INFO`).
+Para volver, se manda `{ "configuredLevel": "INFO" }`. Con `null`, el logger hereda el nivel del
+root: en `local` es `INFO`, pero en el perfil `e2e` es `WARN` y la auditoría quedaría apagada.

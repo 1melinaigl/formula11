@@ -98,21 +98,21 @@ No hay tareas bloqueantes compartidas aparte de T002: cada historia agrega lo su
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T012 [US2] `ActuatorSeguridadE2ETest` en `src/test/java/com/formula11/e2e/observabilidad/ActuatorSeguridadE2ETest.java` (`@SpringBootTest` + `@AutoConfigureMockMvc`, perfil `e2e`). Casos:
-  - Para `/actuator/info`, `/actuator/metrics`, `/actuator/prometheus` y `/actuator/loggers` (test parametrizado): sin sesión → 401 con `mensaje` y `correlationId`; usuario común → 403 con `mensaje`; superusuario → 200. Para `/actuator/prometheus` alcanza con que no sea 401 ni 403: sin `@AutoConfigureObservability` puede no estar registrado en el test (R9).
+- [X] T012 [US2] `ActuatorSeguridadE2ETest` en `src/test/java/com/formula11/e2e/observabilidad/ActuatorSeguridadE2ETest.java` (`@SpringBootTest` + `@AutoConfigureMockMvc` + `@AutoConfigureObservability(tracing = false)`, perfil `e2e`, para que exista `/actuator/prometheus`). Casos:
+  - Para `/actuator/info`, `/actuator/metrics`, `/actuator/prometheus` y `/actuator/loggers` (test parametrizado): sin sesión → 401 con `mensaje` y `correlationId`; usuario común → 403 con `mensaje`; superusuario → 200.
   - `/actuator/info` con superusuario tiene `app.nombre=Formula11` y un `app.version` que no está vacío ni es el texto `@project.version@`.
-  - `/actuator/env` con superusuario → 404, porque no está expuesto.
-  - `POST /actuator/loggers/AUDITORIA` con `{"configuredLevel":"WARN"}` como superusuario → 204. Una llamada a `GET /api/jugadores` no agrega líneas con su correlation ID en `target/auditoria-e2e/auditoria.log`. Al final se restaura con `{"configuredLevel":null}`.
+  - `/actuator/env` con superusuario no responde 200, porque no está expuesto (hoy da el 500 genérico de ruta inexistente; ver el contrato).
+  - `POST /actuator/loggers/AUDITORIA` con `{"configuredLevel":"WARN"}` como superusuario → 204. Una llamada a `GET /api/jugadores` no agrega líneas con su correlation ID en `target/auditoria-e2e/auditoria.log`. Al final se restaura el nivel que tenía (con `null` heredaría el `WARN` del root del perfil `e2e`).
   - El mismo `POST` con usuario común → 403.
 
 ### Implementation for User Story 2
 
-- [ ] T013 [US2] En `src/main/resources/application.yml`, cambiar `management.endpoints.web.exposure.include` a `health,info,metrics,prometheus,loggers`. Agregar `management.info.env.enabled: true` y el bloque `info.app.nombre: Formula11`, `info.app.version: '@project.version@'` (research R3), con un comentario de una línea.
-- [ ] T014 [US2] En `src/main/java/com/formula11/security/SecurityConfig.java`:
+- [X] T013 [US2] En `src/main/resources/application.yml`, cambiar `management.endpoints.web.exposure.include` a `health,info,metrics,prometheus,loggers`. Agregar `management.info.env.enabled: true` y el bloque `info.app.nombre: Formula11`, `info.app.version: '@project.version@'` (research R3), con un comentario de una línea.
+- [X] T014 [US2] En `src/main/java/com/formula11/security/SecurityConfig.java`:
   - Quitar `"/actuator/health"` de la lista de `permitAll`.
   - Agregar antes de `anyRequest()` un bloque comentado (`// Actuator (B, entrega 3): health público, el resto solo superusuario.`) con `EndpointRequest.to(HealthEndpoint.class).permitAll()` y `EndpointRequest.toAnyEndpoint().hasRole("SUPERUSUARIO")`.
   - En `exceptionHandling`, agregar un `accessDeniedHandler` que responda 403 con `ErrorResponse("No tiene permisos para realizar esta operación", Instant.now(), correlationId(request))`, el mismo texto que `GlobalExceptionHandler`.
-- [ ] T015 [US2] Correr T012, y otra vez T006, y dejarlos en verde.
+- [X] T015 [US2] Correr T012, y otra vez T006, y dejarlos en verde.
 
 **Checkpoint**: US1 y US2 funcionan juntas; Actuator queda como pide la consigna, salvo las métricas de negocio.
 
