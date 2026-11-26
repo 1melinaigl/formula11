@@ -126,38 +126,38 @@ No hay tareas bloqueantes compartidas aparte de T002: cada historia agrega lo su
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T016 [P] [US3] `MetricasNegocioTest` en `src/test/java/com/formula11/unit/observabilidad/MetricasNegocioTest.java`, con `SimpleMeterRegistry`:
+- [X] T016 [P] [US3] `MetricasNegocioTest` en `src/test/java/com/formula11/unit/observabilidad/MetricasNegocioTest.java`, con `SimpleMeterRegistry`:
   - al crear el componente, los tres contadores existen en `0`;
   - `registrarOperacionMercado(COMPRA)` sin transacción suma uno;
   - con `TransactionSynchronizationManager.initSynchronization()` no suma hasta llamar a `afterCommit()` en las sincronizaciones registradas, y con `afterCompletion(STATUS_ROLLED_BACK)` no suma;
-  - `medirRecalculo` registra `resultado=ok` o `resultado=error`;
+  - `iniciarMedicion()` + `registrarRecalculo(muestra, ok)` registran `resultado=ok` o `resultado=error`, y una muestra nula no registra nada;
   - `null` no lanza.
   Limpia la sincronización en `@AfterEach`.
-- [ ] T017 [P] [US3] `MetricasNegocioAspectTest` en `src/test/java/com/formula11/unit/observabilidad/MetricasNegocioAspectTest.java`:
+- [X] T017 [P] [US3] `MetricasNegocioAspectTest` en `src/test/java/com/formula11/unit/observabilidad/MetricasNegocioAspectTest.java`:
   - `@AfterReturning` con un `ResultadoOperacion` de `Transaccion.Tipo.COMPRA` y otro de `VENTA` registra el tipo correcto;
   - el `@Around` del recálculo devuelve lo de `proceed()` y registra `ok`; si `proceed()` lanza, relanza la misma instancia y registra `error`;
   - si `MetricasNegocio` lanza, la operación devuelve su resultado igual.
-- [ ] T018 [US3] `MetricasNegocioIntegrationTest` en `src/test/java/com/formula11/integration/observabilidad/MetricasNegocioIntegrationTest.java` (perfil `test`, Testcontainers). Mide con el `MeterRegistry` del contexto y compara el antes y el después, porque el registry se comparte entre tests:
+- [X] T018 [US3] `MetricasNegocioIntegrationTest` en `src/test/java/com/formula11/integration/observabilidad/MetricasNegocioIntegrationTest.java` (perfil `test`, Testcontainers). Mide con el `MeterRegistry` del contexto y compara el antes y el después, porque el registry se comparte entre tests:
   - una compra y una venta por `MercadoService` con datos como los de los tests de mercado existentes suben `compra` y `venta` en uno;
   - una compra sin saldo (lanza `OperacionNoValidaException`) no cambia nada;
   - `RecalculoService.recalcular(null)` suma uno a `formula11.cotizaciones.recalculo{resultado=ok}`.
-- [ ] T019 [US3] `ActuatorPrometheusE2ETest` en `src/test/java/com/formula11/e2e/observabilidad/ActuatorPrometheusE2ETest.java` (perfil `e2e`, `@AutoConfigureObservability`): como superusuario, `GET /actuator/prometheus` trae `formula11_mercado_operaciones_total{` con `tipo="compra"`, `tipo="venta"` y `tipo="p2p"`. Después de una `POST /api/ordenes/compra` por HTTP con un usuario de prueba, el valor de `tipo="compra"` subió en uno.
+- [X] T019 [US3] `ActuatorPrometheusE2ETest` en `src/test/java/com/formula11/e2e/observabilidad/ActuatorPrometheusE2ETest.java` (perfil `e2e`, `@AutoConfigureObservability`): como superusuario, `GET /actuator/prometheus` trae `formula11_mercado_operaciones_total{` con `tipo="compra"`, `tipo="venta"` y `tipo="p2p"`. Después de una `POST /api/ordenes/compra` por HTTP con un usuario de prueba, el valor de `tipo="compra"` subió en uno.
 
 ### Implementation for User Story 3
 
-- [ ] T020 [P] [US3] Enum `TipoOperacionMercado { COMPRA, VENTA, P2P }` en `src/main/java/com/formula11/observabilidad/TipoOperacionMercado.java`, con `etiqueta()` en minúsculas y javadoc que remite a [contracts/metricas-negocio.md](contracts/metricas-negocio.md).
-- [ ] T021 [US3] `MetricasNegocio` en `src/main/java/com/formula11/observabilidad/MetricasNegocio.java` (`@Component`, recibe `MeterRegistry`):
+- [X] T020 [P] [US3] Enum `TipoOperacionMercado { COMPRA, VENTA, P2P }` en `src/main/java/com/formula11/observabilidad/TipoOperacionMercado.java`, con `etiqueta()` en minúsculas y javadoc que remite a [contracts/metricas-negocio.md](contracts/metricas-negocio.md).
+- [X] T021 [US3] `MetricasNegocio` en `src/main/java/com/formula11/observabilidad/MetricasNegocio.java` (`@Component`, recibe `MeterRegistry`):
   - registra en el constructor los tres `Counter` `formula11.mercado.operaciones` con `tipo` y la descripción del contrato;
   - `registrarOperacionMercado(TipoOperacionMercado)` suma después del commit si `TransactionSynchronizationManager.isSynchronizationActive()`, o en el momento si no;
-  - `<T> T medirRecalculo(Callable<T>)` (o un `Timer.Sample` equivalente) registra `formula11.cotizaciones.recalculo` con `resultado`;
+  - `Timer.Sample iniciarMedicion()` y `registrarRecalculo(Timer.Sample, boolean ok)` registran `formula11.cotizaciones.recalculo` con `resultado` (el `@Around` necesita `proceed()`, que lanza `Throwable`, por eso no es un `Callable`);
   - nunca lanza por un problema propio: hace `warn` en el log de la clase.
   Depende de T020.
-- [ ] T022 [US3] `MetricasNegocioAspect` en `src/main/java/com/formula11/observabilidad/MetricasNegocioAspect.java` (`@Aspect @Component @Order(Ordered.HIGHEST_PRECEDENCE)`):
+- [X] T022 [US3] `MetricasNegocioAspect` en `src/main/java/com/formula11/observabilidad/MetricasNegocioAspect.java` (`@Aspect @Component @Order(Ordered.HIGHEST_PRECEDENCE + 10)`, después del `ExposeInvocationInterceptor`):
   - `@AfterReturning(pointcut = "execution(* com.formula11.service.mercado.MercadoService.comprar(..)) || execution(* com.formula11.service.mercado.MercadoService.vender(..))", returning = "resultado")` traduce `Transaccion.Tipo` a `TipoOperacionMercado` por nombre;
   - `@Around("execution(* com.formula11.service.cotizaciones.RecalculoService.recalcular(..))")` mide con `MetricasNegocio`;
   - todo en `try/catch` (R8).
   Depende de T021.
-- [ ] T023 [US3] Correr T016 a T019 y dejarlos en verde.
+- [X] T023 [US3] Correr T016 a T019 y dejarlos en verde.
 
 **Checkpoint**: las métricas de negocio se ven en `/actuator/prometheus`. A ya puede usar `MetricasNegocio` para el P2P.
 

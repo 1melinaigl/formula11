@@ -132,7 +132,7 @@ GET /actuator/health (público)
 
 ```text
 POST /api/mercado/... → MercadoController → [proxy]
-   MetricasNegocioAspect (HIGHEST_PRECEDENCE, afuera)
+   MetricasNegocioAspect (HIGHEST_PRECEDENCE + 10, afuera)
      → TransactionInterceptor → MercadoService.comprar/vender → commit
    @AfterReturning(ResultadoOperacion r) → MetricasNegocio.registrarOperacionMercado(COMPRA|VENTA)
                                               → counter formula11.mercado.operaciones{tipo}
@@ -180,7 +180,7 @@ info:
 | Riesgo | Mitigación |
 |---|---|
 | Un test deja una carga `FALLIDA` y otros ven el health en `DOWN` | Los tests que la crean la borran en `@AfterEach`; ningún test existente consulta el health. |
-| El aspecto corre dentro de la transacción y cuenta una operación que después no se confirma | `@Order(HIGHEST_PRECEDENCE)` y el `afterCommit` de `MetricasNegocio` (R6). |
+| El aspecto corre dentro de la transacción y cuenta una operación que después no se confirma | `@Order(HIGHEST_PRECEDENCE + 10)` y el `afterCommit` de `MetricasNegocio` (R6). |
 | `@project.version@` sin filtrar si se corre desde el IDE sin Maven | Se ve el texto literal en `info`, sin romper nada. Con `mvn` siempre se filtra. |
 | `ArquitecturaTest` de C | Solo controla las capas; `observabilidad` no está en ninguna y el health indicator usa un service, no un repositorio. |
 | A agrega `P2P` a `Transaccion.Tipo` y lo confirma con otro método | El mapeo por nombre a `TipoOperacionMercado` lo cubre. Si usa otro service, llama a `MetricasNegocio` directo (contrato). |

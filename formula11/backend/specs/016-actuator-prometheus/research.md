@@ -94,7 +94,7 @@
 - **Decision**: `MetricasNegocio.registrarOperacionMercado(tipo)` incrementa después del
   commit si hay una transacción activa (`TransactionSynchronizationManager.registerSynchronization`
   con `afterCommit`). Si no hay transacción, incrementa en el momento. El aspecto se
-  ordena por fuera de `@Transactional`, con `@Order(Ordered.HIGHEST_PRECEDENCE)`.
+  ordena por fuera de `@Transactional`, con `@Order(Ordered.HIGHEST_PRECEDENCE + 10)`: con `HIGHEST_PRECEDENCE` justo correría antes que el `ExposeInvocationInterceptor` de Spring y `@AfterReturning` falla.
 - **Rationale**: Una operación que falla en el commit no debe sumar (SC-003). Con el aspecto
   por fuera de la transacción, el commit ya ocurrió cuando corre `@AfterReturning`. El
   chequeo de transacción protege a quien llame directo desde un método transaccional, como
