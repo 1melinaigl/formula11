@@ -56,10 +56,17 @@ PowerShell 7; en Windows PowerShell 5.1 el 401 o el 403 aparecen como error con 
 (Invoke-RestMethod http://localhost:8080/actuator/health -Headers @{Authorization="Bearer $super"}).components.cargaMetricas
 ```
 
-Esperado: estado y detalle de la última carga. Para ver el `DOWN`, se puede forzar una carga
-que falle (por ejemplo, WhoScored en modo `archivos` con una carpeta vacía) o marcar la
-última ejecución como `FALLIDA` en un Postgres descartable. Después, el health público da 503
-con `status` en `DOWN`.
+Esperado: estado y detalle de la última carga. Para ver el `DOWN` en un Postgres descartable:
+con la app apagada, insertar una carga `EN_CURSO` (como si la app se hubiera caído en medio de
+una carga) y volver a levantarla. Al arrancar, la app la marca `FALLIDA` ("La aplicación se reinició
+durante la carga").
+
+```powershell
+docker exec <contenedor> psql -U postgres -d formula11 -c "INSERT INTO ejecucion_metricas (id, estado, inicio) VALUES (nextval('ejecucion_metricas_seq'), 'EN_CURSO', now());"
+```
+
+Después, el health público da 503 con `{"status":"DOWN"}`. El superusuario ve `estado`, `fin`,
+`ejecucionId` y `error`.
 
 ## 5. Métricas de negocio
 

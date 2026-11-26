@@ -190,14 +190,15 @@ No hay tareas bloqueantes compartidas aparte de T002: cada historia agrega lo su
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T028 Correr `mvn verify` completo y compararlo con el baseline de T001: ningún test existente cambia de resultado (SC-005).
-- [ ] T029 [P] En `postman/formula11-registro-catalogo.json`, agregar una carpeta "Actuator" con health (sin auth), info, prometheus y `POST loggers/AUDITORIA`, usando la variable de token de superusuario que ya usa la colección.
-- [ ] T030 [P] En `README.md` (raíz del repo), sumar a la sección "Auditoría" (o renombrarla "Observabilidad"):
+- [X] T028 Correr `mvn verify` completo y compararlo con el baseline de T001: ningún test existente cambia de resultado (SC-005).
+  - 2026-11-26: 403 tests, 0 fallas, 0 errores (358 del baseline + 45 nuevos de la 016).
+- [X] T029 [P] En `postman/formula11-registro-catalogo.json`, agregar (como requests sueltos con "(Actuator, ...)" en el nombre, porque la colección no usa carpetas) con health (sin auth), info, prometheus y `POST loggers/AUDITORIA`, usando la variable de token de superusuario que ya usa la colección.
+- [X] T030 [P] En `README.md` (raíz del repo), sumar a la sección "Auditoría" (o renombrarla "Observabilidad"):
   - los endpoints de Actuator y quién los ve;
   - el componente `cargaMetricas`;
   - las dos métricas de negocio;
   - cómo levantar el Prometheus local.
-- [ ] T031 Seguir los pasos 2 a 6 de [quickstart.md](quickstart.md) con el perfil `local`, contra un Postgres descartable.
+- [X] T031 Seguir los pasos 2 a 6 de [quickstart.md](quickstart.md) con el perfil `local`, contra un Postgres descartable.
   - Adelantado junto con T027:
     - health público `{"status":"UP"}`;
     - `info` da 401 sin sesión, 403 al demo y nombre y versión al superusuario;
@@ -207,7 +208,7 @@ No hay tareas bloqueantes compartidas aparte de T002: cada historia agrega lo su
     - el recálculo deja `formula11_cotizaciones_recalculo_seconds_count{resultado="ok"} 1`;
     - con `AUDITORIA` en `WARN` no hay línea y con `INFO` sí.
 
-    Falta el paso 4 con una carga fallida real.
+    - Paso 4: arranqué la app con una carga `EN_CURSO` en la base, como si se hubiera caído en medio de una carga. Al iniciar, la app la marcó `FALLIDA` ("La aplicación se reinició durante la carga"). El health público respondió `503 {"status":"DOWN"}` y el superusuario vio el detalle.
 - [ ] T032 Actualizar la descripción del PR de `entrega3-observabilidad` con la línea de "Release notes" del [plan.md](plan.md). Pasarle a A el contrato de [contracts/metricas-negocio.md](contracts/metricas-negocio.md) para el P2P.
 
 ---
