@@ -7,6 +7,7 @@ import com.formula11.model.jugadores.Liga;
 import com.formula11.persistence.cotizaciones.CotizacionRepository;
 import com.formula11.persistence.cotizaciones.EstrategiaRepository;
 import com.formula11.persistence.jugadores.JugadorRepository;
+import com.formula11.service.cotizaciones.CotizacionCacheInvalidator;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,6 +58,7 @@ class CotizacionJugadorE2ETest {
     @Autowired private JugadorRepository jugadores;
     @Autowired private CotizacionRepository cotizaciones;
     @Autowired private EstrategiaRepository estrategias;
+    @Autowired private CotizacionCacheInvalidator cacheInvalidator;
     @Autowired private JdbcTemplate jdbc;
 
     private final List<Long> creados = new ArrayList<>();
@@ -66,6 +68,7 @@ class CotizacionJugadorE2ETest {
 
     @BeforeEach
     void sembrar() {
+        cacheInvalidator.invalidate();
         activa = estrategias.findByActivaTrue().map(Estrategia::getCodigo).orElseThrow();
         otra = "RENDIMIENTO_POSICION".equals(activa) ? "CONSISTENCIA" : "RENDIMIENTO_POSICION";
         jugador = jugadores.saveAndFlush(new Jugador("Jugador E2E 008", "Equipo E2E", Liga.LA_LIGA, "MED"));

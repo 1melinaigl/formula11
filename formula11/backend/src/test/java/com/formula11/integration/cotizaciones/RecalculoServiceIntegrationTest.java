@@ -1,6 +1,10 @@
 package com.formula11.integration.cotizaciones;
 
 import com.formula11.service.cotizaciones.RecalculoService;
+import com.formula11.service.cotizaciones.CotizacionCacheInvalidator;
+import com.formula11.service.cotizaciones.CotizacionConsultaService;
+import com.formula11.service.cotizaciones.RankingResultado;
+import com.formula11.service.cotizaciones.RangoRecalculo;
 import com.formula11.model.valuacion.CalculadoraPrecio;
 import com.formula11.model.valuacion.ParametrosPrecio;
 import org.junit.jupiter.api.*;
@@ -42,6 +46,8 @@ class RecalculoServiceIntegrationTest {
     }
 
     @Autowired private RecalculoService recalculo;
+    @Autowired private CotizacionConsultaService consulta;
+    @Autowired private CotizacionCacheInvalidator cacheInvalidator;
     @Autowired private JugadorRepository jugadores;
     @Autowired private MetricaPartidoRepository metricas;
     @Autowired private CotizacionRepository cotizaciones;
@@ -49,6 +55,7 @@ class RecalculoServiceIntegrationTest {
 
     @BeforeEach
     void limpiar() {
+        cacheInvalidator.invalidate();
         List<Jugador> jugadoresDelTest = jugadoresDelSeed();
         Set<Long> idsJugadores = jugadoresDelTest.stream().map(Jugador::getId).collect(java.util.stream.Collectors.toSet());
         Set<LocalDate> fechasCotizacion = Set.of(
@@ -87,7 +94,7 @@ class RecalculoServiceIntegrationTest {
         }
         metricas.flush();
 
-        var response = recalculo.recalcular(new com.formula11.service.cotizaciones.RangoRecalculo(
+        var response = recalculo.recalcular(new RangoRecalculo(
                 LocalDate.of(2026, 1, 4), LocalDate.of(2026, 1, 18)));
 
         assertEquals(3, response.semanasCalculadas());
@@ -114,6 +121,52 @@ class RecalculoServiceIntegrationTest {
                 }
             }
         }
+    }
+
+    @Test
+    void rankingCacheadoSeActualizaAlRecalcularCotizaciones() {
+        List<Jugador> jugadoresConMetricas = jugadoresDelSeed();
+        Jugador jugador = jugadoresConMetricas.get(0);
+        LocalDate fechaMetrica = LocalDate.of(2026, 1, 2);
+        RangoRecalculo rango = new RangoRecalculo(
+                LocalDate.of(2026, 1, 4), LocalDate.of(2026, 1, 4));
+        for (int indice = 0; indice < jugadoresConMetricas.size(); indice++) {
+            metricas.save(metrica(jugadoresConMetricas.get(indice), fechaMetrica, indice + 1));
+        }
+        metricas.flush();
+        recalculo.recalcular(rango);
+
+        RankingResultado cacheado = consulta.ranking(null, jugador.getLiga().getNombreLegible(),
+                jugador.getPosicion(), 0, 100, false);
+        RankingResultado.Item itemCacheado = rankingItem(cacheado, jugador.getId());
+
+        List<MetricaPartido> metricaOriginal = metricas
+                .findByFechaPartidoBetween(fechaMetrica, fechaMetrica).stream()
+                .filter(metrica -> metrica.getJugador().getId().equals(jugador.getId()))
+                .filter(metrica -> "test".equals(metrica.getFuente()))
+                .toList();
+        metricas.deleteAll(metricaOriginal);
+        metricas.flush();
+        metricas.saveAndFlush(metrica(jugador, fechaMetrica, 20));
+        recalculo.recalcular(rango);
+
+        RankingResultado actualizado = consulta.ranking(null, jugador.getLiga().getNombreLegible(),
+                jugador.getPosicion(), 0, 100, false);
+        RankingResultado.Item itemActualizado = rankingItem(actualizado, jugador.getId());
+        boolean cambioScore = itemCacheado.cotizacion().score()
+                .compareTo(itemActualizado.cotizacion().score()) != 0;
+        boolean cambioPrecio = itemCacheado.cotizacion().precio()
+                .compareTo(itemActualizado.cotizacion().precio()) != 0;
+
+        assertTrue(cambioScore || cambioPrecio,
+                "El ranking recargado debe reflejar un score o precio distinto al resultado cacheado");
+    }
+
+    private static RankingResultado.Item rankingItem(RankingResultado ranking, Long jugadorId) {
+        return ranking.items().stream()
+                .filter(item -> item.jugador().getId().equals(jugadorId))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("El jugador no aparece en el ranking"));
     }
 
     private static MetricaPartido metrica(Jugador jugador, LocalDate fecha, int valor) {
