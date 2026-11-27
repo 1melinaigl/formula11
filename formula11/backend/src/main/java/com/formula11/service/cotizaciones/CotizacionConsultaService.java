@@ -1,5 +1,6 @@
 package com.formula11.service.cotizaciones;
 
+import com.github.benmanes.caffeine.cache.Cache;
 import com.formula11.config.ClockConfig;
 import com.formula11.exception.RecursoNoEncontradoException;
 import com.formula11.exception.SoloSuperusuarioException;
@@ -56,13 +57,16 @@ public class CotizacionConsultaService {
     private final CotizacionRepository cotizaciones;
     private final EstrategiaRepository estrategias;
     private final Clock clock;
+    private final Cache<RankingClave, RankingResultado> rankingCache;
 
     public CotizacionConsultaService(JugadorRepository jugadores, CotizacionRepository cotizaciones,
-                                     EstrategiaRepository estrategias, Clock clock) {
+                                     EstrategiaRepository estrategias, Clock clock,
+                                     Cache<RankingClave, RankingResultado> rankingCache) {
         this.jugadores = jugadores;
         this.cotizaciones = cotizaciones;
         this.estrategias = estrategias;
         this.clock = clock;
+        this.rankingCache = rankingCache;
     }
 
     public JugadorDetalleResultado detalle(long jugadorId) {
@@ -133,12 +137,20 @@ public class CotizacionConsultaService {
         Liga ligaFiltro = parsearLiga(liga);
         String posicionFiltro = parsearPosicion(posicion);
         String codigo = resolverEstrategia(estrategia, superusuario);
+        RankingClave clave = new RankingClave(codigo, ligaFiltro, posicionFiltro, page, size);
+        return rankingCache.get(clave, this::calcularRanking);
+    }
+
+    private RankingResultado calcularRanking(RankingClave clave) {
+        String codigo = clave.estrategia();
+        int page = clave.page();
+        int size = clave.size();
         LocalDate fecha = codigo == null ? null : cotizaciones.findMaxFechaByEstrategia(codigo).orElse(null);
         if (fecha == null) {
             return RankingResultado.vacio(codigo, page, size);
         }
         Page<Cotizacion> pagina = cotizaciones.findAll(
-                especificacionRanking(codigo, fecha, ligaFiltro, posicionFiltro),
+                especificacionRanking(codigo, fecha, clave.liga(), clave.posicion()),
                 PageRequest.of(page, size, ORDEN_RANKING));
         Map<Long, BigDecimal> preciosAnteriores = preciosAnteriores(codigo, fecha, pagina.getContent());
         Integer version = cotizaciones.findVersionByEstrategiaAndFecha(codigo, fecha).orElse(null);
