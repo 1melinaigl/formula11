@@ -8,10 +8,12 @@ import com.formula11.persistence.cotizaciones.CotizacionRepository;
 import com.formula11.persistence.cotizaciones.EstrategiaRepository;
 import com.formula11.persistence.jugadores.JugadorRepository;
 import com.formula11.service.cotizaciones.CotizacionConsultaService;
+import com.formula11.service.cotizaciones.CotizacionCacheInvalidator;
 import com.formula11.service.cotizaciones.CotizacionHistoricaPort;
 import com.formula11.service.cotizaciones.CotizacionLeida;
 import com.formula11.service.cotizaciones.HistorialCotizacionesResultado;
 import com.formula11.service.cotizaciones.RankingResultado;
+import com.formula11.service.cotizaciones.EstrategiaService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,6 +60,8 @@ class CotizacionConsultaIntegrationTest {
 
     @Autowired private CotizacionConsultaService service;
     @Autowired private CotizacionHistoricaPort port;
+    @Autowired private CotizacionCacheInvalidator cacheInvalidator;
+    @Autowired private EstrategiaService estrategiaService;
     @Autowired private CotizacionRepository cotizaciones;
     @Autowired private JugadorRepository jugadores;
     @Autowired private EstrategiaRepository estrategias;
@@ -72,6 +76,7 @@ class CotizacionConsultaIntegrationTest {
 
     @BeforeEach
     void sembrar() {
+        cacheInvalidator.invalidate();
         activa = estrategias.findByActivaTrue().map(Estrategia::getCodigo).orElseThrow();
         otra = "RENDIMIENTO_POSICION".equals(activa) ? "CONSISTENCIA" : "RENDIMIENTO_POSICION";
         zeta = crear("Zeta Ocho", Liga.LA_LIGA, "DEL");
@@ -140,6 +145,38 @@ class CotizacionConsultaIntegrationTest {
                 laLiga.items().stream().map(item -> item.jugador().getId()).toList());
         assertEquals(1, otraEstrategia.totalElements());
         assertEquals(new BigDecimal("3.0000"), otraEstrategia.items().get(0).cotizacion().precio());
+    }
+
+    // La clave usa la estrategia ya resuelta: al activar otra, el pedido sin estrategia apunta a otra entrada
+    // aunque el caché no se haya limpiado. La invalidación al recalcular la prueba RecalculoServiceIntegrationTest.
+    @Test
+    void activarOtraEstrategiaDevuelveElRankingDeLaNuevaActiva() {
+        RankingResultado anterior = service.ranking(null, null, null, 0, 20, false);
+        assertEquals(activa, anterior.estrategia());
+
+        try {
+            estrategiaService.activar(otra);
+
+            RankingResultado actualizado = service.ranking(null, null, null, 0, 20, false);
+            assertEquals(otra, actualizado.estrategia());
+            assertEquals(1, actualizado.totalElements());
+            assertEquals(zeta.getId(), actualizado.items().get(0).jugador().getId());
+            assertEquals(new BigDecimal("3.0000"), actualizado.items().get(0).cotizacion().precio());
+        } finally {
+            estrategiaService.activar(activa);
+        }
+    }
+
+    @Test
+    void migracionV30CreaElIndiceDelRanking() {
+        String indexDefinition = jdbc.queryForObject(
+                "SELECT indexdef FROM pg_indexes WHERE schemaname = current_schema() "
+                        + "AND indexname = 'ix_cotizacion_ranking'",
+                String.class);
+
+        assertNotNull(indexDefinition);
+        assertTrue(indexDefinition.toLowerCase().contains(
+                "(estrategia, fecha, score desc, precio desc)"));
     }
 
     @Test

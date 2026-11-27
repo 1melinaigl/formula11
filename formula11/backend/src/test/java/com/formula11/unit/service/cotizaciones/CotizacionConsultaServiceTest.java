@@ -1,5 +1,7 @@
 package com.formula11.unit.service.cotizaciones;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.formula11.exception.RecursoNoEncontradoException;
 import com.formula11.exception.SoloSuperusuarioException;
 import com.formula11.model.cotizaciones.Cotizacion;
@@ -10,9 +12,12 @@ import com.formula11.persistence.cotizaciones.CotizacionRepository;
 import com.formula11.persistence.cotizaciones.EstrategiaRepository;
 import com.formula11.persistence.jugadores.JugadorRepository;
 import com.formula11.service.cotizaciones.CotizacionConsultaService;
+import com.formula11.service.cotizaciones.CotizacionCacheInvalidator;
 import com.formula11.service.cotizaciones.CotizacionLeida;
+import com.formula11.service.cotizaciones.CotizacionVigentePort;
 import com.formula11.service.cotizaciones.HistorialCotizacionesResultado;
 import com.formula11.service.cotizaciones.JugadorDetalleResultado;
+import com.formula11.service.cotizaciones.RankingClave;
 import com.formula11.service.cotizaciones.RankingResultado;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,6 +59,7 @@ class CotizacionConsultaServiceTest {
     private CotizacionRepository cotizaciones;
     private EstrategiaRepository estrategias;
     private CotizacionConsultaService service;
+    private Cache<RankingClave, RankingResultado> rankingCache;
     private Jugador jugador;
 
     @BeforeEach
@@ -61,7 +67,9 @@ class CotizacionConsultaServiceTest {
         jugadores = mock(JugadorRepository.class);
         cotizaciones = mock(CotizacionRepository.class);
         estrategias = mock(EstrategiaRepository.class);
-        service = new CotizacionConsultaService(jugadores, cotizaciones, estrategias, Clock.fixed(AHORA, ZoneOffset.UTC));
+        rankingCache = Caffeine.newBuilder().build();
+        service = new CotizacionConsultaService(jugadores, cotizaciones, estrategias,
+                Clock.fixed(AHORA, ZoneOffset.UTC), rankingCache);
         Estrategia activa = mock(Estrategia.class);
         when(activa.getCodigo()).thenReturn(ACTIVA);
         when(estrategias.findByActivaTrue()).thenReturn(Optional.of(activa));
@@ -349,6 +357,7 @@ class CotizacionConsultaServiceTest {
         when(cotizaciones.findMaxFechaByEstrategia(ACTIVA)).thenReturn(Optional.empty());
 
         RankingResultado ranking = service.ranking(null, null, null, 0, 20, false);
+        RankingResultado repetido = service.ranking(null, null, null, 0, 20, false);
 
         assertEquals(ACTIVA, ranking.estrategia());
         assertNull(ranking.version());
@@ -356,6 +365,8 @@ class CotizacionConsultaServiceTest {
         assertEquals(0, ranking.totalElements());
         assertEquals(0, ranking.totalPages());
         assertTrue(ranking.items().isEmpty());
+        assertSame(ranking, repetido);
+        verify(cotizaciones, times(1)).findMaxFechaByEstrategia(ACTIVA);
     }
 
     @Test
@@ -363,9 +374,84 @@ class CotizacionConsultaServiceTest {
         when(estrategias.findByActivaTrue()).thenReturn(Optional.empty());
 
         RankingResultado ranking = service.ranking(null, null, null, 0, 20, false);
+        RankingResultado repetido = service.ranking(null, null, null, 0, 20, false);
 
         assertNull(ranking.estrategia());
         assertTrue(ranking.items().isEmpty());
+        assertSame(ranking, repetido);
+        verify(estrategias, times(2)).findByActivaTrue();
+        verifyNoInteractions(cotizaciones);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void rankingRepetidoNoVuelveAConsultarCotizacionesPeroResuelveLaActiva() {
+        when(cotizaciones.findMaxFechaByEstrategia(ACTIVA)).thenReturn(Optional.of(DOMINGO_1));
+        when(cotizaciones.findVersionByEstrategiaAndFecha(ACTIVA, DOMINGO_1)).thenReturn(Optional.of(1));
+        when(cotizaciones.findFechaAnterior(ACTIVA, DOMINGO_1)).thenReturn(Optional.empty());
+        when(cotizaciones.findAll(any(Specification.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(cotizacion(jugador, DOMINGO_1, "1.0000", "0.5", ACTIVA)),
+                        PageRequest.of(0, 20), 1));
+
+        RankingResultado primero = service.ranking(null, null, null, 0, 20, false);
+        RankingResultado segundo = service.ranking(null, null, null, 0, 20, false);
+
+        assertSame(primero, segundo);
+        verify(estrategias, times(2)).findByActivaTrue();
+        verify(cotizaciones, times(1)).findMaxFechaByEstrategia(ACTIVA);
+        verify(cotizaciones, times(1)).findAll(any(Specification.class), any(Pageable.class));
+        verify(cotizaciones, times(1)).findFechaAnterior(ACTIVA, DOMINGO_1);
+        verify(cotizaciones, times(1)).findVersionByEstrategiaAndFecha(ACTIVA, DOMINGO_1);
+    }
+
+    @Test
+    void rankingClavesNormalizadasCompartenEntradaYClavesDistintasNo() {
+        when(cotizaciones.findMaxFechaByEstrategia(anyString())).thenReturn(Optional.empty());
+
+        RankingResultado normalizado = service.ranking(null, "La Liga", "del", 0, 10, false);
+        assertSame(normalizado, service.ranking(null, "la liga", "DEL", 0, 10, false));
+
+        service.ranking(null, "Serie A", "DEL", 0, 10, false);
+        service.ranking(null, "La Liga", "POR", 0, 10, false);
+        service.ranking(null, "La Liga", "DEL", 1, 10, false);
+        service.ranking(null, "La Liga", "DEL", 0, 11, false);
+        service.ranking(OTRA, null, null, 0, 10, true);
+
+        verify(cotizaciones, times(5)).findMaxFechaByEstrategia(ACTIVA);
+        verify(cotizaciones, times(1)).findMaxFechaByEstrategia(OTRA);
+    }
+
+    @Test
+    void rankingVacioSeRecargaDespuesDeInvalidar() {
+        Cache<String, CotizacionVigentePort.CotizacionVigente> cotizacionCache = Caffeine.newBuilder().build();
+        CotizacionCacheInvalidator invalidator = new CotizacionCacheInvalidator(cotizacionCache, rankingCache);
+        when(cotizaciones.findMaxFechaByEstrategia(ACTIVA))
+                .thenReturn(Optional.empty(), Optional.of(DOMINGO_1));
+        when(cotizaciones.findAll(any(Specification.class), any(Pageable.class))).thenReturn(Page.empty());
+
+        RankingResultado vacio = service.ranking(null, null, null, 0, 20, false);
+        assertSame(vacio, service.ranking(null, null, null, 0, 20, false));
+
+        invalidator.invalidate();
+
+        RankingResultado actualizado = service.ranking(null, null, null, 0, 20, false);
+        assertNull(vacio.fecha());
+        assertEquals(DOMINGO_1, actualizado.fecha());
+        verify(cotizaciones, times(2)).findMaxFechaByEstrategia(ACTIVA);
+    }
+
+    @Test
+    void rankingCacheadoDeOtraEstrategiaNoEludeElPermiso() {
+        when(cotizaciones.findMaxFechaByEstrategia(OTRA)).thenReturn(Optional.empty());
+        RankingResultado cacheado = service.ranking(OTRA, null, null, 0, 20, true);
+
+        assertSame(cacheado, rankingCache.getIfPresent(
+                new RankingClave(OTRA, null, null, 0, 20)));
+        assertThrows(SoloSuperusuarioException.class,
+                () -> service.ranking(OTRA, null, null, 0, 20, false));
+
+        verify(estrategias, times(2)).findByActivaTrue();
+        verify(cotizaciones, times(1)).findMaxFechaByEstrategia(OTRA);
     }
 
     @Test
